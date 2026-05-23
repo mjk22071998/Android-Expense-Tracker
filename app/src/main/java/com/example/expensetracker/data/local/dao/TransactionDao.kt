@@ -1,6 +1,5 @@
 package com.example.expensetracker.data.local.dao
 
-import android.R
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -26,7 +25,7 @@ interface TransactionDao {
         ORDER BY date DESC
     """
     )
-    suspend fun getTransactions(ledgerId: String, startDate: Long, endDate: Long)
+    fun getTransactions(ledgerId: String, startDate: Long, endDate: Long): Flow<List<Transaction>>
 
     @Query(
         """
@@ -37,7 +36,7 @@ interface TransactionDao {
         AND date BETWEEN :startDate AND :endDate
     """
     )
-    suspend fun getTotalIncome(ledgerId: String, startDate: Long, endDate: Long): Flow<Double?>
+    fun getPeriodIncome(ledgerId: String, startDate: Long, endDate: Long): Flow<Double?>
 
     @Query(
         """
@@ -48,7 +47,7 @@ interface TransactionDao {
         AND date BETWEEN :startDate AND :endDate
     """
     )
-    suspend fun getTotalExpenses(ledgerId: String, startDate: Long, endDate: Long): Flow<Double?>
+    fun getPeriodExpense(ledgerId: String, startDate: Long, endDate: Long): Flow<Double?>
 
     @Query(
         """
@@ -68,5 +67,45 @@ interface TransactionDao {
         } else {
             ledgerDao.addExpense(transaction.ledgerId, transaction.amount, updatedAt)
         }
+    }
+
+    @androidx.room.Transaction
+    suspend fun updateAndRecalculateBalance(
+        oldTransaction: Transaction,
+        newTransaction: Transaction,
+        ledgerDao: LedgerDao
+    ) {
+        // Step 1 — reverse old transaction effect
+        if (oldTransaction.type == "EXPENSE") {
+            ledgerDao.reverseExpense(oldTransaction.ledgerId, oldTransaction.amount, System.currentTimeMillis())
+        } else {
+            ledgerDao.reverseIncome(oldTransaction.ledgerId, oldTransaction.amount, System.currentTimeMillis())
+        }
+
+        // Step 2 — apply new transaction effect
+        if (newTransaction.type == "EXPENSE") {
+            ledgerDao.addExpense(newTransaction.ledgerId, newTransaction.amount, System.currentTimeMillis())
+        } else {
+            ledgerDao.addIncome(newTransaction.ledgerId, newTransaction.amount, System.currentTimeMillis())
+        }
+
+        // Step 3 — update the transaction itself
+        update(newTransaction)
+    }
+
+    @androidx.room.Transaction
+    suspend fun softDeleteAndUpdateBalance(
+        transaction: Transaction,
+        ledgerDao: LedgerDao
+    ) {
+        // Reverse the effect
+        if (transaction.type == "EXPENSE") {
+            ledgerDao.reverseExpense(transaction.ledgerId, transaction.amount, System.currentTimeMillis())
+        } else {
+            ledgerDao.reverseIncome(transaction.ledgerId, transaction.amount, System.currentTimeMillis())
+        }
+
+        // Soft delete
+        softDelete(transaction.id, System.currentTimeMillis())
     }
 }

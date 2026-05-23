@@ -47,6 +47,28 @@ interface LedgerDao {
     )
     suspend fun addExpense(ledgerId: String, amount: Double, updatedAt: Long)
 
+    @Query(
+        """
+            UPDATE ledgers 
+            SET balance = balance - :amount,
+                totalIncome = totalIncome - :amount,
+                updatedAt = :updatedAt
+            WHERE id = :ledgerId
+        """
+    )
+    suspend fun reverseIncome(ledgerId: String, amount: Double, updatedAt: Long)
+
+    @Query(
+        """
+        UPDATE ledgers 
+        SET balance = balance + :amount,
+            totalExpenses = totalExpenses - :amount,
+            updatedAt = :updatedAt
+        WHERE id = :ledgerId
+        """
+    )
+    suspend fun reverseExpense(ledgerId: String, amount: Double, updatedAt: Long)
+
     @Query("DELETE FROM ledgers WHERE id=:id AND isDefault=0")
     suspend fun delete(id: String)
 }
