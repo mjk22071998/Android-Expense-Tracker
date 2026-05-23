@@ -28,19 +28,19 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun providesTransactionDao(appDatabase: AppDatabase): TransactionDao{
+    fun provideTransactionDao(appDatabase: AppDatabase): TransactionDao{
         return appDatabase.transactionDao()
     }
 
     @Provides
     @Singleton
-    fun providesCategoryDao(appDatabase: AppDatabase): CategoryDao{
+    fun provideCategoryDao(appDatabase: AppDatabase): CategoryDao{
         return appDatabase.categoryDao()
     }
 
     @Provides
     @Singleton
-    fun providesLedgerDao(appDatabase: AppDatabase): LedgerDao{
+    fun provideLedgerDao(appDatabase: AppDatabase): LedgerDao{
         return appDatabase.ledgerDao()
     }
 }
