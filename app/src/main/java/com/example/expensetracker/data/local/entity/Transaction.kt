@@ -6,7 +6,8 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "transactions", foreignKeys = [ForeignKey(
+    tableName = "transactions",
+    foreignKeys = [ForeignKey(
         entity = Ledger::class,
         parentColumns = ["id"],
         childColumns = ["ledgerId"],
@@ -16,7 +17,15 @@ import androidx.room.PrimaryKey
         parentColumns = ["id"],
         childColumns = ["categoryId"],
         onDelete = ForeignKey.SET_NULL
-    )], indices = [Index("ledgerId"), Index("categoryId")]
+    )],
+    indices = [
+        Index("ledgerId"),
+        Index("categoryId"),
+        Index("type"),
+        Index("date"),
+        Index("isDeleted"),
+        Index(value = ["ledgerId", "type", "date", "isDeleted"])
+    ]
 )
 data class Transaction(
     @PrimaryKey val id: String,
