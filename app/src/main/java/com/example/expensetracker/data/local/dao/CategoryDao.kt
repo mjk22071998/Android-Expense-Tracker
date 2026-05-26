@@ -17,7 +17,7 @@ interface CategoryDao {
     suspend fun update(category: Category)
 
     @Query("Select * from categories")
-    suspend fun getAllCategories(): Flow<List<Category>>
+    fun getAllCategories(): Flow<List<Category>>
 
     @Query("Select * from categories where isDefault=0")
     suspend fun getNonDefaultCategories(): List<Category>
