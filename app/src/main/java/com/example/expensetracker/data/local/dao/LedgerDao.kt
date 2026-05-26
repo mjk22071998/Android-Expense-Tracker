@@ -17,13 +17,13 @@ interface LedgerDao {
     suspend fun update(ledger: Ledger)
 
     @Query("SELECT * FROM ledgers")
-    suspend fun getAllLedgers(): Flow<List<Ledger>>
+    fun getAllLedgers(): Flow<List<Ledger>>
 
     @Query("SELECT * FROM ledgers WHERE id=:id")
-    suspend fun getLedgerById(id: String): Ledger?
+    fun getLedgerById(id: String): Ledger?
 
     @Query("SELECT * FROM ledgers WHERE isDefault=1 LIMIT 1")
-    suspend fun getDefaultLedger(): Ledger?
+    fun getDefaultLedger(): Ledger?
 
     @Query(
         """
