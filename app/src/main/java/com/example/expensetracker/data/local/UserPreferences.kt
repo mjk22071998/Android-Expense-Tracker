@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.example.expensetracker.Constants
 import com.example.expensetracker.domain.model.CurrencyHelper
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
@@ -19,8 +20,8 @@ class UserPreferences @Inject constructor(
     @param:ApplicationContext private val context: Context
 ) {
     companion object {
-        private val CURRENCY_CODE = stringPreferencesKey("currency_code")
-        private val IS_DARK_THEME = booleanPreferencesKey("is_dark_theme")
+        private val CURRENCY_CODE = stringPreferencesKey(Constants.Preferences.CURRENCY_CODE)
+        private val IS_DARK_THEME = booleanPreferencesKey(Constants.Preferences.IS_DARK_THEME)
     }
 
     val currencyCode: Flow<String> = context.dataStore.data.map { preferences ->

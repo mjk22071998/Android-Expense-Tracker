@@ -2,6 +2,7 @@ package com.example.expensetracker.data.local.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import com.example.expensetracker.Constants
 import com.example.expensetracker.data.local.dao.CategoryDao
 import com.example.expensetracker.data.local.dao.LedgerDao
 import com.example.expensetracker.data.local.dao.TransactionDao
@@ -22,6 +23,6 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun ledgerDao(): LedgerDao
 
     companion object{
-        const val DATABASE_NAME="expense_tracker.db"
+        const val DATABASE_NAME = Constants.Database.DATABASE_NAME
     }
 }

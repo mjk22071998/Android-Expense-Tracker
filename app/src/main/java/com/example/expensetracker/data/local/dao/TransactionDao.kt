@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.example.expensetracker.Constants
 import com.example.expensetracker.data.local.entity.Transaction
 import kotlinx.coroutines.flow.Flow
 
@@ -62,7 +63,7 @@ interface TransactionDao {
     suspend fun insertAndUpdateBalance(transaction: Transaction, ledgerDao: LedgerDao) {
         insert(transaction)
         val updatedAt = System.currentTimeMillis()
-        if (transaction.type == "INCOME") {
+        if (transaction.type == Constants.TransactionType.INCOME) {
             ledgerDao.addIncome(transaction.ledgerId, transaction.amount, updatedAt)
         } else {
             ledgerDao.addExpense(transaction.ledgerId, transaction.amount, updatedAt)
@@ -76,14 +77,14 @@ interface TransactionDao {
         ledgerDao: LedgerDao
     ) {
         // Step 1 — reverse old transaction effect
-        if (oldTransaction.type == "EXPENSE") {
+        if (oldTransaction.type == Constants.TransactionType.EXPENSE) {
             ledgerDao.reverseExpense(oldTransaction.ledgerId, oldTransaction.amount, System.currentTimeMillis())
         } else {
             ledgerDao.reverseIncome(oldTransaction.ledgerId, oldTransaction.amount, System.currentTimeMillis())
         }
 
         // Step 2 — apply new transaction effect
-        if (newTransaction.type == "EXPENSE") {
+        if (newTransaction.type == Constants.TransactionType.EXPENSE) {
             ledgerDao.addExpense(newTransaction.ledgerId, newTransaction.amount, System.currentTimeMillis())
         } else {
             ledgerDao.addIncome(newTransaction.ledgerId, newTransaction.amount, System.currentTimeMillis())
@@ -99,7 +100,7 @@ interface TransactionDao {
         ledgerDao: LedgerDao
     ) {
         // Reverse the effect
-        if (transaction.type == "EXPENSE") {
+        if (transaction.type == Constants.TransactionType.EXPENSE) {
             ledgerDao.reverseExpense(transaction.ledgerId, transaction.amount, System.currentTimeMillis())
         } else {
             ledgerDao.reverseIncome(transaction.ledgerId, transaction.amount, System.currentTimeMillis())
