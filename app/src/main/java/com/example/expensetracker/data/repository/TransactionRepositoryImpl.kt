@@ -1,6 +1,7 @@
 package com.example.expensetracker.data.repository
 
 import com.example.expensetracker.data.local.dao.LedgerDao
+import com.example.expensetracker.data.local.dao.MonthlySnapshotDao
 import com.example.expensetracker.data.local.dao.TransactionDao
 import com.example.expensetracker.data.local.entity.Transaction
 import jakarta.inject.Inject
@@ -8,7 +9,8 @@ import kotlinx.coroutines.flow.Flow
 
 class TransactionRepositoryImpl @Inject constructor(
     private val transactionDao: TransactionDao,
-    private val ledgerDao: LedgerDao
+    private val ledgerDao: LedgerDao,
+    private val snapshotDao: MonthlySnapshotDao
 ): TransactionRepository {
     override fun getTransactions(
         ledgerId: String,
@@ -35,17 +37,19 @@ class TransactionRepositoryImpl @Inject constructor(
     }
 
     override suspend fun insertTransaction(transaction: Transaction) {
-        transactionDao.insertAndUpdateBalance(transaction,ledgerDao)
+        transactionDao.insertAndUpdateBalance(transaction, ledgerDao, snapshotDao)
     }
 
     override suspend fun updateTransaction(
         oldTransaction: Transaction,
         newTransaction: Transaction
     ) {
-        transactionDao.updateAndRecalculateBalance(oldTransaction, newTransaction, ledgerDao)
+        transactionDao.updateAndRecalculateBalance(
+            oldTransaction, newTransaction, ledgerDao, snapshotDao
+        )
     }
 
     override suspend fun softDeleteTransaction(transaction: Transaction) {
-        transactionDao.softDeleteAndUpdateBalance(transaction, ledgerDao)
+        transactionDao.softDeleteAndUpdateBalance(transaction, ledgerDao, snapshotDao)
     }
 }

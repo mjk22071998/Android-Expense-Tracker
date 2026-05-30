@@ -6,8 +6,11 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.expensetracker.Constants
+import com.example.expensetracker.data.local.entity.MonthlySnapshot
 import com.example.expensetracker.data.local.entity.Transaction
 import kotlinx.coroutines.flow.Flow
+import java.util.Calendar
+import java.util.UUID
 
 @Dao
 interface TransactionDao {
@@ -60,13 +63,48 @@ interface TransactionDao {
     suspend fun softDelete(id: String, updatedAt: Long)
 
     @androidx.room.Transaction
-    suspend fun insertAndUpdateBalance(transaction: Transaction, ledgerDao: LedgerDao) {
+    suspend fun insertAndUpdateBalance(
+        transaction: Transaction,
+        ledgerDao: LedgerDao,
+        snapshotDao: MonthlySnapshotDao
+    ) {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = transaction.date
+        }
+        val month = calendar.get(Calendar.MONTH) + 1
+        val year = calendar.get(Calendar.YEAR)
+        val now = System.currentTimeMillis()
+
+        // Ensure snapshot exists for this month
+        val existingSnapshot = snapshotDao.getSnapshot(transaction.ledgerId, month, year)
+        if (existingSnapshot == null) {
+            val previousSnapshot = getPreviousMonthSnapshot(
+                transaction.ledgerId, month, year, snapshotDao
+            )
+            snapshotDao.insert(
+                MonthlySnapshot(
+                    id = UUID.randomUUID().toString(),
+                    ledgerId = transaction.ledgerId,
+                    month = month,
+                    year = year,
+                    openingBalance = previousSnapshot?.closingBalance ?: 0.0,
+                    closingBalance = previousSnapshot?.closingBalance ?: 0.0,
+                    createdAt = now,
+                    updatedAt = now
+                )
+            )
+        }
+
+        // Insert transaction
         insert(transaction)
-        val updatedAt = System.currentTimeMillis()
+
+        // Update ledger and snapshot
         if (transaction.type == Constants.TransactionType.INCOME) {
-            ledgerDao.addIncome(transaction.ledgerId, transaction.amount, updatedAt)
+            ledgerDao.addIncome(transaction.ledgerId, transaction.amount, now)
+            snapshotDao.addIncome(transaction.ledgerId, month, year, transaction.amount, now)
         } else {
-            ledgerDao.addExpense(transaction.ledgerId, transaction.amount, updatedAt)
+            ledgerDao.addExpense(transaction.ledgerId, transaction.amount, now)
+            snapshotDao.addExpense(transaction.ledgerId, month, year, transaction.amount, now)
         }
     }
 
@@ -74,39 +112,69 @@ interface TransactionDao {
     suspend fun updateAndRecalculateBalance(
         oldTransaction: Transaction,
         newTransaction: Transaction,
-        ledgerDao: LedgerDao
+        ledgerDao: LedgerDao,
+        snapshotDao: MonthlySnapshotDao
     ) {
-        // Step 1 — reverse old transaction effect
-        if (oldTransaction.type == Constants.TransactionType.EXPENSE) {
-            ledgerDao.reverseExpense(oldTransaction.ledgerId, oldTransaction.amount, System.currentTimeMillis())
+        val oldCalendar = Calendar.getInstance().apply { timeInMillis = oldTransaction.date }
+        val newCalendar = Calendar.getInstance().apply { timeInMillis = newTransaction.date }
+        val oldMonth = oldCalendar.get(Calendar.MONTH) + 1
+        val oldYear = oldCalendar.get(Calendar.YEAR)
+        val newMonth = newCalendar.get(Calendar.MONTH) + 1
+        val newYear = newCalendar.get(Calendar.YEAR)
+        val now = System.currentTimeMillis()
+
+        // Reverse old transaction effect
+        if (oldTransaction.type == Constants.TransactionType.INCOME) {
+            ledgerDao.reverseIncome(oldTransaction.ledgerId, oldTransaction.amount, now)
+            snapshotDao.reverseIncome(oldTransaction.ledgerId, oldMonth, oldYear, oldTransaction.amount, now)
         } else {
-            ledgerDao.reverseIncome(oldTransaction.ledgerId, oldTransaction.amount, System.currentTimeMillis())
+            ledgerDao.reverseExpense(oldTransaction.ledgerId, oldTransaction.amount, now)
+            snapshotDao.reverseExpense(oldTransaction.ledgerId, oldMonth, oldYear, oldTransaction.amount, now)
         }
 
-        // Step 2 — apply new transaction effect
-        if (newTransaction.type == Constants.TransactionType.EXPENSE) {
-            ledgerDao.addExpense(newTransaction.ledgerId, newTransaction.amount, System.currentTimeMillis())
+        // Apply new transaction effect
+        if (newTransaction.type == Constants.TransactionType.INCOME) {
+            ledgerDao.addIncome(newTransaction.ledgerId, newTransaction.amount, now)
+            snapshotDao.addIncome(newTransaction.ledgerId, newMonth, newYear, newTransaction.amount, now)
         } else {
-            ledgerDao.addIncome(newTransaction.ledgerId, newTransaction.amount, System.currentTimeMillis())
+            ledgerDao.addExpense(newTransaction.ledgerId, newTransaction.amount, now)
+            snapshotDao.addExpense(newTransaction.ledgerId, newMonth, newYear, newTransaction.amount, now)
         }
 
-        // Step 3 — update the transaction itself
         update(newTransaction)
     }
 
     @androidx.room.Transaction
     suspend fun softDeleteAndUpdateBalance(
         transaction: Transaction,
-        ledgerDao: LedgerDao
+        ledgerDao: LedgerDao,
+        snapshotDao: MonthlySnapshotDao
     ) {
-        // Reverse the effect
-        if (transaction.type == Constants.TransactionType.EXPENSE) {
-            ledgerDao.reverseExpense(transaction.ledgerId, transaction.amount, System.currentTimeMillis())
+        val calendar = Calendar.getInstance().apply { timeInMillis = transaction.date }
+        val month = calendar.get(Calendar.MONTH) + 1
+        val year = calendar.get(Calendar.YEAR)
+        val now = System.currentTimeMillis()
+
+        if (transaction.type == Constants.TransactionType.INCOME) {
+            ledgerDao.reverseIncome(transaction.ledgerId, transaction.amount, now)
+            snapshotDao.reverseIncome(transaction.ledgerId, month, year, transaction.amount, now)
         } else {
-            ledgerDao.reverseIncome(transaction.ledgerId, transaction.amount, System.currentTimeMillis())
+            ledgerDao.reverseExpense(transaction.ledgerId, transaction.amount, now)
+            snapshotDao.reverseExpense(transaction.ledgerId, month, year, transaction.amount, now)
         }
 
-        // Soft delete
-        softDelete(transaction.id, System.currentTimeMillis())
+        softDelete(transaction.id, now)
+    }
+
+    // Helper to get previous month's snapshot for opening balance
+    private suspend fun getPreviousMonthSnapshot(
+        ledgerId: String,
+        month: Int,
+        year: Int,
+        snapshotDao: MonthlySnapshotDao
+    ): MonthlySnapshot? {
+        val prevMonth = if (month == 1) 12 else month - 1
+        val prevYear = if (month == 1) year - 1 else year
+        return snapshotDao.getSnapshot(ledgerId, prevMonth, prevYear)
     }
 }

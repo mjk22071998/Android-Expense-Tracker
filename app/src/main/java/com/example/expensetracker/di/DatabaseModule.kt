@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.example.expensetracker.data.local.dao.CategoryDao
 import com.example.expensetracker.data.local.dao.LedgerDao
+import com.example.expensetracker.data.local.dao.MonthlySnapshotDao
 import com.example.expensetracker.data.local.dao.TransactionDao
 import com.example.expensetracker.data.local.database.AppDatabase
 import dagger.Module
@@ -23,7 +24,9 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             AppDatabase.DATABASE_NAME
-        ).build()
+        )
+            .addMigrations(AppDatabase.MIGRATION_1_2)  // ← add this
+            .build()
     }
 
     @Provides
@@ -42,5 +45,11 @@ object DatabaseModule {
     @Singleton
     fun provideLedgerDao(appDatabase: AppDatabase): LedgerDao{
         return appDatabase.ledgerDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideMonthlySnapshotDao(database: AppDatabase): MonthlySnapshotDao {
+        return database.monthlySnapshotDao()
     }
 }
