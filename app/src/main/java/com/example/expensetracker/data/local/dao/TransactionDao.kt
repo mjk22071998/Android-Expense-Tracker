@@ -8,6 +8,7 @@ import androidx.room.Update
 import com.example.expensetracker.Constants
 import com.example.expensetracker.data.local.entity.MonthlySnapshot
 import com.example.expensetracker.data.local.entity.Transaction
+import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
 import java.util.UUID
@@ -20,16 +21,32 @@ interface TransactionDao {
     @Update
     suspend fun update(transaction: Transaction)
 
-    @Query(
-        """
-        SELECT * FROM transactions
-        WHERE ledgerId=:ledgerId
-        AND isDeleted=0
-        AND date BETWEEN :startDate AND :endDate
-        ORDER BY date DESC
-    """
-    )
-    fun getTransactions(ledgerId: String, startDate: Long, endDate: Long): Flow<List<Transaction>>
+    @Query("""
+    SELECT 
+        t.id,
+        t.ledgerId,
+        t.categoryId,
+        COALESCE(c.icon, 'other') as categoryIcon,
+        COALESCE(c.name, 'Uncategorized') as categoryName,
+        t.amount,
+        t.type,
+        t.note,
+        t.date,
+        t.createdAt,
+        t.updatedAt,
+        t.isDeleted
+    FROM transactions t
+    LEFT JOIN categories c ON t.categoryId = c.id
+    WHERE t.ledgerId = :ledgerId
+    AND t.isDeleted = 0
+    AND t.date BETWEEN :startDate AND :endDate
+    ORDER BY t.date DESC
+""")
+    fun getTransactions(
+        ledgerId: String,
+        startDate: Long,
+        endDate: Long
+    ): Flow<List<TransactionWithCategory>>
 
     @Query(
         """

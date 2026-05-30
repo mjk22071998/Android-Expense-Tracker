@@ -3,7 +3,9 @@ package com.example.expensetracker.data.repository
 import com.example.expensetracker.data.local.dao.LedgerDao
 import com.example.expensetracker.data.local.dao.MonthlySnapshotDao
 import com.example.expensetracker.data.local.dao.TransactionDao
+import com.example.expensetracker.data.local.entity.MonthlySnapshot
 import com.example.expensetracker.data.local.entity.Transaction
+import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.Flow
 
@@ -16,8 +18,8 @@ class TransactionRepositoryImpl @Inject constructor(
         ledgerId: String,
         startDate: Long,
         endDate: Long
-    ): Flow<List<Transaction>> {
-        return transactionDao.getTransactions(ledgerId,startDate,endDate)
+    ): Flow<List<TransactionWithCategory>> { // ← update return type
+        return transactionDao.getTransactions(ledgerId, startDate, endDate)
     }
 
     override fun getPeriodIncome(
@@ -51,5 +53,13 @@ class TransactionRepositoryImpl @Inject constructor(
 
     override suspend fun softDeleteTransaction(transaction: Transaction) {
         transactionDao.softDeleteAndUpdateBalance(transaction, ledgerDao, snapshotDao)
+    }
+
+    override fun getMonthlySnapshot(
+        ledgerId: String,
+        month: Int,
+        year: Int
+    ): Flow<MonthlySnapshot?> {
+        return snapshotDao.observeSnapshot(ledgerId, month, year)
     }
 }
