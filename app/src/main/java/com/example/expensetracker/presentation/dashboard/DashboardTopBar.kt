@@ -1,7 +1,5 @@
 package com.example.expensetracker.presentation.dashboard
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -10,6 +8,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
+import com.example.expensetracker.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,7 +26,7 @@ fun DashboardTopBar(
         actions = {
             IconButton(onClick = onSettingsClick) {
                 Icon(
-                    imageVector = Icons.Filled.Settings,
+                    painter = painterResource(id = R.drawable.ic_settings),
                     contentDescription = "Settings"
                 )
             }

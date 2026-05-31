@@ -10,20 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.TrendingUp
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.DirectionsCar
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ElectricBolt
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LocalHospital
-import androidx.compose.material.icons.filled.MoreHoriz
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Movie
-import androidx.compose.material.icons.filled.Restaurant
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Work
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -47,8 +33,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import com.example.expensetracker.Constants
+import com.example.expensetracker.R
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -135,7 +122,7 @@ fun TransactionItem(
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.MoreVert,
+                        painter = painterResource(id = R.drawable.ic_more_vert),
                         contentDescription = "More options",
                         modifier = Modifier.size(16.dp)
                     )
@@ -154,7 +141,7 @@ fun TransactionItem(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.Edit,
+                                painter = painterResource(id = R.drawable.ic_edit),
                                 contentDescription = "Edit"
                             )
                         },
@@ -173,7 +160,7 @@ fun TransactionItem(
                         },
                         leadingIcon = {
                             Icon(
-                                imageVector = Icons.Default.Delete,
+                                painter = painterResource(id = R.drawable.ic_delete),
                                 contentDescription = "Delete",
                                 tint = MaterialTheme.colorScheme.error
                             )
@@ -202,7 +189,7 @@ private fun CategoryIcon(
         contentAlignment = Alignment.Center
     ) {
         Icon(
-            imageVector = getCategoryIcon(categoryIcon),
+            painter = painterResource(id = getCategoryIcon(categoryIcon)),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSecondaryContainer,
             modifier = Modifier.size(24.dp)
@@ -219,7 +206,7 @@ private fun DeleteConfirmationDialog(
         onDismissRequest = onDismiss,
         icon = {
             Icon(
-                imageVector = Icons.Default.Delete,
+                painter = painterResource(id = R.drawable.ic_delete),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.error
             )
@@ -248,18 +235,18 @@ private fun DeleteConfirmationDialog(
     )
 }
 
-fun getCategoryIcon(iconName: String): ImageVector {
+fun getCategoryIcon(iconName: String): Int {
     return when (iconName) {
-        "restaurant" -> Icons.Default.Restaurant
-        "transport" -> Icons.Default.DirectionsCar
-        "shopping" -> Icons.Default.ShoppingCart
-        "health" -> Icons.Default.LocalHospital
-        "entertainment" -> Icons.Default.Movie
-        "salary" -> Icons.Default.Work
-        "investment" -> Icons.AutoMirrored.Default.TrendingUp
-        "rent" -> Icons.Default.Home
-        "utilities" -> Icons.Default.ElectricBolt
-        else -> Icons.Default.MoreHoriz
+        "restaurant"    -> R.drawable.ic_restaurant
+        "transport"     -> R.drawable.ic_directions_car
+        "shopping"      -> R.drawable.ic_shopping_cart
+        "health"        -> R.drawable.ic_local_hospital
+        "entertainment" -> R.drawable.ic_movie
+        "salary"        -> R.drawable.ic_work
+        "investment"    -> R.drawable.ic_trending_up
+        "rent"          -> R.drawable.ic_home
+        "utilities"     -> R.drawable.ic_electric_bolt
+        else            -> R.drawable.ic_more_horiz
     }
 }
 
