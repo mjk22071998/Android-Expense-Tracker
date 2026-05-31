@@ -26,15 +26,8 @@ object  CurrencyHelper {
         }
     }
 
-    fun formatAmount(amount: Double, currencyCode: String): String {
-        return try {
-            val currency = Currency.getInstance(currencyCode)
-            val formatter = NumberFormat.getCurrencyInstance()
-            formatter.currency = currency
-            formatter.format(amount)
-        } catch (e: Exception) {
-            "$currencyCode $amount"
-        }
+    fun formatAmount(amount: Double): String {
+        return String.format(Locale.getDefault(), "%,.2f", amount)
     }
 
     fun getDefaultCurrencyCode(): String {

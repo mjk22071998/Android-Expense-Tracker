@@ -37,6 +37,7 @@ import androidx.compose.ui.res.painterResource
 import com.example.expensetracker.Constants
 import com.example.expensetracker.R
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
+import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -56,11 +57,9 @@ fun TransactionItem(
     if (showDeleteDialog) {
         DeleteConfirmationDialog(
             onConfirm = {
-                showDeleteDialog = false
                 onDelete()
             },
             onDismiss = {
-                showDeleteDialog = false
             }
         )
     }
@@ -167,7 +166,6 @@ fun TransactionItem(
                         },
                         onClick = {
                             isMenuExpanded = false
-                            showDeleteDialog = true
                         }
                     )
                 }
@@ -257,7 +255,7 @@ fun formatTransactionDate(timestamp: Long): String {
 
     return when {
         isSameDay(today, transactionCal) -> "Today"
-        isYesterday(today, transactionCal) -> "Yesterday"
+        isYesterday(transactionCal) -> "Yesterday"
         else -> SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(date)
     }
 }
@@ -267,7 +265,7 @@ private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {
             cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
 }
 
-private fun isYesterday(today: Calendar, other: Calendar): Boolean {
+private fun isYesterday(other: Calendar): Boolean {
     val yesterday = Calendar.getInstance().apply {
         add(Calendar.DAY_OF_YEAR, -1)
     }

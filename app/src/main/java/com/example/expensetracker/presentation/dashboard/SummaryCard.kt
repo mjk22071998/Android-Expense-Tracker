@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.expensetracker.R
+import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
 
 @Composable
 fun SummaryCard(
