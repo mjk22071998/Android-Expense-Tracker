@@ -25,7 +25,7 @@ class UserPreferences @Inject constructor(
     }
 
     val currencyCode: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[CURRENCY_CODE] ?: CurrencyHelper.getDefaultCurrencyCode()
+        preferences[CURRENCY_CODE] ?: CurrencyHelper.getDefaultCurrencyCode(context)
     }
 
     val isDarkTheme: Flow<Boolean> = context.dataStore.data.map { preferences ->

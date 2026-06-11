@@ -1,5 +1,7 @@
 package com.example.expensetracker.domain.model
 
+import android.content.Context
+import android.telephony.TelephonyManager
 import java.text.NumberFormat
 import java.util.Currency
 import java.util.Locale
@@ -30,9 +32,19 @@ object  CurrencyHelper {
         return String.format(Locale.getDefault(), "%,.2f", amount)
     }
 
-    fun getDefaultCurrencyCode(): String {
+    fun getDefaultCurrencyCode(context: Context): String {
         return try {
-            Currency.getInstance(Locale.getDefault()).currencyCode
+            val telephonyManager = context
+                .getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            val simCountry = telephonyManager.simCountryIso.uppercase()
+            if (simCountry.isNotEmpty()) {
+                val locale = Locale.Builder()
+                    .setRegion(simCountry)
+                    .build()
+                Currency.getInstance(locale).currencyCode
+            } else {
+                Currency.getInstance(Locale.getDefault()).currencyCode
+            }
         } catch (e: Exception) {
             "PKR"
         }
@@ -40,7 +52,14 @@ object  CurrencyHelper {
 
     fun getSymbol(currencyCode: String): String {
         return try {
-            Currency.getInstance(currencyCode).symbol
+            val currency = Currency.getInstance(currencyCode)
+            // Build locale using SIM country for accurate symbol
+            val simLocale = Locale.Builder()
+                .setRegion(currencyCode.take(2)) // "PK" from "PKR"
+                .build()
+            val symbol = currency.getSymbol(simLocale)
+            // If symbol still equals code, it means locale didn't help
+            if (symbol == currencyCode) currency.symbol else symbol
         } catch (e: Exception) {
             currencyCode
         }
