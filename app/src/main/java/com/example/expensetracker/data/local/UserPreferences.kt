@@ -21,15 +21,15 @@ class UserPreferences @Inject constructor(
 ) {
     companion object {
         private val CURRENCY_CODE = stringPreferencesKey(Constants.Preferences.CURRENCY_CODE)
-        private val IS_DARK_THEME = booleanPreferencesKey(Constants.Preferences.IS_DARK_THEME)
+        private val THEME_MODE = stringPreferencesKey("theme_mode")
     }
 
     val currencyCode: Flow<String> = context.dataStore.data.map { preferences ->
         preferences[CURRENCY_CODE] ?: CurrencyHelper.getDefaultCurrencyCode(context)
     }
 
-    val isDarkTheme: Flow<Boolean> = context.dataStore.data.map { preferences ->
-        preferences[IS_DARK_THEME] ?: false
+    val themeMode: Flow<String> = context.dataStore.data.map { preferences ->
+        preferences[THEME_MODE] ?: Constants.ThemeMode.SYSTEM
     }
 
     suspend fun setCurrencyCode(code: String) {
@@ -38,9 +38,9 @@ class UserPreferences @Inject constructor(
         }
     }
 
-    suspend fun setDarkTheme(isDark: Boolean) {
+    suspend fun setThemeMode(mode: String) {
         context.dataStore.edit { preferences ->
-            preferences[IS_DARK_THEME] = isDark
+            preferences[THEME_MODE] = mode
         }
     }
 }

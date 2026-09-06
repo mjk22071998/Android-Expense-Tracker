@@ -2,6 +2,12 @@ package com.example.expensetracker
 
 object Constants {
 
+    object ThemeMode {
+        const val SYSTEM = "SYSTEM"
+        const val LIGHT = "LIGHT"
+        const val DARK = "DARK"
+    }
+
     // Navigation argument keys
     object NavArgs {
         const val TRANSACTION_ID = "transactionId"

@@ -101,12 +101,12 @@ fun SummaryCard(
 
                 Text(
                     text = "$currencySymbol ${formatAmount(amount)}",
-                    style = MaterialTheme.typography.titleLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.ExtraBold,
                     color = Color.White,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    letterSpacing = (-0.5).sp
+                    letterSpacing = (-0.3).sp
                 )
             }
         }

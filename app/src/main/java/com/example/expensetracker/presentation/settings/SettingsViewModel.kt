@@ -1,10 +1,12 @@
 package com.example.expensetracker.presentation.settings
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.data.local.UserPreferences
 import com.example.expensetracker.domain.model.CurrencyHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +16,8 @@ import kotlinx.coroutines.launch
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -30,14 +33,14 @@ class SettingsViewModel @Inject constructor(
                 _uiState.update { state ->
                     state.copy(
                         currencyCode = code,
-                        currencySymbol = CurrencyHelper.getSymbol(code)
+                        currencySymbol = CurrencyHelper.getSymbol(code, context)
                     )
                 }
             }
         }
         viewModelScope.launch {
-            userPreferences.isDarkTheme.collect { isDark ->
-                _uiState.update { it.copy(isDarkTheme = isDark) }
+            userPreferences.themeMode.collect { mode ->
+                _uiState.update { it.copy(themeMode = mode) }
             }
         }
     }
@@ -78,9 +81,9 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun setDarkTheme(isDark: Boolean) {
+    fun setThemeMode(mode: String) {
         viewModelScope.launch {
-            userPreferences.setDarkTheme(isDark)
+            userPreferences.setThemeMode(mode)
         }
     }
 }

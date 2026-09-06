@@ -1,5 +1,6 @@
 package com.example.expensetracker.presentation.transaction
 
+import android.content.Context
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,6 +12,7 @@ import com.example.expensetracker.data.repository.LedgerRepository
 import com.example.expensetracker.data.repository.TransactionRepository
 import com.example.expensetracker.domain.model.CurrencyHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -25,8 +27,9 @@ class AddEditTransactionViewModel @Inject constructor(
     private val categoryRepository: CategoryRepository,
     private val ledgerRepository: LedgerRepository,
     private val userPreferences: UserPreferences,
+    @param:ApplicationContext private val context: Context,
     savedStateHandle: SavedStateHandle
-) : ViewModel(){
+) : ViewModel() {
     private val _uiState = MutableStateFlow(AddEditTransactionUiState())
     val uiState: StateFlow<AddEditTransactionUiState> = _uiState.asStateFlow()
 
@@ -45,7 +48,7 @@ class AddEditTransactionViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferences.currencyCode.collect { code ->
                 _uiState.update { state ->
-                    state.copy(currencySymbol = CurrencyHelper.getSymbol(code))
+                    state.copy(currencySymbol = CurrencyHelper.getSymbol(code, context))
                 }
             }
         }
@@ -100,7 +103,7 @@ class AddEditTransactionViewModel @Inject constructor(
         _uiState.update { state ->
             state.copy(
                 type = type,
-                selectedCategoryId = null, // reset category since list changes
+                selectedCategoryId = null,
                 filteredCategories = state.allCategories.filter { it.transactionType == type }
             )
         }
@@ -108,7 +111,6 @@ class AddEditTransactionViewModel @Inject constructor(
     }
 
     fun onAmountChanged(value: String) {
-        // allow only digits and a single decimal point
         val filtered = value.filterIndexed { index, c ->
             c.isDigit() || (c == '.' && !value.take(index).contains('.'))
         }

@@ -1,5 +1,6 @@
 package com.example.expensetracker.presentation.dashboard
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.data.local.UserPreferences
@@ -10,6 +11,7 @@ import com.example.expensetracker.data.repository.TransactionRepository
 import com.example.expensetracker.domain.model.CurrencyHelper
 import com.example.expensetracker.domain.model.DateRangeFilter
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +24,8 @@ import java.util.Calendar
 class DashboardViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val ledgerRepository: LedgerRepository,
-    private val userPreferences: UserPreferences
+    private val userPreferences: UserPreferences,
+    @param:ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -39,7 +42,7 @@ class DashboardViewModel @Inject constructor(
         viewModelScope.launch {
             userPreferences.currencyCode.collect { code ->
                 _uiState.update { state ->
-                    state.copy(currencySymbol = CurrencyHelper.getSymbol(code))
+                    state.copy(currencySymbol = CurrencyHelper.getSymbol(code, context))
                 }
             }
         }
@@ -58,7 +61,6 @@ class DashboardViewModel @Inject constructor(
                         )
                     }
                     loadTransactions()
-                    loadMonthlySnapshot()
                 }
             }
         }
@@ -74,27 +76,6 @@ class DashboardViewModel @Inject constructor(
             ).collect { transactions ->
                 _uiState.update { state ->
                     state.copy(transactions = transactions)
-                }
-            }
-        }
-    }
-
-    private fun loadMonthlySnapshot() {
-        val calendar = Calendar.getInstance()
-        val month = calendar.get(Calendar.MONTH) + 1
-        val year = calendar.get(Calendar.YEAR)
-
-        viewModelScope.launch {
-            transactionRepository.getMonthlySnapshot(
-                ledgerId = currentLedgerId,
-                month = month,
-                year = year
-            ).collect { snapshot ->
-                _uiState.update { state ->
-                    state.copy(
-                        openingBalance = snapshot?.openingBalance ?: 0.0,
-                        closingBalance = snapshot?.closingBalance ?: 0.0
-                    )
                 }
             }
         }

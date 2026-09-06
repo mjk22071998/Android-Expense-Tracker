@@ -2,11 +2,11 @@ package com.example.expensetracker.domain.model
 
 import android.content.Context
 import android.telephony.TelephonyManager
-import java.text.NumberFormat
 import java.util.Currency
 import java.util.Locale
 
-object  CurrencyHelper {
+object CurrencyHelper {
+
     val allCurrencies: List<CurrencyModel> by lazy {
         Currency.getAvailableCurrencies()
             .map { currency ->
@@ -34,9 +34,7 @@ object  CurrencyHelper {
 
     fun getDefaultCurrencyCode(context: Context): String {
         return try {
-            val telephonyManager = context
-                .getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-            val simCountry = telephonyManager.simCountryIso.uppercase()
+            val simCountry = getSimCountry(context)
             if (simCountry.isNotEmpty()) {
                 val locale = Locale.Builder()
                     .setRegion(simCountry)
@@ -50,18 +48,30 @@ object  CurrencyHelper {
         }
     }
 
-    fun getSymbol(currencyCode: String): String {
+    fun getSymbol(currencyCode: String, context: Context): String {
         return try {
             val currency = Currency.getInstance(currencyCode)
-            // Build locale using SIM country for accurate symbol
-            val simLocale = Locale.Builder()
-                .setRegion(currencyCode.take(2)) // "PK" from "PKR"
-                .build()
-            val symbol = currency.getSymbol(simLocale)
-            // If symbol still equals code, it means locale didn't help
-            if (symbol == currencyCode) currency.symbol else symbol
+            val simCountry = getSimCountry(context)
+
+            val locale = if (simCountry.isNotEmpty()) {
+                Locale.Builder().setRegion(simCountry).build()
+            } else {
+                Locale.getDefault()
+            }
+
+            currency.getSymbol(locale)
         } catch (e: Exception) {
             currencyCode
+        }
+    }
+
+    private fun getSimCountry(context: Context): String {
+        return try {
+            val telephonyManager = context
+                .getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+            telephonyManager.simCountryIso.uppercase()
+        } catch (e: Exception) {
+            ""
         }
     }
 }
