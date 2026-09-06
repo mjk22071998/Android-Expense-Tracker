@@ -21,4 +21,5 @@ interface TransactionRepository {
     suspend fun insertTransaction(transaction: Transaction)
     suspend fun updateTransaction(oldTransaction: Transaction, newTransaction: Transaction)
     suspend fun softDeleteTransaction(transaction: Transaction)
+    suspend fun getTransactionById(id: String): Transaction?
 }

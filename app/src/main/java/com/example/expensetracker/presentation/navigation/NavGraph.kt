@@ -51,11 +51,8 @@ fun NavGraph(
                     type = NavType.StringType
                 }
             )
-        ) { backStackEntry ->
-            val transactionId = backStackEntry.arguments
-                ?.getString(Constants.NavArgs.TRANSACTION_ID)
+        ) {
             EditTransactionScreen(
-                transactionId = transactionId,
                 onNavigateBack = {
                     navController.popBackStack()
                 }

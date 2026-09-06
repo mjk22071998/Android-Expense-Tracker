@@ -71,4 +71,7 @@ interface LedgerDao {
 
     @Query("DELETE FROM ledgers WHERE id=:id AND isDefault=0")
     suspend fun delete(id: String)
+
+    @Query("SELECT * FROM ledgers WHERE isDefault = 1 LIMIT 1")
+    suspend fun getDefaultLedgerSync(): Ledger?
 }

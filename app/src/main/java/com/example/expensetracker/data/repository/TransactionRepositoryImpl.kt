@@ -62,4 +62,8 @@ class TransactionRepositoryImpl @Inject constructor(
     ): Flow<MonthlySnapshot?> {
         return snapshotDao.observeSnapshot(ledgerId, month, year)
     }
+
+    override suspend fun getTransactionById(id: String): Transaction? {
+        return transactionDao.getTransactionById(id)
+    }
 }

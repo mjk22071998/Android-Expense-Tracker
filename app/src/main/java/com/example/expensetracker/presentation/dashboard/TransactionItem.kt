@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -34,6 +36,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.sp
 import com.example.expensetracker.Constants
 import com.example.expensetracker.R
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
@@ -54,12 +57,17 @@ fun TransactionItem(
     var isMenuExpanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
+    val isIncome = transaction.type == Constants.TransactionType.INCOME
+    val accentColor = if (isIncome) Color(0xFF2E7D32) else Color(0xFFC62828)
+
     if (showDeleteDialog) {
         DeleteConfirmationDialog(
             onConfirm = {
+                showDeleteDialog = false
                 onDelete()
             },
             onDismiss = {
+                showDeleteDialog = false
             }
         )
     }
@@ -73,101 +81,104 @@ fun TransactionItem(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Category Icon
-            CategoryIcon(categoryIcon = transaction.categoryIcon)
-
-            // Title and Date
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = transaction.note.ifBlank { "No description" },
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                Text(
-                    text = formatTransactionDate(transaction.date),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-            }
-
-            // Amount
-            Text(
-                text = (if (transaction.type == Constants.TransactionType.INCOME) "+" else "-") +
-                        "$currencySymbol ${formatAmount(transaction.amount)}",
-                style = MaterialTheme.typography.bodyMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = if (transaction.type == Constants.TransactionType.INCOME) {
-                    Color(0xFF2E7D32) // income green
-                } else {
-                    MaterialTheme.colorScheme.error  // expense red
-                }
+            // Colored left accent border
+            Box(
+                modifier = Modifier
+                    .width(4.dp)
+                    .fillMaxHeight()
+                    .background(accentColor)
             )
 
-            // Kebab Menu
-            Box {
-                IconButton(
-                    onClick = { isMenuExpanded = true },
-                    modifier = Modifier.size(24.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                CategoryIcon(
+                    categoryIcon = transaction.categoryIcon,
+                    accentColor = accentColor
+                )
+
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_more_vert),
-                        contentDescription = "More options",
-                        modifier = Modifier.size(16.dp)
+                    Text(
+                        text = transaction.note.ifBlank { transaction.categoryName },
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = formatTransactionDate(transaction.date),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                 }
 
-                DropdownMenu(
-                    expanded = isMenuExpanded,
-                    onDismissRequest = { isMenuExpanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = "Edit",
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_edit),
-                                contentDescription = "Edit"
-                            )
-                        },
-                        onClick = {
-                            isMenuExpanded = false
-                            onEdit()
-                        }
-                    )
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = "Delete",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                painter = painterResource(id = R.drawable.ic_delete),
-                                contentDescription = "Delete",
-                                tint = MaterialTheme.colorScheme.error
-                            )
-                        },
-                        onClick = {
-                            isMenuExpanded = false
-                        }
-                    )
+                Text(
+                    text = "${if (isIncome) "+" else "-"} $currencySymbol ${formatAmount(transaction.amount)}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = accentColor,
+                    letterSpacing = (-0.3).sp
+                )
+
+                Box {
+                    IconButton(
+                        onClick = { isMenuExpanded = true },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_more_vert),
+                            contentDescription = "More options",
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = isMenuExpanded,
+                        onDismissRequest = { isMenuExpanded = false }
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Edit") },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_edit),
+                                    contentDescription = "Edit"
+                                )
+                            },
+                            onClick = {
+                                isMenuExpanded = false
+                                onEdit()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                Text(
+                                    text = "Delete",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_delete),
+                                    contentDescription = "Delete",
+                                    tint = MaterialTheme.colorScheme.error
+                                )
+                            },
+                            onClick = {
+                                isMenuExpanded = false
+                                showDeleteDialog = true
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -177,20 +188,21 @@ fun TransactionItem(
 @Composable
 private fun CategoryIcon(
     categoryIcon: String,
+    accentColor: Color,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
             .size(44.dp)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.secondaryContainer),
+            .background(accentColor.copy(alpha = 0.12f)),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             painter = painterResource(id = getCategoryIcon(categoryIcon)),
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSecondaryContainer,
-            modifier = Modifier.size(24.dp)
+            tint = accentColor,
+            modifier = Modifier.size(22.dp)
         )
     }
 }
@@ -209,12 +221,8 @@ private fun DeleteConfirmationDialog(
                 tint = MaterialTheme.colorScheme.error
             )
         },
-        title = {
-            Text(text = "Delete Transaction")
-        },
-        text = {
-            Text(text = "Are you sure you want to delete this transaction? This action cannot be undone.")
-        },
+        title = { Text(text = "Delete Transaction") },
+        text = { Text(text = "Are you sure you want to delete this transaction? This action cannot be undone.") },
         confirmButton = {
             TextButton(
                 onClick = onConfirm,

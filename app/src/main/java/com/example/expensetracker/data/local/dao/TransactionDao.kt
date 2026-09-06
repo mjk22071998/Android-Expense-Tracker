@@ -79,6 +79,9 @@ interface TransactionDao {
     )
     suspend fun softDelete(id: String, updatedAt: Long)
 
+    @Query("SELECT * FROM transactions WHERE id = :id LIMIT 1")
+    suspend fun getTransactionById(id: String): Transaction?
+
     @androidx.room.Transaction
     suspend fun insertAndUpdateBalance(
         transaction: Transaction,

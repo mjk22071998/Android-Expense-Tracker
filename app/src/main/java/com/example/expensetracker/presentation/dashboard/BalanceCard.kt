@@ -96,7 +96,7 @@ fun BalanceCard(
                 Text(
                     text = "$currencySymbol ${formatAmount(balance)}",
                     style = MaterialTheme.typography.displayMedium,
-                    fontWeight = FontWeight.ExtraBold,
+                    fontWeight = FontWeight.Bold,
                     color = Color.White,
                     letterSpacing = (-1).sp
                 )

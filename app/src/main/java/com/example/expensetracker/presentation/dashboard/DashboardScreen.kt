@@ -31,6 +31,7 @@ fun DashboardScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             DashboardTopBar(
                 onSettingsClick = onNavigateToSettings
