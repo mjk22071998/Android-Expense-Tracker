@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.Constants
 import com.example.expensetracker.data.local.UserPreferences
+import com.example.expensetracker.data.local.entity.Category
 import com.example.expensetracker.data.local.entity.Transaction
 import com.example.expensetracker.data.repository.CategoryRepository
 import com.example.expensetracker.data.repository.LedgerRepository
@@ -176,6 +177,40 @@ class AddEditTransactionViewModel @Inject constructor(
             }
 
             _uiState.update { it.copy(isLoading = false, isSaved = true) }
+        }
+    }
+
+    fun addCategory(name: String, icon: String) {
+        viewModelScope.launch {
+            val newCategory = Category(
+                id = UUID.randomUUID().toString(),
+                name = name,
+                icon = icon,
+                transactionType = _uiState.value.type, // inherits the currently selected type
+                isDefault = false
+            )
+            categoryRepository.insertCategory(newCategory)
+            _uiState.update { it.copy(selectedCategoryId = newCategory.id) }
+            validate()
+        }
+    }
+
+    fun updateCategory(category: Category, name: String, icon: String) {
+        viewModelScope.launch {
+            categoryRepository.updateCategory(
+                category.copy(name = name, icon = icon)
+            )
+        }
+    }
+
+    fun deleteCategory(category: Category) {
+        viewModelScope.launch {
+            categoryRepository.deleteCategory(category.id)
+            // if the category being deleted is currently selected, clear it and re-validate
+            if (_uiState.value.selectedCategoryId == category.id) {
+                _uiState.update { it.copy(selectedCategoryId = null) }
+                validate()
+            }
         }
     }
 }

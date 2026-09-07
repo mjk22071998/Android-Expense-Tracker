@@ -13,15 +13,15 @@ interface CategoryDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(category: Category)
 
-    @Update
-    suspend fun update(category: Category)
-
     @Query("Select * from categories")
     fun getAllCategories(): Flow<List<Category>>
 
     @Query("Select * from categories where isDefault=0")
     suspend fun getNonDefaultCategories(): List<Category>
 
-    @Query("delete from categories where id=:id and isDefault=0")
+    @Update
+    suspend fun update(category: Category)
+
+    @Query("DELETE FROM categories WHERE id = :id AND isDefault = 0")
     suspend fun delete(id: String)
 }

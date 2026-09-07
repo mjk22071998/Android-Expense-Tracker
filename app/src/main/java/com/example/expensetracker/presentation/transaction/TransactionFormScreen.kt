@@ -28,6 +28,9 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -37,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expensetracker.R
+import com.example.expensetracker.data.local.entity.Category
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,6 +49,9 @@ fun TransactionFormScreen(
     viewModel: AddEditTransactionViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var showAddCategoryDialog by remember { mutableStateOf(false) }
+    var categoryBeingEdited by remember { mutableStateOf<Category?>(null) }
+    var categoryBeingDeleted by remember { mutableStateOf<Category?>(null) }
 
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
@@ -145,7 +152,10 @@ fun TransactionFormScreen(
                     CategoryPicker(
                         categories = uiState.filteredCategories,
                         selectedCategoryId = uiState.selectedCategoryId,
-                        onCategorySelected = viewModel::onCategorySelected
+                        onCategorySelected = viewModel::onCategorySelected,
+                        onAddCategoryClick = { showAddCategoryDialog = true },
+                        onEditCategory = { categoryBeingEdited = it },
+                        onDeleteCategory = { categoryBeingDeleted = it }
                     )
                 }
             }
@@ -204,5 +214,38 @@ fun TransactionFormScreen(
                 )
             }
         }
+    }
+    if (showAddCategoryDialog) {
+        CategoryDialog(
+            transactionType = uiState.type,
+            onDismiss = { showAddCategoryDialog = false },
+            onSave = { name, icon ->
+                viewModel.addCategory(name, icon)
+                showAddCategoryDialog = false
+            }
+        )
+    }
+
+    categoryBeingEdited?.let { category ->
+        CategoryDialog(
+            transactionType = category.transactionType,
+            existingCategory = category,
+            onDismiss = { categoryBeingEdited = null },
+            onSave = { name, icon ->
+                viewModel.updateCategory(category, name, icon)
+                categoryBeingEdited = null
+            }
+        )
+    }
+
+    categoryBeingDeleted?.let { category ->
+        DeleteCategoryDialog(
+            category = category,
+            onConfirm = {
+                viewModel.deleteCategory(category)
+                categoryBeingDeleted = null
+            },
+            onDismiss = { categoryBeingDeleted = null }
+        )
     }
 }

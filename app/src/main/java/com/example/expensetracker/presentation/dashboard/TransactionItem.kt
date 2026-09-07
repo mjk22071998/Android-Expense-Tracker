@@ -42,6 +42,7 @@ import com.example.expensetracker.Constants
 import com.example.expensetracker.R
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
+import com.example.expensetracker.domain.model.getCategoryIcon
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -241,21 +242,6 @@ private fun DeleteConfirmationDialog(
             }
         }
     )
-}
-
-fun getCategoryIcon(iconName: String): Int {
-    return when (iconName) {
-        "restaurant"    -> R.drawable.ic_restaurant
-        "transport"     -> R.drawable.ic_directions_car
-        "shopping"      -> R.drawable.ic_shopping_cart
-        "health"        -> R.drawable.ic_local_hospital
-        "entertainment" -> R.drawable.ic_movie
-        "salary"        -> R.drawable.ic_work
-        "investment"    -> R.drawable.ic_trending_up
-        "rent"          -> R.drawable.ic_home
-        "utilities"     -> R.drawable.ic_electric_bolt
-        else            -> R.drawable.ic_more_horiz
-    }
 }
 
 fun formatTransactionDate(timestamp: Long): String {
