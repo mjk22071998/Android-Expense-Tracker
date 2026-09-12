@@ -20,7 +20,7 @@ interface LedgerDao {
     fun getAllLedgers(): Flow<List<Ledger>>
 
     @Query("SELECT * FROM ledgers WHERE id=:id")
-    fun getLedgerById(id: String): Ledger?
+    suspend fun getLedgerById(id: String): Ledger?
 
     @Query("SELECT * FROM ledgers WHERE isDefault=1 LIMIT 1")
     fun getDefaultLedger(): Flow<Ledger?>
