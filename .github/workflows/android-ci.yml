@@ -1,0 +1,54 @@
+name: Android CI
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - hacktoberfest
+      - 'dev/**'
+      - 'feature/**'
+  pull_request:
+    branches:
+      - main
+      - master
+      - hacktoberfest
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-lint:
+    name: Build & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Make Gradle Wrapper Executable
+        run: chmod +x gradlew
+
+      - name: Run Android Lint
+        run: ./gradlew lint
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Upload Debug APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: warn

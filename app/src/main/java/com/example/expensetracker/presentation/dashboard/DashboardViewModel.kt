@@ -16,6 +16,7 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -40,29 +41,37 @@ class DashboardViewModel @Inject constructor(
 
     private fun loadCurrencySymbol() {
         viewModelScope.launch {
-            userPreferences.currencyCode.collect { code ->
-                _uiState.update { state ->
-                    state.copy(currencySymbol = CurrencyHelper.getSymbol(code, context))
+            userPreferences.currencyCode
+                .catch { e ->
+                    _uiState.update { it.copy(error = e.localizedMessage ?: "Error loading currency") }
                 }
-            }
+                .collect { code ->
+                    _uiState.update { state ->
+                        state.copy(currencySymbol = CurrencyHelper.getSymbol(code, context))
+                    }
+                }
         }
     }
 
     private fun loadDefaultLedger() {
         viewModelScope.launch {
-            ledgerRepository.getDefaultLedger().collect { ledger ->
-                ledger?.let {
-                    currentLedgerId = it.id
-                    _uiState.update { state ->
-                        state.copy(
-                            balance = ledger.balance,
-                            totalIncome = ledger.totalIncome,
-                            totalExpense = ledger.totalExpenses
-                        )
-                    }
-                    loadTransactions()
+            ledgerRepository.getDefaultLedger()
+                .catch { e ->
+                    _uiState.update { it.copy(error = e.localizedMessage ?: "Error loading ledger") }
                 }
-            }
+                .collect { ledger ->
+                    ledger?.let {
+                        currentLedgerId = it.id
+                        _uiState.update { state ->
+                            state.copy(
+                                balance = ledger.balance,
+                                totalIncome = ledger.totalIncome,
+                                totalExpense = ledger.totalExpenses
+                            )
+                        }
+                        loadTransactions()
+                    }
+                }
         }
     }
 
@@ -73,7 +82,11 @@ class DashboardViewModel @Inject constructor(
                 ledgerId = currentLedgerId,
                 startDate = startDate,
                 endDate = endDate
-            ).collect { transactions ->
+            )
+            .catch { e ->
+                _uiState.update { it.copy(error = e.localizedMessage ?: "Error loading transactions") }
+            }
+            .collect { transactions ->
                 _uiState.update { state ->
                     state.copy(transactions = transactions)
                 }
@@ -88,20 +101,24 @@ class DashboardViewModel @Inject constructor(
 
     fun softDeleteTransaction(transaction: TransactionWithCategory) {
         viewModelScope.launch {
-            transactionRepository.softDeleteTransaction(
-                Transaction(
-                    id = transaction.id,
-                    ledgerId = transaction.ledgerId,
-                    categoryId = transaction.categoryId,
-                    amount = transaction.amount,
-                    type = transaction.type,
-                    note = transaction.note,
-                    date = transaction.date,
-                    createdAt = transaction.createdAt,
-                    updatedAt = System.currentTimeMillis(),
-                    isDeleted = true
+            try {
+                transactionRepository.softDeleteTransaction(
+                    Transaction(
+                        id = transaction.id,
+                        ledgerId = transaction.ledgerId,
+                        categoryId = transaction.categoryId,
+                        amount = transaction.amount,
+                        type = transaction.type,
+                        note = transaction.note,
+                        date = transaction.date,
+                        createdAt = transaction.createdAt,
+                        updatedAt = System.currentTimeMillis(),
+                        isDeleted = true
+                    )
                 )
-            )
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.localizedMessage ?: "Error deleting transaction") }
+            }
         }
     }
 

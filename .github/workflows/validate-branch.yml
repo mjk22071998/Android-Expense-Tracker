@@ -1,0 +1,90 @@
+name: Hacktoberfest Branch Validation
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  validate-branch:
+    name: Validate Target & Origin Branch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Target Base Branch
+        run: |
+          TARGET_BRANCH="${{ github.base_ref }}"
+          echo "Target Base Branch: $TARGET_BRANCH"
+          
+          if [ "$TARGET_BRANCH" != "hacktoberfest" ]; then
+            echo "::error title=Invalid Target Branch::This Pull Request targets '$TARGET_BRANCH'. All Hacktoberfest contributions MUST target the 'hacktoberfest' branch."
+            echo ""
+            echo "===================================================================================="
+            echo "❌ INVALID BASE BRANCH DETECTED"
+            echo "===================================================================================="
+            echo "Your Pull Request is currently targeting '$TARGET_BRANCH'."
+            echo "For Hacktoberfest, all contributions must target the 'hacktoberfest' branch."
+            echo ""
+            echo "How to fix this on GitHub:"
+            echo "1. Click 'Edit' near the top of your Pull Request (next to the title)."
+            echo "2. Change the base branch dropdown from '$TARGET_BRANCH' to 'hacktoberfest'."
+            echo "3. Save your changes."
+            echo "===================================================================================="
+            exit 1
+          else
+            echo "✅ Base target branch is correctly set to 'hacktoberfest'."
+          fi
+
+      - name: Validate Branch Ancestry (Created from hacktoberfest)
+        run: |
+          echo "Fetching remote branches..."
+          git fetch origin hacktoberfest:refs/remotes/origin/hacktoberfest || true
+          git fetch origin main:refs/remotes/origin/main || true
+          git fetch origin master:refs/remotes/origin/master || true
+
+          # Determine commit merge bases
+          BASE_HACKTOBERFEST=$(git merge-base HEAD refs/remotes/origin/hacktoberfest 2>/dev/null || true)
+          
+          # Check main or master if available
+          BASE_MAIN=""
+          if git rev-parse --verify refs/remotes/origin/main >/dev/null 2>&1; then
+            BASE_MAIN=$(git merge-base HEAD refs/remotes/origin/main 2>/dev/null || true)
+          elif git rev-parse --verify refs/remotes/origin/master >/dev/null 2>&1; then
+            BASE_MAIN=$(git merge-base HEAD refs/remotes/origin/master 2>/dev/null || true)
+          fi
+
+          echo "Merge base with hacktoberfest: $BASE_HACKTOBERFEST"
+          echo "Merge base with main/master:   $BASE_MAIN"
+
+          # If BASE_MAIN exists and is a strict descendant of BASE_HACKTOBERFEST,
+          # then the branch contains commits unique to main that are not in hacktoberfest,
+          # indicating it was branched from main/master instead of hacktoberfest.
+          if [ -n "$BASE_MAIN" ] && [ -n "$BASE_HACKTOBERFEST" ] && [ "$BASE_MAIN" != "$BASE_HACKTOBERFEST" ]; then
+            if git merge-base --is-ancestor "$BASE_HACKTOBERFEST" "$BASE_MAIN"; then
+              echo "::error title=Invalid Branch Origin::This feature branch was created from 'main/master' rather than 'hacktoberfest'."
+              echo ""
+              echo "===================================================================================="
+              echo "❌ INVALID BRANCH ORIGIN DETECTED"
+              echo "===================================================================================="
+              echo "Your feature branch appears to have been created from 'main' or 'master' instead of 'hacktoberfest'."
+              echo ""
+              echo "Hacktoberfest contributions must originate from the 'hacktoberfest' branch."
+              echo ""
+              echo "How to fix this:"
+              echo "1. Fetch the latest upstream changes:"
+              echo "   git fetch upstream"
+              echo "2. Switch to 'hacktoberfest':"
+              echo "   git checkout hacktoberfest"
+              echo "3. Create a fresh feature branch from 'hacktoberfest':"
+              echo "   git checkout -b fix/my-contribution"
+              echo "4. Apply your changes to the new branch and push to your fork."
+              echo "===================================================================================="
+              exit 1
+            fi
+          fi
+
+          echo "✅ Branch lineage verified: This feature branch originates from 'hacktoberfest'."

@@ -52,7 +52,7 @@ interface TransactionDao {
         """
         SELECT SUM(amount) FROM transactions
         WHERE ledgerId=:ledgerId
-        AND type='ICOME'
+        AND type='INCOME'
         AND isDeleted=0
         AND date BETWEEN :startDate AND :endDate
     """

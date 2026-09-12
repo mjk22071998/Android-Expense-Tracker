@@ -146,70 +146,85 @@ class AddEditTransactionViewModel @Inject constructor(
         val now = System.currentTimeMillis()
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, error = null) }
 
-            if (state.isEditMode && state.originalTransaction != null) {
-                val updatedTransaction = state.originalTransaction.copy(
-                    amount = amountValue,
-                    type = state.type,
-                    categoryId = state.selectedCategoryId,
-                    note = state.note,
-                    date = state.date,
-                    updatedAt = now
-                )
-                transactionRepository.updateTransaction(
-                    oldTransaction = state.originalTransaction,
-                    newTransaction = updatedTransaction
-                )
-            } else {
-                val newTransaction = Transaction(
-                    id = UUID.randomUUID().toString(),
-                    ledgerId = state.currentLedgerId,
-                    categoryId = state.selectedCategoryId,
-                    amount = amountValue,
-                    type = state.type,
-                    note = state.note,
-                    date = state.date,
-                    createdAt = now,
-                    updatedAt = now
-                )
-                transactionRepository.insertTransaction(newTransaction)
+            try {
+                if (state.isEditMode && state.originalTransaction != null) {
+                    val updatedTransaction = state.originalTransaction.copy(
+                        amount = amountValue,
+                        type = state.type,
+                        categoryId = state.selectedCategoryId,
+                        note = state.note,
+                        date = state.date,
+                        updatedAt = now
+                    )
+                    transactionRepository.updateTransaction(
+                        oldTransaction = state.originalTransaction,
+                        newTransaction = updatedTransaction
+                    )
+                } else {
+                    val newTransaction = Transaction(
+                        id = UUID.randomUUID().toString(),
+                        ledgerId = state.currentLedgerId,
+                        categoryId = state.selectedCategoryId,
+                        amount = amountValue,
+                        type = state.type,
+                        note = state.note,
+                        date = state.date,
+                        createdAt = now,
+                        updatedAt = now
+                    )
+                    transactionRepository.insertTransaction(newTransaction)
+                }
+                _uiState.update { it.copy(isLoading = false, isSaved = true) }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.localizedMessage ?: "Error saving transaction") }
             }
-
-            _uiState.update { it.copy(isLoading = false, isSaved = true) }
         }
     }
 
     fun addCategory(name: String, icon: String) {
         viewModelScope.launch {
-            val newCategory = Category(
-                id = UUID.randomUUID().toString(),
-                name = name,
-                icon = icon,
-                transactionType = _uiState.value.type, // inherits the currently selected type
-                isDefault = false
-            )
-            categoryRepository.insertCategory(newCategory)
-            _uiState.update { it.copy(selectedCategoryId = newCategory.id) }
-            validate()
+            try {
+                val newCategory = Category(
+                    id = UUID.randomUUID().toString(),
+                    name = name,
+                    icon = icon,
+                    transactionType = _uiState.value.type, // inherits the currently selected type
+                    isDefault = false
+                )
+                categoryRepository.insertCategory(newCategory)
+                _uiState.update { it.copy(selectedCategoryId = newCategory.id) }
+                validate()
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.localizedMessage ?: "Error adding category") }
+            }
         }
     }
 
     fun updateCategory(category: Category, name: String, icon: String) {
         viewModelScope.launch {
-            categoryRepository.updateCategory(
-                category.copy(name = name, icon = icon)
-            )
+            try {
+                categoryRepository.updateCategory(
+                    category.copy(name = name, icon = icon)
+                )
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.localizedMessage ?: "Error updating category") }
+            }
         }
     }
 
     fun deleteCategory(category: Category) {
         viewModelScope.launch {
-            categoryRepository.deleteCategory(category.id)
-            // if the category being deleted is currently selected, clear it and re-validate
-            if (_uiState.value.selectedCategoryId == category.id) {
-                _uiState.update { it.copy(selectedCategoryId = null) }
-                validate()
+            try {
+                categoryRepository.deleteCategory(category.id)
+                // if the category being deleted is currently selected, clear it and re-validate
+                if (_uiState.value.selectedCategoryId == category.id) {
+                    _uiState.update { it.copy(selectedCategoryId = null) }
+                    validate()
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.localizedMessage ?: "Error deleting category") }
             }
         }
     }

@@ -10,8 +10,6 @@ class CategorySeeder @Inject constructor(
     private val categoryDao: CategoryDao
 ) {
     suspend fun seedIfNeeded() {
-        val existing = categoryDao.getNonDefaultCategories()
-        // Actually check default categories specifically
         val defaultCategories = getDefaultCategoryList()
         defaultCategories.forEach { category ->
             categoryDao.insert(category) // IGNORE strategy — safe to call every launch
