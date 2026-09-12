@@ -33,6 +33,7 @@ Thank you for contributing! If this is your first open-source contribution, don'
 
 - [ ] My branch was created from `hacktoberfest`
 - [ ] My PR targets `hacktoberfest`
+- [ ] I have not modified any GitHub Actions workflow files (`.github/workflows/`)
 - [ ] I have not included unrelated changes
 - [ ] I have tested my changes
 - [ ] I have read `CONTRIBUTING.md`

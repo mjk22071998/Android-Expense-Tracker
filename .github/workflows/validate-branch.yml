@@ -88,3 +88,34 @@ jobs:
           fi
 
           echo "✅ Branch lineage verified: This feature branch originates from 'hacktoberfest'."
+
+      - name: Disallow Workflow File Modifications
+        run: |
+          echo "Checking for modified workflow files..."
+          git fetch origin hacktoberfest:refs/remotes/origin/hacktoberfest || true
+          
+          # Find changed files in .github/workflows/
+          CHANGED_WORKFLOWS=$(git diff --name-only refs/remotes/origin/hacktoberfest...HEAD | grep -E '^\.github/workflows/' || true)
+          
+          if [ -n "$CHANGED_WORKFLOWS" ]; then
+            echo "::error title=Unauthorized Workflow Modification::Pull Requests are not allowed to modify workflow files."
+            echo ""
+            echo "===================================================================================="
+            echo "❌ UNAUTHORIZED WORKFLOW MODIFICATION DETECTED"
+            echo "===================================================================================="
+            echo "Your Pull Request includes changes to the following GitHub Actions workflow files:"
+            echo "$CHANGED_WORKFLOWS"
+            echo ""
+            echo "Contributors are not allowed to modify CI/CD workflows or validation scripts."
+            echo ""
+            echo "How to fix this:"
+            echo "1. Revert changes to workflow files in your branch:"
+            echo "   git checkout origin/hacktoberfest -- .github/workflows/"
+            echo "2. Commit and push the reverted files to your fork:"
+            echo "   git commit -m 'revert workflow modifications'"
+            echo "   git push origin <your-branch-name>"
+            echo "===================================================================================="
+            exit 1
+          else
+            echo "✅ No unauthorized workflow file modifications detected."
+          fi

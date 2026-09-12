@@ -163,6 +163,7 @@ hacktoberfest (base)
 - Avoid making unrelated formatting or style changes to code you aren't touching.
 - Follow the existing Kotlin and Android coding conventions used in the project.
 - Do not rewrite working code unnecessarily.
+- **Do NOT modify CI workflows:** Do not edit or delete files in `.github/workflows/`. Contributions that modify CI workflows or branch validation rules will automatically fail CI and be rejected.
 - **UI Changes:** Take screenshots or screen recordings of the updated UI.
 - **Bug Fixes:** Verify how the bug was reproduced and confirm your fix resolves it.
 
