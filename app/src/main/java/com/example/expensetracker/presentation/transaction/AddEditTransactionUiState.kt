@@ -2,6 +2,7 @@ package com.example.expensetracker.presentation.transaction
 
 import com.example.expensetracker.data.local.entity.Category
 import com.example.expensetracker.data.local.entity.Transaction
+import com.example.expensetracker.domain.model.UiError
 
 data class AddEditTransactionUiState(
     val isEditMode: Boolean = false,
@@ -16,7 +17,7 @@ data class AddEditTransactionUiState(
     val isSaveEnabled: Boolean = false,
     val isLoading: Boolean = false,
     val isSaved: Boolean = false,
-    val error: String? = null,
+    val error: UiError? = null,
     val originalTransaction: Transaction? = null,
     val currentLedgerId: String = ""
 )

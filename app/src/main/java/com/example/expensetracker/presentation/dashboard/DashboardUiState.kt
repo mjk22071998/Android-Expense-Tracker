@@ -2,6 +2,7 @@ package com.example.expensetracker.presentation.dashboard
 
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.DateRangeFilter
+import com.example.expensetracker.domain.model.UiError
 
 data class DashboardUiState(
     val balance: Double = 0.0,
@@ -11,5 +12,5 @@ data class DashboardUiState(
     val selectedFilter: DateRangeFilter = DateRangeFilter.Last30Days,
     val currencySymbol: String = "₨",
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: UiError? = null
 )

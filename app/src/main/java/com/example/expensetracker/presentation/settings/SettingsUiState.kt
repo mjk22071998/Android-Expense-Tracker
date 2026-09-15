@@ -2,6 +2,7 @@ package com.example.expensetracker.presentation.settings
 
 import com.example.expensetracker.Constants
 import com.example.expensetracker.domain.model.CurrencyModel
+import com.example.expensetracker.domain.model.UiError
 
 data class SettingsUiState(
     val currencyCode: String = "PKR",
@@ -9,5 +10,6 @@ data class SettingsUiState(
     val themeMode: String = Constants.ThemeMode.SYSTEM,
     val currencySearchQuery: String = "",
     val filteredCurrencies: List<CurrencyModel> = emptyList(),
-    val isCurrencyPickerVisible: Boolean = false
+    val isCurrencyPickerVisible: Boolean = false,
+    val error: UiError? = null
 )

@@ -1,10 +1,10 @@
 package com.example.expensetracker.presentation.settings
 
 import android.content.Context
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.data.local.UserPreferences
 import com.example.expensetracker.domain.model.CurrencyHelper
+import com.example.expensetracker.domain.model.UiError
+import com.example.expensetracker.presentation.common.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val userPreferences: UserPreferences,
     @param:ApplicationContext private val context: Context
-) : ViewModel() {
+) : BaseViewModel() {
+
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
@@ -28,7 +28,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     private fun observePreferences() {
-        viewModelScope.launch {
+        launchSafely(onError = ::handleError) {
             userPreferences.currencyCode.collect { code ->
                 _uiState.update { state ->
                     state.copy(
@@ -38,7 +38,7 @@ class SettingsViewModel @Inject constructor(
                 }
             }
         }
-        viewModelScope.launch {
+        launchSafely(onError = ::handleError) {
             userPreferences.themeMode.collect { mode ->
                 _uiState.update { it.copy(themeMode = mode) }
             }
@@ -59,7 +59,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun onCurrencySelected(currencyCode: String) {
-        viewModelScope.launch {
+        launchSafely(onError = ::handleError) {
             userPreferences.setCurrencyCode(currencyCode)
             _uiState.update { state ->
                 state.copy(
@@ -82,8 +82,16 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun setThemeMode(mode: String) {
-        viewModelScope.launch {
+        launchSafely(onError = ::handleError) {
             userPreferences.setThemeMode(mode)
         }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
+    }
+
+    private fun handleError(error: UiError) {
+        _uiState.update { it.copy(error = error) }
     }
 }
