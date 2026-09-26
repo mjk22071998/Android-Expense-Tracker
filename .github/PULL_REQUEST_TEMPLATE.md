@@ -1,39 +1,13 @@
-<!--
-Thank you for contributing! If this is your first open-source contribution, don't worry — CONTRIBUTING.md walks you through the entire process.
--->
-
 ## Description
 
-<!-- Provide a brief description of what this PR does and why. -->
+<!-- Provide a brief description of your changes and link related issues (e.g., Fixes #12). -->
 
-## Related Issue
+## Changes Made
 
-<!-- Link to the issue addressed by this PR, e.g., "Fixes #12" or "Closes #45". -->
+<!-- List the main changes introduced in this PR. -->
 
-## What changed?
+## Checklist
 
-<!-- List the specific changes made in this PR. -->
-
-## Why?
-
-<!-- Explain the motivation for these changes. -->
-
-## Testing
-
-- [ ] Application builds successfully (`./gradlew assembleDebug`)
-- [ ] Android Lint passes (`./gradlew lint`)
-- [ ] I tested the changed functionality manually
-- [ ] Tests added/updated (if applicable)
-
-## Screenshots
-
-<!-- Required for relevant UI changes. Attach screenshots or screen recordings showing before/after or new features. -->
-
-## Contributor checklist
-
-- [ ] My branch was created from `hacktoberfest`
-- [ ] My PR targets `hacktoberfest`
-- [ ] I have not modified any GitHub Actions workflow files (`.github/workflows/`)
-- [ ] I have not included unrelated changes
-- [ ] I have tested my changes
-- [ ] I have read `CONTRIBUTING.md`
+- [ ] My branch was created from and targets `hacktoberfest`
+- [ ] The project builds successfully (`./gradlew assembleDebug` or Android Studio Build)
+- [ ] I have tested my changes manually

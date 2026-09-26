@@ -1,6 +1,6 @@
 # Expense Tracker
 
-A production-grade, offline-first personal finance Android application built with modern Android development practices. Designed for individuals and groups to track income, expenses, and manage multiple ledgers with seamless cloud synchronization.
+A production-grade, offline-first personal finance Android application built with modern Android development practices.
 
 ---
 
@@ -18,16 +18,11 @@ A production-grade, offline-first personal finance Android application built wit
 - **Branded App Startup** — native Android SplashScreen API covers process/window creation, handing off seamlessly to a Compose loading state gated on first-launch database seeding, so the Dashboard never renders with empty or partial data
 - **Transaction Detail View** — tap any transaction for a full detail dialog
 - **Consistent Brand Design** — gradient hero cards for balance and income/expense summaries, custom Material Symbol icon set
+- **Structured Error Handling** — a sealed `UiError` type and an `AppResult<T>` wrapper around every repository write, so failures surface as a readable message instead of a silent crash or a stuck loading state
 
 ### In Progress (v0.2)
-- **Custom Categories** — users can create their own categories inline from the transaction form, choosing a name and an icon from a curated Material Symbol grid. Seeded default categories remain protected from editing or deletion
-- **Expanded Filters & Search** — further date-range filtering and in-list search (not yet implemented)
-
-### Planned
-- **Auth & Cloud Sync** (v0.3) — Firebase Auth with background Firestore sync
-- **Group Ledgers** (v0.4) — shared expense management with real-time collaboration
-- **Multiple Personal Ledgers** (v0.5) — manage separate budgets in one app
-- **Monetization** (v0.6) — free tier with Pro upgrade via Google Play Billing
+- **Custom Categories** — users can create their own categories inline from the transaction form, choosing a name and an icon from a curated Material Symbol grid. Seeded default categories remain protected from editing or deletion. Code complete; a full manual end-to-end pass since the error-handling refactor is still outstanding (see Testing Strategy)
+- **Expanded Filters & Search** — further date-range filtering and in-list search — not yet started
 
 ---
 
@@ -41,7 +36,7 @@ A deliberate decision was made **not** to shift the whole screen's color theme b
 
 ## Architecture
 
-This project follows **Clean Architecture** with **MVVM** pattern, ensuring separation of concerns, testability, and scalability across all planned versions.
+This project follows **Clean Architecture** with **MVVM** pattern, ensuring separation of concerns, testability, and scalability.
 
 ```
 app/
@@ -50,17 +45,17 @@ app/
 │   │   ├── dao/                # Data Access Objects
 │   │   ├── database/           # AppDatabase, migrations
 │   │   └── entity/             # Room entities + projections
-│   ├── remote/                 # Firestore, Firebase (v0.3+)
-│   └── repository/             # Repository implementations
+│   └── repository/             # Repository interfaces + implementations
 │
 ├── domain/
-│   └── model/                  # Domain models, sealed classes, helpers
+│   └── model/                  # Domain models, sealed classes, UiError/AppResult, helpers
 │
 ├── presentation/
-│   ├── dashboard/               # Dashboard screen, ViewModel, UiState
-│   ├── transaction/             # Add/Edit transaction screens
-│   ├── settings/                # Settings screen, ViewModel, UiState
-│   └── navigation/              # NavGraph, Screen sealed class
+│   ├── common/                  # BaseViewModel and other shared ViewModel infrastructure
+│   ├── dashboard/                # Dashboard screen, ViewModel, UiState
+│   ├── transaction/              # Add/Edit transaction screens
+│   ├── settings/                 # Settings screen, ViewModel, UiState
+│   └── navigation/               # NavGraph, Screen sealed class
 │
 └── di/                         # Hilt dependency injection modules
 ```
@@ -70,8 +65,9 @@ app/
 - **Offline First** — Room is always the single source of truth. UI never reads from remote directly
 - **Unidirectional Data Flow** — Repository → ViewModel → UiState → UI
 - **Reactive UI** — Room `Flow` + `StateFlow` means UI updates automatically on data changes
-- **Plug & Play** — Repository interfaces allow swapping local-only implementation for synced implementation in v0.3 without touching UI or ViewModel code
+- **Plug & Play** — Repository interfaces allow swapping the local-only implementation for a synced one later, without touching UI or ViewModel code
 - **Atomic Operations** — transaction inserts, updates, and deletes are wrapped in Room `@Transaction` ensuring balance and monthly snapshots are never out of sync
+- **Structured Failure Handling** — repository functions return `AppResult<T>` rather than throwing; every ViewModel extends `BaseViewModel` and uses `launchSafely` as a last-line-of-defense `CoroutineExceptionHandler`, so an unexpected failure degrades to a visible error state instead of crashing the app
 
 ---
 
@@ -89,10 +85,7 @@ app/
 | Async | Kotlin Coroutines + Flow |
 | Local Preferences | DataStore |
 | App Startup | AndroidX SplashScreen API + Compose loading overlay |
-| Background Sync | WorkManager *(v0.3)* |
-| Auth | Firebase Auth *(v0.3)* |
-| Cloud Sync | Firestore *(v0.3)* |
-| Push Notifications | Firebase Cloud Messaging *(v0.4)* |
+| Testing | JUnit4, MockK, Turbine, Room in-memory database testing |
 | Build System | Gradle with Version Catalogs (TOML) |
 | Code Gen | KSP (Kotlin Symbol Processing) |
 
@@ -157,41 +150,12 @@ Maintained atomically alongside every transaction write, but not currently surfa
 
 ### Key Design Decisions
 
-- **UUID primary keys** — device-generated, collision-free across devices for sync. Seeded default categories and the default ledger use fixed, human-readable IDs instead, so repeated seeding on every app launch is naturally idempotent via `OnConflictStrategy.IGNORE`
-- **Soft delete** — `isDeleted` flag instead of physical delete, enabling sync propagation
+- **UUID primary keys** — device-generated, collision-free across devices. Seeded default categories and the default ledger use fixed, human-readable IDs instead, so repeated seeding on every app launch is naturally idempotent via `OnConflictStrategy.IGNORE`
+- **Soft delete** — `isDeleted` flag instead of physical delete
 - **Running balance** — maintained on `Ledger` for O(1) reads, never calculated by scanning all rows
 - **Composite indexes** — `(ledgerId, type, isDeleted, date)` for fast period queries
 - **Atomic transactions** — Room `@Transaction` guarantees balance and snapshot never drift from actual data, on insert, edit, and soft delete alike
 - **`isDefault` on categories** — designed in from v0.1 specifically to support user-created categories later without a schema change: the deletion query already scopes to `WHERE isDefault = 0`, and the category foreign key already uses `SET_NULL` rather than `RESTRICT`, so v0.2's custom categories slotted in as pure UI/ViewModel work with zero migration
-
----
-
-## Sync Architecture (v0.3)
-
-```
-┌─────────────────────────────────────────┐
-│              Android Device              │
-│                                          │
-│  UI ──→ ViewModel ──→ Repository         │
-│                           │              │
-│                      Room (SQLite)       │
-│                      Source of Truth     │
-│                           │              │
-│                      Sync Queue          │
-│                    (PENDING_UPLOAD)      │
-│                           │              │
-│                      WorkManager         │
-│                    (on connectivity)     │
-└───────────────────────────┼─────────────┘
-                            │
-                    Firebase Firestore
-                    (cloud mirror)
-```
-
-- **Write local first, sync later** — UI is never blocked by network
-- **Last Write Wins** — `updatedAt` timestamps resolve conflicts
-- **Sync queue** — `sync_status` column tracks `SYNCED / PENDING_UPLOAD / PENDING_DELETE`
-- **Offline group edits** — group transactions queue locally and sync on reconnect
 
 ---
 
@@ -207,17 +171,14 @@ A few decisions changed during v0.1 based on real-world testing rather than the 
 
 ---
 
-## Versioned Roadmap
+## Current Status
 
 | Version | Focus | Status |
 |---|---|---|
 | v0.1 | Core offline functionality | Complete |
-| v0.2 | Filters, search, custom categories | In Progress |
-| v0.3 | Auth + personal cloud sync | Planned |
-| v0.4 | Group ledgers | Planned |
-| v0.5 | Multiple personal ledgers | Planned |
-| v0.6 | Monetization | Planned |
-| v1.0 | Production release | Planned |
+| v0.2 | Custom categories, error handling, tests, filters & search | In Progress |
+
+This repository intentionally does not publish its longer-term roadmap during Hacktoberfest — see **Contributing** below for why, and what kinds of PRs are actually in scope right now.
 
 ---
 
@@ -247,42 +208,57 @@ Open in Android Studio, let Gradle sync, then run on emulator or device.
 
 ```toml
 # Core
-kotlin = "2.3.21"
-agp = "9.2.1"
-composeBom = "2026.05.01"
+kotlin = "2.4.10"
+agp = "9.4.0"
+composeBom = "2026.08.00"
 
 # Database
-room = "2.8.4"
+room = "2.8.5"
 
 # DI
-hilt = "2.59.2"
+hilt = "2.60.1"
 
 # Async
 kotlinx-coroutines = "1.11.0"
 
 # Navigation
-navigation-compose = "2.9.8"
+navigation-compose = "2.10.1"
 
 # Preferences
 datastore = "1.2.1"
+
+# Testing
+kotlinx-coroutines-test = "1.11.0"
+turbine = "1.2.1"
+mockk = "1.14.11"
 ```
 
 ---
 
 ## Testing Strategy
 
-Core v0.1 flows — add, edit, delete, filter switching, and balance integrity across all of them — have been manually verified end-to-end on-device.
+**Confirmed passing, on-device (`src/androidTest`, real Room + SQLite, in-memory database):**
+- `LedgerDaoTest` — insert/read consistency, running-balance arithmetic, and the `isDefault` deletion guard
+- `TransactionDaoTest` — atomic balance updates on insert, edit (including a type change from expense to income), and soft delete; soft-deleted transactions correctly excluded from queries
 
-Automated coverage is planned starting v0.2:
+**Written, using Fakes/MockK, not yet confirmed run (`src/test`, plain JVM):**
+- `SettingsViewModelTest`
+- `DashboardViewModelTest`
 
-- **Unit Tests** — ViewModels tested with `FakeRepository` implementations, no DB required
-- **Integration Tests** — Room DAO tests with in-memory database
-- **UI Tests** — Compose UI tests with `createComposeRule()`
+**Known gaps — good first contributions:**
+- Run and confirm the two ViewModel test suites above; fix anything that surfaces
+- `AddEditTransactionViewModelTest` does not exist yet
+- `CategoryDao` / `CategoryRepository` have zero test coverage at any layer
+- No test currently proves a real `SQLiteConstraintException` correctly converts to `UiError.Database` via `safeCall`/`toUiError()` — everything there has only been reasoned about, not verified against a genuine Room exception
+- A full manual pass of the custom-category add/edit/delete flow hasn't been re-confirmed since the error-handling refactor landed
+- No Compose UI tests exist yet (`createComposeRule()`)
 
-Repository interfaces enable full ViewModel testing without a real database — a core architectural benefit.
+Repository interfaces enable full ViewModel testing without a real database — the actual payoff of that design choice.
 
 ---
 
 ## Contributing
 
-This is currently a personal portfolio project. Contributions are warmly welcome.
+This is a personal learning project, opened up for **Hacktoberfest**. Contributions are welcome — with one deliberate constraint: **PRs should improve what already exists, not propose new major features.** That means bug fixes, filling the test coverage gaps listed above, refactors, accessibility improvements, performance work, documentation, and finishing the in-progress v0.2 items (custom categories, filters & search) are all in scope. Proposals for things like cloud sync, group ledgers, or monetization are not being accepted right now — not because they're bad ideas, but because this project has a longer-term roadmap that's intentionally kept out of this public repository for the duration of Hacktoberfest, precisely to keep contributor effort focused on the current codebase rather than speculative future work.
+
+If you're unsure whether something is in scope, open an issue first before starting a PR.
