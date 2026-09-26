@@ -191,7 +191,7 @@ This repository intentionally does not publish its longer-term roadmap during Ha
 
 ### Clone & Run
 ```bash
-git clone https://github.com/yourusername/expense-tracker.git
+git clone https://github.com/mjk22071998/expense-tracker.git
 cd expense-tracker
 ```
 
