@@ -10,6 +10,7 @@ import com.example.expensetracker.data.repository.TransactionRepository
 import com.example.expensetracker.domain.model.AppResult
 import com.example.expensetracker.domain.model.CurrencyHelper
 import com.example.expensetracker.domain.model.DateRangeFilter
+import com.example.expensetracker.domain.model.DateUtils
 import com.example.expensetracker.domain.model.UiError
 import com.example.expensetracker.domain.model.toUiError
 import com.example.expensetracker.presentation.common.BaseViewModel
@@ -164,12 +165,7 @@ class DashboardViewModel @Inject constructor(
         val calendar = Calendar.getInstance()
 
         return when (filter) {
-            is DateRangeFilter.Last30Days -> {
-                val start = Calendar.getInstance().apply {
-                    add(Calendar.DAY_OF_YEAR, -30)
-                }.timeInMillis
-                Pair(start, now)
-            }
+            is DateRangeFilter.Today -> DateUtils.todayLocalRange()
             is DateRangeFilter.ThisWeek -> {
                 calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
                 calendar.set(Calendar.HOUR_OF_DAY, 0)
@@ -191,9 +187,7 @@ class DashboardViewModel @Inject constructor(
                 calendar.set(Calendar.SECOND, 0)
                 Pair(calendar.timeInMillis, now)
             }
-            is DateRangeFilter.Custom -> {
-                Pair(filter.startDate, filter.endDate)
-            }
+            is DateRangeFilter.Custom -> Pair(filter.startDate, filter.endDate)
         }
     }
 }

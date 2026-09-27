@@ -9,7 +9,7 @@ data class DashboardUiState(
     val totalIncome: Double = 0.0,
     val totalExpense: Double = 0.0,
     val transactions: List<TransactionWithCategory> = emptyList(),
-    val selectedFilter: DateRangeFilter = DateRangeFilter.Last30Days,
+    val selectedFilter: DateRangeFilter = DateRangeFilter.ThisMonth,
     val currencySymbol: String = "₨",
     val isLoading: Boolean = false,
     val error: UiError? = null,

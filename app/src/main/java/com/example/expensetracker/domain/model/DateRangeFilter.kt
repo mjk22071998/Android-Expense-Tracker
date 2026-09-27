@@ -1,7 +1,7 @@
 package com.example.expensetracker.domain.model
 
 sealed class DateRangeFilter {
-    object Last30Days : DateRangeFilter()
+    object Today : DateRangeFilter()
     object ThisWeek : DateRangeFilter()
     object ThisMonth : DateRangeFilter()
     object ThisYear : DateRangeFilter()

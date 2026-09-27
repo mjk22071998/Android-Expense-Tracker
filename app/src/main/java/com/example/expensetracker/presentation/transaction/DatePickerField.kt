@@ -28,7 +28,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import androidx.compose.ui.platform.LocalLocale
 import com.example.expensetracker.domain.model.DateUtils
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,7 +49,7 @@ fun DatePickerField(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+                text = SimpleDateFormat("MMM dd, yyyy", LocalLocale.current.platformLocale)
                     .format(Date(selectedDate)),
                 style = MaterialTheme.typography.bodyMedium
             )
