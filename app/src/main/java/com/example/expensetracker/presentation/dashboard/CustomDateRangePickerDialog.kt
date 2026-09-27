@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import java.util.Calendar
+import com.example.expensetracker.domain.model.DateUtils
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -21,19 +21,14 @@ fun CustomDateRangePickerDialog(
     onDismiss: () -> Unit,
     onRangeSelected: (startDate: Long, endDate: Long) -> Unit
 ) {
-    val todayEndOfDay = remember {
-        Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 23)
-            set(Calendar.MINUTE, 59)
-            set(Calendar.SECOND, 59)
-            set(Calendar.MILLISECOND, 999)
-        }.timeInMillis
-    }
+    val todayUtcMillis = remember { DateUtils.todayAsUtcMidnight() }
 
     val rangeState = rememberDateRangePickerState(
+        initialSelectedStartDateMillis = todayUtcMillis,
+        initialSelectedEndDateMillis = todayUtcMillis,
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                return utcTimeMillis <= todayEndOfDay
+                return utcTimeMillis <= todayUtcMillis
             }
         }
     )
@@ -46,7 +41,10 @@ fun CustomDateRangePickerDialog(
                     val start = rangeState.selectedStartDateMillis
                     val end = rangeState.selectedEndDateMillis
                     if (start != null && end != null) {
-                        onRangeSelected(start, end)
+                        onRangeSelected(
+                            DateUtils.utcMidnightToLocalStartOfDay(start),
+                            DateUtils.utcMidnightToLocalEndOfDay(end)
+                        )
                     }
                 },
                 enabled = rangeState.selectedStartDateMillis != null &&
