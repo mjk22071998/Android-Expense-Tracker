@@ -1,6 +1,7 @@
 package com.example.expensetracker.presentation.dashboard
 
 import android.content.Context
+import com.example.expensetracker.Constants
 import com.example.expensetracker.data.local.UserPreferences
 import com.example.expensetracker.data.local.entity.Transaction
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
@@ -15,12 +16,17 @@ import com.example.expensetracker.presentation.common.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import java.util.Calendar
+import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
@@ -31,6 +37,7 @@ class DashboardViewModel @Inject constructor(
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
+    private val searchQueryFlow = MutableStateFlow("")
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
     private var currentLedgerId: String = ""
@@ -38,8 +45,35 @@ class DashboardViewModel @Inject constructor(
     init {
         loadDefaultLedger()
         loadCurrencySymbol()
+        observeSearchQuery()
     }
 
+    @OptIn(FlowPreview::class)
+    private fun observeSearchQuery() {
+        launchSafely(onError = ::handleError) {
+            searchQueryFlow
+                .debounce(Constants.Search.DEBOUNCE_MS.milliseconds)
+                .distinctUntilChanged()
+                .collectLatest {
+                    loadTransactions()
+                }
+        }
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        _uiState.update { it.copy(searchQuery = query) } // instant — what the TextField actually displays
+        searchQueryFlow.value = query                     // debounced — what actually triggers a re-query
+    }
+
+    fun onSearchActivated() {
+        _uiState.update { it.copy(isSearchActive = true) }
+    }
+
+    fun onSearchClosed() {
+        _uiState.update { it.copy(isSearchActive = false, searchQuery = "") }
+        searchQueryFlow.value = ""
+        loadTransactions()
+    }
     private fun loadCurrencySymbol() {
         launchSafely(onError = ::handleError) {
             userPreferences.currencyCode
@@ -74,17 +108,17 @@ class DashboardViewModel @Inject constructor(
 
     private fun loadTransactions() {
         val (startDate, endDate) = getDateRange(_uiState.value.selectedFilter)
+        val query = _uiState.value.searchQuery
         launchSafely(onError = ::handleError) {
             transactionRepository.getTransactions(
                 ledgerId = currentLedgerId,
                 startDate = startDate,
-                endDate = endDate
+                endDate = endDate,
+                searchQuery = query
             )
                 .catch { e -> handleError(e.toUiError()) }
                 .collect { transactions ->
-                    _uiState.update { state ->
-                        state.copy(transactions = transactions)
-                    }
+                    _uiState.update { state -> state.copy(transactions = transactions) }
                 }
         }
     }

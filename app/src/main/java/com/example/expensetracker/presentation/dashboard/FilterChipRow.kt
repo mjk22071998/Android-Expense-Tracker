@@ -12,6 +12,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -24,6 +28,8 @@ fun FilterChipRow(
     onFilterSelected: (DateRangeFilter) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showDateRangePicker by remember { mutableStateOf(false) }
+
     val filters = listOf(
         DateRangeFilter.Last30Days to "Last 30 Days",
         DateRangeFilter.ThisWeek to "This Week",
@@ -40,12 +46,7 @@ fun FilterChipRow(
             FilterChip(
                 selected = selectedFilter == filter,
                 onClick = { onFilterSelected(filter) },
-                label = {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.labelMedium
-                    )
-                },
+                label = { Text(text = label, style = MaterialTheme.typography.labelMedium) },
                 leadingIcon = if (selectedFilter == filter) {
                     {
                         Icon(
@@ -61,9 +62,19 @@ fun FilterChipRow(
         item {
             CustomRangeChip(
                 isSelected = selectedFilter is DateRangeFilter.Custom,
-                onSelected = { onFilterSelected(DateRangeFilter.Custom(0L, 0L)) }
+                onSelected = { showDateRangePicker = true } // was: onFilterSelected(DateRangeFilter.Custom(0L, 0L))
             )
         }
+    }
+
+    if (showDateRangePicker) {
+        CustomDateRangePickerDialog(
+            onDismiss = { showDateRangePicker = false },
+            onRangeSelected = { start, end ->
+                onFilterSelected(DateRangeFilter.Custom(start, end))
+                showDateRangePicker = false
+            }
+        )
     }
 }
 

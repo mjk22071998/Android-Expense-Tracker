@@ -12,5 +12,7 @@ data class DashboardUiState(
     val selectedFilter: DateRangeFilter = DateRangeFilter.Last30Days,
     val currencySymbol: String = "₨",
     val isLoading: Boolean = false,
-    val error: UiError? = null
+    val error: UiError? = null,
+    val searchQuery: String = "",
+    val isSearchActive: Boolean = false,
 )

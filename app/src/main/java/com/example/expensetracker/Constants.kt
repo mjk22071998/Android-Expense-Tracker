@@ -30,4 +30,8 @@ object Constants {
         const val CURRENCY_CODE = "currency_code"
         const val IS_DARK_THEME = "is_dark_theme"
     }
+
+    object Search {
+        const val DEBOUNCE_MS = 300L
+    }
 }

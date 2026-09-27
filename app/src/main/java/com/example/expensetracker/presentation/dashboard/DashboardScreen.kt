@@ -1,5 +1,6 @@
 package com.example.expensetracker.presentation.dashboard
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -49,11 +50,20 @@ fun DashboardScreen(
         }
     }
 
+    BackHandler(enabled = uiState.isSearchActive) {
+        viewModel.onSearchClosed()
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             DashboardTopBar(
+                isSearchActive = uiState.isSearchActive,
+                searchQuery = uiState.searchQuery,
+                onSearchQueryChanged = viewModel::onSearchQueryChanged,
+                onSearchActivated = viewModel::onSearchActivated,
+                onSearchClosed = viewModel::onSearchClosed,
                 onSettingsClick = onNavigateToSettings
             )
         },

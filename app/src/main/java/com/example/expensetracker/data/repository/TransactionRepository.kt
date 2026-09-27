@@ -11,7 +11,8 @@ interface TransactionRepository {
     fun getTransactions(
         ledgerId: String,
         startDate: Long,
-        endDate: Long
+        endDate: Long,
+        searchQuery: String = ""
     ): Flow<List<TransactionWithCategory>>
 
     fun getPeriodIncome(ledgerId: String, startDate: Long, endDate: Long): Flow<Double?>

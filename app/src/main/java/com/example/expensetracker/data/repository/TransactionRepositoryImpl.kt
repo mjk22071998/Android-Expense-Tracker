@@ -4,8 +4,10 @@ import com.example.expensetracker.data.local.dao.LedgerDao
 import com.example.expensetracker.data.local.dao.MonthlySnapshotDao
 import com.example.expensetracker.data.local.dao.TransactionDao
 import com.example.expensetracker.data.local.entity.Transaction
+import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.AppResult
 import com.example.expensetracker.domain.model.safeCall
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class TransactionRepositoryImpl @Inject constructor(
@@ -14,8 +16,14 @@ class TransactionRepositoryImpl @Inject constructor(
     private val snapshotDao: MonthlySnapshotDao
 ) : TransactionRepository {
 
-    override fun getTransactions(ledgerId: String, startDate: Long, endDate: Long) =
-        transactionDao.getTransactions(ledgerId, startDate, endDate)
+    override fun getTransactions(
+        ledgerId: String,
+        startDate: Long,
+        endDate: Long,
+        searchQuery: String
+    ): Flow<List<TransactionWithCategory>> {
+        return transactionDao.getTransactions(ledgerId, startDate, endDate, searchQuery)
+    }
 
     override fun getPeriodIncome(ledgerId: String, startDate: Long, endDate: Long) =
         transactionDao.getPeriodIncome(ledgerId, startDate, endDate)
