@@ -259,6 +259,28 @@ Repository interfaces enable full ViewModel testing without a real database — 
 
 ## Contributing
 
-This is a personal learning project, opened up for **Hacktoberfest**. Contributions are welcome — with one deliberate constraint: **PRs should improve what already exists, not propose new major features.** That means bug fixes, filling the test coverage gaps listed above, refactors, accessibility improvements, performance work, documentation, and finishing the in-progress v0.2 items (custom categories, filters & search) are all in scope. Proposals for things like cloud sync, group ledgers, or monetization are not being accepted right now — not because they're bad ideas, but because this project has a longer-term roadmap that's intentionally kept out of this public repository for the duration of Hacktoberfest, precisely to keep contributor effort focused on the current codebase rather than speculative future work.
+Contributions are welcome, especially for **Hacktoberfest**!
 
-If you're unsure whether something is in scope, open an issue first before starting a PR.
+PRs should focus on bug fixes, test coverage, refactoring, performance improvements, documentation, and finishing in-progress v0.2 items.
+
+### Quick Workflow
+1. **Fork & Clone:** Fork the repository on GitHub and clone your fork locally.
+2. **Checkout `hacktoberfest` Branch:** Always switch to the **`hacktoberfest`** branch before working:
+   ```bash
+   git checkout hacktoberfest
+   ```
+3. **Make Your Changes:** Implement your changes in Android Studio.
+4. **Verify Build:** Ensure the project builds cleanly without errors:
+   ```bash
+   # Linux / macOS
+   ./gradlew assembleDebug
+
+   # Windows
+   gradlew.bat assembleDebug
+   ```
+5. **Push & Open PR:** Push your changes to your fork and submit a Pull Request targeting the **`hacktoberfest`** branch.
+
+> [!IMPORTANT]
+> All Pull Requests **MUST** originate from and target the **`hacktoberfest`** branch (not `main`).
+
+For full step-by-step instructions, please read [CONTRIBUTING.md](CONTRIBUTING.md).
