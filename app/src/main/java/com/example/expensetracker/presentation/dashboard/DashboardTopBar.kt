@@ -1,6 +1,8 @@
 package com.example.expensetracker.presentation.dashboard
 
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,9 +28,11 @@ import com.example.expensetracker.R
 fun DashboardTopBar(
     isSearchActive: Boolean,
     searchQuery: String,
+    activeCategoryFilterCount: Int,
     onSearchQueryChanged: (String) -> Unit,
     onSearchActivated: () -> Unit,
     onSearchClosed: () -> Unit,
+    onFilterClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
     if (isSearchActive) {
@@ -94,6 +98,20 @@ fun DashboardTopBar(
                         painter = painterResource(id = R.drawable.ic_search),
                         contentDescription = "Search"
                     )
+                }
+                IconButton(onClick = onFilterClick) {
+                    BadgedBox(
+                        badge = {
+                            if (activeCategoryFilterCount > 0) {
+                                Badge { Text(activeCategoryFilterCount.toString()) }
+                            }
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_filter_list),
+                            contentDescription = "Filter by category"
+                        )
+                    }
                 }
                 IconButton(onClick = onSettingsClick) {
                     Icon(

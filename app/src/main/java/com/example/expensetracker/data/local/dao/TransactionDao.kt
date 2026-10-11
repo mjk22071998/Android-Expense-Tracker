@@ -22,37 +22,34 @@ interface TransactionDao {
     suspend fun update(transaction: Transaction)
 
     @Query("""
-        SELECT 
-            t.id,
-            t.ledgerId,
-            t.categoryId,
-            COALESCE(c.icon, 'other') as categoryIcon,
-            COALESCE(c.name, 'Uncategorized') as categoryName,
-            t.amount,
-            t.type,
-            t.note,
-            t.date,
-            t.createdAt,
-            t.updatedAt,
-            t.isDeleted
-        FROM transactions t
-        LEFT JOIN categories c ON t.categoryId = c.id
-        WHERE t.ledgerId = :ledgerId
-        AND t.isDeleted = 0
-        AND t.date BETWEEN :startDate AND :endDate
-        AND (
-            :searchQuery = ''
-            OR t.note LIKE '%' || :searchQuery || '%'
-            OR c.name LIKE '%' || :searchQuery || '%'
-            OR CAST(t.amount AS TEXT) LIKE '%' || :searchQuery || '%'
-        )
-        ORDER BY t.date DESC
-    """)
+    SELECT 
+        t.id, t.ledgerId, t.categoryId,
+        COALESCE(c.icon, 'other') as categoryIcon,
+        COALESCE(c.name, 'Uncategorized') as categoryName,
+        t.amount, t.type, t.note, t.date, t.createdAt, t.updatedAt, t.isDeleted
+    FROM transactions t
+    LEFT JOIN categories c ON t.categoryId = c.id
+    WHERE t.ledgerId = :ledgerId
+    AND t.isDeleted = 0
+    AND t.date BETWEEN :startDate AND :endDate
+    AND (:typeFilter IS NULL OR t.type = :typeFilter)
+    AND (
+        :searchQuery = ''
+        OR t.note LIKE '%' || :searchQuery || '%'
+        OR c.name LIKE '%' || :searchQuery || '%'
+        OR CAST(t.amount AS TEXT) LIKE '%' || :searchQuery || '%'
+    )
+    AND (:categoryFilterEmpty = 1 OR t.categoryId IN (:categoryIds))
+    ORDER BY t.date DESC
+""")
     fun getTransactions(
         ledgerId: String,
         startDate: Long,
         endDate: Long,
-        searchQuery: String = ""
+        searchQuery: String = "",
+        typeFilter: String? = null,
+        categoryIds: List<String> = emptyList(),
+        categoryFilterEmpty: Boolean = true
     ): Flow<List<TransactionWithCategory>>
 
     @Query(

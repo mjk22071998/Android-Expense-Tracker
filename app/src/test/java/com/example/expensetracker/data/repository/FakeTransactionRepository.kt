@@ -26,7 +26,9 @@ class FakeTransactionRepository : TransactionRepository {
         ledgerId: String,
         startDate: Long,
         endDate: Long,
-        searchQuery: String
+        searchQuery: String,
+        typeFilter: String?,
+        categoryIds: Set<String>
     ): Flow<List<TransactionWithCategory>> = flow {
         errorToThrow?.let { throw it }
         emitAll(transactionsFlow)

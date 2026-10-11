@@ -1,5 +1,6 @@
 package com.example.expensetracker.presentation.dashboard
 
+import com.example.expensetracker.data.local.entity.Category
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.domain.model.UiError
@@ -15,4 +16,8 @@ data class DashboardUiState(
     val error: UiError? = null,
     val searchQuery: String = "",
     val isSearchActive: Boolean = false,
+    val selectedTypeFilter: String? = null,
+    val allCategories: List<Category> = emptyList(),
+    val selectedCategoryIds: Set<String> = emptySet(),
+    val isCategoryFilterSheetVisible: Boolean = false
 )

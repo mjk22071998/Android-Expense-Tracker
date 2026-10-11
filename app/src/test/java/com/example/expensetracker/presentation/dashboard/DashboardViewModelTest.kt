@@ -5,6 +5,7 @@ import com.example.expensetracker.Constants
 import com.example.expensetracker.data.local.UserPreferences
 import com.example.expensetracker.data.local.entity.Ledger
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
+import com.example.expensetracker.data.repository.FakeCategoryRepository
 import com.example.expensetracker.data.repository.FakeLedgerRepository
 import com.example.expensetracker.data.repository.FakeTransactionRepository
 import com.example.expensetracker.domain.model.AppResult
@@ -30,6 +31,7 @@ class DashboardViewModelTest {
     private lateinit var transactionRepository: FakeTransactionRepository
     private lateinit var ledgerRepository: FakeLedgerRepository
     private lateinit var userPreferences: UserPreferences
+    private lateinit var categoryRepository: FakeCategoryRepository
     private lateinit var context: Context
     private lateinit var viewModel: DashboardViewModel
 
@@ -38,6 +40,7 @@ class DashboardViewModelTest {
         transactionRepository = FakeTransactionRepository()
         ledgerRepository = FakeLedgerRepository()
         context = mockk(relaxed = true)
+        categoryRepository = FakeCategoryRepository()
         userPreferences = mockk(relaxed = true) {
             every { currencyCode } returns MutableStateFlow("PKR")
         }
@@ -45,6 +48,7 @@ class DashboardViewModelTest {
         viewModel = DashboardViewModel(
             transactionRepository = transactionRepository,
             ledgerRepository = ledgerRepository,
+            categoryRepository = categoryRepository,
             userPreferences = userPreferences,
             context = context
         )

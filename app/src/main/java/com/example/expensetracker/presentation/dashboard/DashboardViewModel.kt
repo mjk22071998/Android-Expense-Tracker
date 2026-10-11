@@ -5,6 +5,7 @@ import com.example.expensetracker.Constants
 import com.example.expensetracker.data.local.UserPreferences
 import com.example.expensetracker.data.local.entity.Transaction
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
+import com.example.expensetracker.data.repository.CategoryRepository
 import com.example.expensetracker.data.repository.LedgerRepository
 import com.example.expensetracker.data.repository.TransactionRepository
 import com.example.expensetracker.domain.model.AppResult
@@ -17,7 +18,7 @@ import com.example.expensetracker.presentation.common.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
-import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,54 +28,32 @@ import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import java.util.Calendar
-import kotlin.time.Duration.Companion.milliseconds
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val ledgerRepository: LedgerRepository,
+    private val categoryRepository: CategoryRepository,
     private val userPreferences: UserPreferences,
     @param:ApplicationContext private val context: Context
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
-    private val searchQueryFlow = MutableStateFlow("")
     val uiState: StateFlow<DashboardUiState> = _uiState.asStateFlow()
 
     private var currentLedgerId: String = ""
+    private var transactionsJob: Job? = null
+    private val searchQueryFlow = MutableStateFlow("")
 
     init {
         loadDefaultLedger()
         loadCurrencySymbol()
+        loadCategories()
         observeSearchQuery()
     }
 
-    @OptIn(FlowPreview::class)
-    private fun observeSearchQuery() {
-        launchSafely(onError = ::handleError) {
-            searchQueryFlow
-                .debounce(Constants.Search.DEBOUNCE_MS.milliseconds)
-                .distinctUntilChanged()
-                .collectLatest {
-                    loadTransactions()
-                }
-        }
-    }
+    // ---------- loading ----------
 
-    fun onSearchQueryChanged(query: String) {
-        _uiState.update { it.copy(searchQuery = query) } // instant — what the TextField actually displays
-        searchQueryFlow.value = query                     // debounced — what actually triggers a re-query
-    }
-
-    fun onSearchActivated() {
-        _uiState.update { it.copy(isSearchActive = true) }
-    }
-
-    fun onSearchClosed() {
-        _uiState.update { it.copy(isSearchActive = false, searchQuery = "") }
-        searchQueryFlow.value = ""
-        loadTransactions()
-    }
     private fun loadCurrencySymbol() {
         launchSafely(onError = ::handleError) {
             userPreferences.currencyCode
@@ -83,6 +62,16 @@ class DashboardViewModel @Inject constructor(
                     _uiState.update { state ->
                         state.copy(currencySymbol = CurrencyHelper.getSymbol(code, context))
                     }
+                }
+        }
+    }
+
+    private fun loadCategories() {
+        launchSafely(onError = ::handleError) {
+            categoryRepository.getAllCategories()
+                .catch { e -> handleError(e.toUiError()) }
+                .collect { categories ->
+                    _uiState.update { it.copy(allCategories = categories) }
                 }
         }
     }
@@ -107,15 +96,33 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+    private fun observeSearchQuery() {
+        launchSafely(onError = ::handleError) {
+            searchQueryFlow
+                .debounce(Constants.Search.DEBOUNCE_MS)
+                .distinctUntilChanged()
+                .collectLatest {
+                    loadTransactions()
+                }
+        }
+    }
+
     private fun loadTransactions() {
+        transactionsJob?.cancel() // stop the previous listener before starting a new one
+
         val (startDate, endDate) = getDateRange(_uiState.value.selectedFilter)
         val query = _uiState.value.searchQuery
-        launchSafely(onError = ::handleError) {
+        val typeFilter = _uiState.value.selectedTypeFilter
+        val categoryIds = _uiState.value.selectedCategoryIds
+
+        transactionsJob = launchSafely(onError = ::handleError) {
             transactionRepository.getTransactions(
                 ledgerId = currentLedgerId,
                 startDate = startDate,
                 endDate = endDate,
-                searchQuery = query
+                searchQuery = query,
+                typeFilter = typeFilter,
+                categoryIds = categoryIds
             )
                 .catch { e -> handleError(e.toUiError()) }
                 .collect { transactions ->
@@ -124,10 +131,67 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+    // ---------- date and type filters ----------
+
     fun onFilterSelected(filter: DateRangeFilter) {
         _uiState.update { it.copy(selectedFilter = filter) }
         loadTransactions()
     }
+
+    fun onTypeFilterSelected(type: String) {
+        _uiState.update { state ->
+            state.copy(selectedTypeFilter = if (state.selectedTypeFilter == type) null else type)
+        }
+        loadTransactions()
+    }
+
+    // ---------- search ----------
+
+    fun onSearchQueryChanged(query: String) {
+        _uiState.update { it.copy(searchQuery = query) } // instant: what the text field shows
+        searchQueryFlow.value = query                     // debounced: what triggers the database query
+    }
+
+    fun onSearchActivated() {
+        _uiState.update { it.copy(isSearchActive = true) }
+    }
+
+    fun onSearchClosed() {
+        _uiState.update { it.copy(isSearchActive = false, searchQuery = "") }
+        searchQueryFlow.value = ""
+        loadTransactions()
+    }
+
+    // ---------- category filter ----------
+
+    fun onCategoryFilterToggled(categoryId: String) {
+        _uiState.update { state ->
+            val updated = if (categoryId in state.selectedCategoryIds) {
+                state.selectedCategoryIds - categoryId
+            } else {
+                state.selectedCategoryIds + categoryId
+            }
+            state.copy(selectedCategoryIds = updated)
+        }
+    }
+
+    fun onCategoryFilterSheetVisibilityChanged(isVisible: Boolean) {
+        _uiState.update { it.copy(isCategoryFilterSheetVisible = isVisible) }
+    }
+
+    fun onApplyCategoryFilters() {
+        _uiState.update { it.copy(isCategoryFilterSheetVisible = false) }
+        loadTransactions()
+    }
+
+    fun onClearCategoryFilters() {
+        _uiState.update {
+            it.copy(selectedCategoryIds = emptySet(), isCategoryFilterSheetVisible = false)
+        }
+        loadTransactions()
+    }
+
+    // ---------- delete ----------
 
     fun softDeleteTransaction(transaction: TransactionWithCategory) {
         launchSafely(onError = ::handleError) {
@@ -145,12 +209,11 @@ class DashboardViewModel @Inject constructor(
                     isDeleted = true
                 )
             )
-            when (result) {
-                is AppResult.Success -> Unit // list updates on its own via the Flow re-emitting
-                is AppResult.Error -> handleError(result.error)
-            }
+            if (result is AppResult.Error) handleError(result.error)
         }
     }
+
+    // ---------- errors ----------
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
@@ -159,6 +222,8 @@ class DashboardViewModel @Inject constructor(
     private fun handleError(error: UiError) {
         _uiState.update { it.copy(error = error) }
     }
+
+    // ---------- date range ----------
 
     private fun getDateRange(filter: DateRangeFilter): Pair<Long, Long> {
         val now = System.currentTimeMillis()

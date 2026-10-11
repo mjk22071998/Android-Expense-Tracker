@@ -43,15 +43,17 @@ fun DashboardScreen(
     var selectedTransaction by remember { mutableStateOf<TransactionWithCategory?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // back button closes search instead of exiting the app
+    BackHandler(enabled = uiState.isSearchActive) {
+        viewModel.onSearchClosed()
+    }
+
+    // show errors in a snackbar, then clear them
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
             snackbarHostState.showSnackbar(error.message)
             viewModel.clearError()
         }
-    }
-
-    BackHandler(enabled = uiState.isSearchActive) {
-        viewModel.onSearchClosed()
     }
 
     Scaffold(
@@ -61,9 +63,11 @@ fun DashboardScreen(
             DashboardTopBar(
                 isSearchActive = uiState.isSearchActive,
                 searchQuery = uiState.searchQuery,
+                activeCategoryFilterCount = uiState.selectedCategoryIds.size,
                 onSearchQueryChanged = viewModel::onSearchQueryChanged,
                 onSearchActivated = viewModel::onSearchActivated,
                 onSearchClosed = viewModel::onSearchClosed,
+                onFilterClick = { viewModel.onCategoryFilterSheetVisibilityChanged(true) },
                 onSettingsClick = onNavigateToSettings
             )
         },
@@ -84,7 +88,7 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Fixed header — never scrolls
+            // fixed header, never scrolls
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -122,11 +126,16 @@ fun DashboardScreen(
                     selectedFilter = uiState.selectedFilter,
                     onFilterSelected = viewModel::onFilterSelected
                 )
+
+                TypeFilterRow(
+                    selectedType = uiState.selectedTypeFilter,
+                    onTypeSelected = viewModel::onTypeFilterSelected
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Only this scrolls
+            // only this part scrolls
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -163,6 +172,17 @@ fun DashboardScreen(
                 selectedTransaction = null
                 onEditTransaction(transaction.id)
             }
+        )
+    }
+
+    if (uiState.isCategoryFilterSheetVisible) {
+        CategoryFilterBottomSheet(
+            allCategories = uiState.allCategories,
+            selectedCategoryIds = uiState.selectedCategoryIds,
+            onCategoryToggled = viewModel::onCategoryFilterToggled,
+            onClear = viewModel::onClearCategoryFilters,
+            onApply = viewModel::onApplyCategoryFilters,
+            onDismiss = { viewModel.onCategoryFilterSheetVisibilityChanged(false) }
         )
     }
 }

@@ -20,9 +20,19 @@ class TransactionRepositoryImpl @Inject constructor(
         ledgerId: String,
         startDate: Long,
         endDate: Long,
-        searchQuery: String
+        searchQuery: String,
+        typeFilter: String?,
+        categoryIds: Set<String>
     ): Flow<List<TransactionWithCategory>> {
-        return transactionDao.getTransactions(ledgerId, startDate, endDate, searchQuery)
+        return transactionDao.getTransactions(
+            ledgerId = ledgerId,
+            startDate = startDate,
+            endDate = endDate,
+            searchQuery = searchQuery,
+            typeFilter = typeFilter,
+            categoryIds = categoryIds.toList(),
+            categoryFilterEmpty = categoryIds.isEmpty()
+        )
     }
 
     override fun getPeriodIncome(ledgerId: String, startDate: Long, endDate: Long) =
