@@ -13,7 +13,7 @@ A production-grade, offline-first personal finance Android application built wit
 - **Category System** — transactions organized by categories with Material Symbol icons, seeded automatically on first launch with fixed, idempotent IDs, plus user custom category creation.
 - **Search & Multi-Category Filtering** — live debounced search query flow and bottom sheet multi-category filters with active badge counters.
 - **Strategy-Driven Date Filtering** — period filtering (`AllTime`, `Today`, `ThisWeek`, `ThisMonth`, `ThisYear`, `Custom`) implemented via the Strategy Pattern for zero-coupling extensibility, allowing complete historical inspection across all time (`0L to Long.MAX_VALUE`).
-- **Currency Support** — default currency detected from the device's SIM country (falling back to locale), searchable currency picker supporting 150+ currencies with native symbols.
+- **Currency Support** — default currency detected from the device's SIM country (falling back to locale), searchable currency picker supporting 150+ currencies with natural colloquial symbols (`Rs` for PKR, `$` for USD, `₹` for INR, `€` for EUR, `£` for GBP, etc.).
 - **Live Theme Switching** — dynamic System, Light, or Dark modes with edge-to-edge system bar synchronization.
 - **Branded App Startup** — official AndroidX `SplashScreen` API integrated before `super.onCreate()`, handing off to an organic branded Compose overlay gated on first-launch database seeding.
 - **Receipt-Style Transaction Detail** — tap any transaction for a modal breakdown, status badge, and one-tap edit routing.
@@ -162,6 +162,7 @@ UNIQUE INDEX    (ledgerId, month, year)
 
 Unit test suite (`src/test`):
 - `DateRangeFilterTest` — verifies Strategy pattern implementations and period boundary correctness.
+- `CurrencyHelperTest` — tests colloquial local currency symbol resolution across global currency codes.
 - `DashboardViewModelTest` — tests search debounce, filter state changes, and soft-delete propagation.
 - `SettingsViewModelTest` — tests live theme and currency preference persistence.
 - `DateUtilsTest` — validates UTC-to-local midnight conversions and period boundaries.
