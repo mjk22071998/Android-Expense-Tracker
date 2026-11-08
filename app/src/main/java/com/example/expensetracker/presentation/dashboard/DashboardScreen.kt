@@ -56,7 +56,8 @@ fun DashboardScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTransaction by remember { mutableStateOf<TransactionWithCategory?>(null) }
     var showTotalCardsSheet by remember { mutableStateOf(false) }
-    var showPeriodPicker by remember { mutableStateOf(false) }
+    var showPeriodSheet by remember { mutableStateOf(false) }
+    var showCustomDatePicker by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -184,6 +185,7 @@ fun DashboardScreen(
                 // 2. High-energy Action Pills Row (Transfer / Target / Settings)
                 // ============================================================
                 val periodLabel = when (uiState.selectedFilter) {
+                    is DateRangeFilter.AllTime -> "All Time"
                     is DateRangeFilter.Today -> "Today"
                     is DateRangeFilter.ThisWeek -> "This Week"
                     is DateRangeFilter.ThisMonth -> "This Month"
@@ -193,7 +195,7 @@ fun DashboardScreen(
 
                 QuickActionsRow(
                     onAddTransaction = onAddTransaction,
-                    onFilterPeriodClick = { showPeriodPicker = true },
+                    onFilterPeriodClick = { showPeriodSheet = true },
                     periodLabel = periodLabel
                 )
 
@@ -302,13 +304,29 @@ fun DashboardScreen(
         )
     }
 
-    // Modal: Period Date Range Selection
-    if (showPeriodPicker) {
+    // Modal: Period Filter Selection Bottom Sheet
+    if (showPeriodSheet) {
+        PeriodFilterBottomSheet(
+            selectedFilter = uiState.selectedFilter,
+            onFilterSelected = { filter ->
+                viewModel.onFilterSelected(filter)
+                showPeriodSheet = false
+            },
+            onCustomRangeClick = {
+                showPeriodSheet = false
+                showCustomDatePicker = true
+            },
+            onDismiss = { showPeriodSheet = false }
+        )
+    }
+
+    // Modal: Custom Date Range Picker
+    if (showCustomDatePicker) {
         CustomDateRangePickerDialog(
-            onDismiss = { showPeriodPicker = false },
+            onDismiss = { showCustomDatePicker = false },
             onRangeSelected = { start, end ->
                 viewModel.onFilterSelected(DateRangeFilter.Custom(start, end))
-                showPeriodPicker = false
+                showCustomDatePicker = false
             }
         )
     }

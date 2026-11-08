@@ -39,6 +39,7 @@ fun FilterChipRow(
     var showDateRangePicker by remember { mutableStateOf(false) }
 
     val filters = listOf(
+        DateRangeFilter.AllTime to "All Time",
         DateRangeFilter.Today to "Today",
         DateRangeFilter.ThisWeek to "This Week",
         DateRangeFilter.ThisMonth to "This Month",

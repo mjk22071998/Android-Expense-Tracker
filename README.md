@@ -12,7 +12,7 @@ A production-grade, offline-first personal finance Android application built wit
 - **Smart Balance Tracking** — real-time running balance with O(1) reads, maintained directly on the ledger entity rather than recalculated by scanning historical rows.
 - **Category System** — transactions organized by categories with Material Symbol icons, seeded automatically on first launch with fixed, idempotent IDs, plus user custom category creation.
 - **Search & Multi-Category Filtering** — live debounced search query flow and bottom sheet multi-category filters with active badge counters.
-- **Strategy-Driven Date Filtering** — period filtering (`Today`, `ThisWeek`, `ThisMonth`, `ThisYear`, `Custom`) implemented via the Strategy Pattern for zero-coupling extensibility.
+- **Strategy-Driven Date Filtering** — period filtering (`AllTime`, `Today`, `ThisWeek`, `ThisMonth`, `ThisYear`, `Custom`) implemented via the Strategy Pattern for zero-coupling extensibility, allowing complete historical inspection across all time (`0L to Long.MAX_VALUE`).
 - **Currency Support** — default currency detected from the device's SIM country (falling back to locale), searchable currency picker supporting 150+ currencies with native symbols.
 - **Live Theme Switching** — dynamic System, Light, or Dark modes with edge-to-edge system bar synchronization.
 - **Branded App Startup** — official AndroidX `SplashScreen` API integrated before `super.onCreate()`, handing off to an organic branded Compose overlay gated on first-launch database seeding.
@@ -68,7 +68,7 @@ app/
 ### Applied Design Patterns
 
 - **Strategy Pattern (`DateRangeFilter`)**:
-  Date period boundaries (`Today`, `ThisWeek`, `ThisMonth`, `ThisYear`, `Custom`) are encapsulated inside `DateRangeFilter.calculateRange(now)`. The `DashboardViewModel` simply invokes `selectedFilter.calculateRange()`, satisfying the **Open/Closed Principle (OCP)** — new reporting periods can be added without modifying ViewModel or UI code.
+  Date period boundaries (`AllTime`, `Today`, `ThisWeek`, `ThisMonth`, `ThisYear`, `Custom`) are encapsulated inside `DateRangeFilter.calculateRange(now)`. The `DashboardViewModel` simply invokes `selectedFilter.calculateRange()`, satisfying the **Open/Closed Principle (OCP)** — new reporting periods can be added without modifying ViewModel or UI code.
 - **Factory Method Pattern (`Transaction`, `Category`, `Ledger`)**:
   Entity companion objects provide `.create(...)` factory methods that handle UUID generation, timestamp synchronization (`createdAt`, `updatedAt`), and invariant defaults. A `.toSoftDeleted()` transition method handles soft-deletion state cleanly.
 - **Singleton Pattern (Hilt Dependency Injection)**:

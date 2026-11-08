@@ -7,6 +7,13 @@ import org.junit.Test
 class DateRangeFilterTest {
 
     @Test
+    fun allTimeFilter_returnsZeroToMaxLong() {
+        val (start, end) = DateRangeFilter.AllTime.calculateRange()
+        assertEquals(0L, start)
+        assertEquals(Long.MAX_VALUE, end)
+    }
+
+    @Test
     fun customFilter_returnsExactStartAndEnd() {
         val filter = DateRangeFilter.Custom(startDate = 1000L, endDate = 2000L)
         val (start, end) = filter.calculateRange()
@@ -20,6 +27,7 @@ class DateRangeFilterTest {
         val now = 1731050000000L // arbitrary fixed timestamp
 
         listOf(
+            DateRangeFilter.AllTime,
             DateRangeFilter.Today,
             DateRangeFilter.ThisWeek,
             DateRangeFilter.ThisMonth,

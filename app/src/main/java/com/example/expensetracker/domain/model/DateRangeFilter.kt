@@ -8,6 +8,10 @@ package com.example.expensetracker.domain.model
 sealed class DateRangeFilter {
     abstract fun calculateRange(now: Long = System.currentTimeMillis()): Pair<Long, Long>
 
+    data object AllTime : DateRangeFilter() {
+        override fun calculateRange(now: Long): Pair<Long, Long> = 0L to Long.MAX_VALUE
+    }
+
     data object Today : DateRangeFilter() {
         override fun calculateRange(now: Long): Pair<Long, Long> = DateUtils.todayLocalRange(now)
     }

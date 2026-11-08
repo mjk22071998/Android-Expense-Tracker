@@ -117,6 +117,15 @@ class DashboardViewModelTest {
     }
 
     @Test
+    fun `selecting AllTime filter updates ui state and requests all transactions`() {
+        ledgerRepository.emitDefaultLedger(sampleLedger())
+
+        viewModel.onFilterSelected(DateRangeFilter.AllTime)
+
+        assertEquals(DateRangeFilter.AllTime, viewModel.uiState.value.selectedFilter)
+    }
+
+    @Test
     fun `soft deleting a transaction marks it deleted and sends it to the repository`() = runTest {
         ledgerRepository.emitDefaultLedger(sampleLedger())
         val transaction = sampleTransaction()
