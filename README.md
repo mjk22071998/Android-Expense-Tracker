@@ -36,6 +36,7 @@ A production-grade, offline-first personal finance Android application built wit
 - **Export to PDF Statements** — generate professional, hardware-accelerated ISO A4 PDF statements with executive summary cards (inflow, outflow, net balance) and itemized ledger tables; automatically inherits dashboard filters and supports live in-modal customization with two dedicated export flows:
   - **Save in Phone / SD Storage**: Proactively verifies storage permissions (with `WRITE_EXTERNAL_STORAGE` on API $\le 28$ and Scoped Storage `MediaStore` on Android 10+), automatically detects preferred storage (Phone Storage or external SD Card), and writes directly to `Download/ExpenseTracker/` with an interactive "Open" snackbar and SAF fallback.
   - **Share PDF**: Seamlessly shares the generated statement via Android's secure `FileProvider` and system chooser.
+- **Contextual Material 3 Tooltips** — accessible, dark-forest-styled tooltips (`AppTooltip`) across interactive icon buttons and actions (PDF Export, Home, Ledger, Categories, Settings, Add Entry, Period Filter, Clear Search, Back Navigation, and Transaction Menus) triggerable via long-press on touch screens and hover on pointers.
 - **Structured Error Handling** — sealed `UiError` hierarchy and `AppResult<T>` wrapper around all repository operations.
 
 ---

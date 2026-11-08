@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.expensetracker.R
+import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.ui.theme.ElectricLime
 
 @Composable
@@ -83,18 +84,22 @@ fun SearchPillBar(
             }
 
             if (query.isNotEmpty()) {
-                IconButton(
-                    onClick = { onQueryChange("") },
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape)
+                AppTooltip(
+                    text = "Clear search"
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_close),
-                        contentDescription = "Clear",
-                        tint = Color(0xFFA5C4B2),
-                        modifier = Modifier.size(16.dp)
-                    )
+                    IconButton(
+                        onClick = { onQueryChange("") },
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clip(CircleShape)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_close),
+                            contentDescription = "Clear",
+                            tint = Color(0xFFA5C4B2),
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 }
             }
         }

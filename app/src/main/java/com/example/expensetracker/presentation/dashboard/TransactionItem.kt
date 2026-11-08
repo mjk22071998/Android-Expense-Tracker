@@ -19,6 +19,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import com.example.expensetracker.presentation.common.TooltipPosition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +40,7 @@ import com.example.expensetracker.R
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
 import com.example.expensetracker.domain.model.getCategoryIcon
+import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import java.text.SimpleDateFormat
@@ -54,62 +56,59 @@ fun TransactionItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var isMenuExpanded by remember { mutableStateOf(false) }
     val isIncome = transaction.type == Constants.TransactionType.INCOME
-
-    // Vibrant circular avatar matching Screen 1 (e.g. green Wise icon, category avatar)
-    val avatarBg = if (isIncome) Color(0xFF1B4D2B) else Color(0x33FFFFFF)
-    val avatarTint = if (isIncome) ElectricLime else Color.White
+    var isMenuExpanded by remember { mutableStateOf(false) }
 
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
             .clickable(onClick = onClick)
-            .padding(vertical = 8.dp, horizontal = 4.dp),
+            .padding(vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        // Circular Avatar / Category Icon
-        Box(
-            modifier = Modifier
-                .size(46.dp)
-                .clip(CircleShape)
-                .background(avatarBg),
-            contentAlignment = Alignment.Center
+        // Leading Circular Glass Icon with Material Category Icon
+        Surface(
+            modifier = Modifier.size(46.dp),
+            shape = CircleShape,
+            color = Color(0x28FFFFFF)
         ) {
-            Icon(
-                painter = painterResource(id = getCategoryIcon(transaction.categoryIcon)),
-                contentDescription = transaction.categoryName,
-                tint = avatarTint,
-                modifier = Modifier.size(22.dp)
-            )
+            Box(contentAlignment = Alignment.Center) {
+                Icon(
+                    painter = painterResource(id = getCategoryIcon(transaction.categoryIcon)),
+                    contentDescription = transaction.categoryName,
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
 
-        // Title & Timestamp
+        // Title and Timestamp
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(3.dp)
+            verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             Text(
-                text = transaction.note.ifBlank { transaction.categoryName },
+                text = transaction.categoryName.ifBlank { "Uncategorized" },
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White,
+                fontSize = 15.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
 
+            val displaySubtitle = if (!transaction.note.isNullOrBlank()) {
+                "${formatTransactionDate(transaction.date)} • ${transaction.note}"
+            } else {
+                formatTransactionDate(transaction.date)
+            }
+
             Text(
-                text = buildString {
-                    append(formatTransactionDate(transaction.date))
-                    if (transaction.note.isNotBlank() && transaction.categoryName.isNotBlank()) {
-                        append(" • ")
-                        append(transaction.categoryName)
-                    }
-                },
-                style = MaterialTheme.typography.labelSmall,
+                text = displaySubtitle,
+                style = MaterialTheme.typography.bodySmall,
                 color = Color(0xFFA5C4B2),
+                fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -140,16 +139,21 @@ fun TransactionItem(
 
         // Contextual 3-dot Menu
         Box {
-            IconButton(
-                onClick = { isMenuExpanded = true },
-                modifier = Modifier.size(28.dp)
+            AppTooltip(
+                text = "Transaction options",
+                position = TooltipPosition.Left
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_more_vert),
-                    contentDescription = "More",
-                    tint = Color(0xFFA5C4B2),
-                    modifier = Modifier.size(18.dp)
-                )
+                IconButton(
+                    onClick = { isMenuExpanded = true },
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_more_vert),
+                        contentDescription = "More",
+                        tint = Color(0xFFA5C4B2),
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
 
             DropdownMenu(

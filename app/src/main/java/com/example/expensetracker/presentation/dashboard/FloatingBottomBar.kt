@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.expensetracker.R
+import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
 import com.example.expensetracker.ui.theme.ForestBorderDark
@@ -58,74 +59,82 @@ fun FloatingBottomBar(
         ) {
             // 1. Home
             val isHome = currentDestination == BottomNavDestination.HOME
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
-                    .background(if (isHome) ElectricLime else Color.Transparent)
-                    .clickable(onClick = onHomeClick),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_home),
-                    contentDescription = "Home",
-                    tint = if (isHome) ElectricLimeOn else ForestTextSecondaryDark,
-                    modifier = Modifier.size(22.dp)
-                )
+            AppTooltip(text = "Dashboard") {
+                Box(
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(CircleShape)
+                        .background(if (isHome) ElectricLime else Color.Transparent)
+                        .clickable(onClick = onHomeClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_home),
+                        contentDescription = "Home",
+                        tint = if (isHome) ElectricLimeOn else ForestTextSecondaryDark,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
 
             // 2. Ledger / Accounts
             val isLedger = currentDestination == BottomNavDestination.LEDGER
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
-                    .background(if (isLedger) ElectricLime else Color.Transparent)
-                    .clickable(onClick = onLedgerClick),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_savings),
-                    contentDescription = "Ledger",
-                    tint = if (isLedger) ElectricLimeOn else ForestTextSecondaryDark,
-                    modifier = Modifier.size(22.dp)
-                )
+            AppTooltip(text = "Financial Overview & Ledger") {
+                Box(
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(CircleShape)
+                        .background(if (isLedger) ElectricLime else Color.Transparent)
+                        .clickable(onClick = onLedgerClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_savings),
+                        contentDescription = "Ledger",
+                        tint = if (isLedger) ElectricLimeOn else ForestTextSecondaryDark,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
 
             // 3. Categories / Analytics
             val isCategories = currentDestination == BottomNavDestination.CATEGORIES
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
-                    .background(if (isCategories) ElectricLime else Color.Transparent)
-                    .clickable(onClick = onCategoriesClick),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_category),
-                    contentDescription = "Categories",
-                    tint = if (isCategories) ElectricLimeOn else ForestTextSecondaryDark,
-                    modifier = Modifier.size(22.dp)
-                )
+            AppTooltip(text = "Filter by Category") {
+                Box(
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(CircleShape)
+                        .background(if (isCategories) ElectricLime else Color.Transparent)
+                        .clickable(onClick = onCategoriesClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_category),
+                        contentDescription = "Categories",
+                        tint = if (isCategories) ElectricLimeOn else ForestTextSecondaryDark,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
 
             // 4. Settings
             val isSettings = currentDestination == BottomNavDestination.SETTINGS
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
-                    .background(if (isSettings) ElectricLime else Color.Transparent)
-                    .clickable(onClick = onSettingsClick),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_settings),
-                    contentDescription = "Settings",
-                    tint = if (isSettings) ElectricLimeOn else ForestTextSecondaryDark,
-                    modifier = Modifier.size(22.dp)
-                )
+            AppTooltip(text = "Settings & Preferences") {
+                Box(
+                    modifier = Modifier
+                        .size(46.dp)
+                        .clip(CircleShape)
+                        .background(if (isSettings) ElectricLime else Color.Transparent)
+                        .clickable(onClick = onSettingsClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_settings),
+                        contentDescription = "Settings",
+                        tint = if (isSettings) ElectricLimeOn else ForestTextSecondaryDark,
+                        modifier = Modifier.size(22.dp)
+                    )
+                }
             }
         }
     }

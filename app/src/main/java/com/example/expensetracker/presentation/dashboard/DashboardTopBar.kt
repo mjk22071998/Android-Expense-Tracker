@@ -3,8 +3,6 @@ package com.example.expensetracker.presentation.dashboard
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -25,6 +23,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.expensetracker.R
+import com.example.expensetracker.presentation.common.AppTooltip
+import com.example.expensetracker.presentation.common.TooltipPosition
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,22 +45,27 @@ fun DashboardTopBar(
         },
         actions = {
             if (onExportClick != null) {
-                Surface(
-                    onClick = onExportClick,
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .size(38.dp),
-                    shape = CircleShape,
-                    color = Color(0x28FFFFFF),
-                    border = BorderStroke(1.dp, Color(0x33FFFFFF))
+                AppTooltip(
+                    text = "Export PDF Statement",
+                    position = TooltipPosition.Below
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_picture_as_pdf),
-                            contentDescription = "Export to PDF",
-                            tint = Color.White,
-                            modifier = Modifier.size(18.dp)
-                        )
+                    Surface(
+                        onClick = onExportClick,
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .size(38.dp),
+                        shape = CircleShape,
+                        color = Color(0x28FFFFFF),
+                        border = BorderStroke(1.dp, Color(0x33FFFFFF))
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_picture_as_pdf),
+                                contentDescription = "Export to PDF",
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 }
             }

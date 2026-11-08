@@ -1,6 +1,7 @@
 package com.example.expensetracker.presentation.dashboard
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,6 +21,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.expensetracker.R
+import com.example.expensetracker.presentation.common.AppTooltip
+import com.example.expensetracker.presentation.common.TooltipPosition
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
 
@@ -36,68 +39,84 @@ fun QuickActionsRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         // 1. Primary Vibrant Yellow/Lime Pill (Add Entry)
-        Surface(
-            onClick = onAddTransaction,
-            modifier = Modifier
-                .weight(1f)
-                .height(48.dp),
-            shape = RoundedCornerShape(24.dp),
-            color = ElectricLime
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+        Box(modifier = Modifier.weight(1f)) {
+            AppTooltip(
+                text = "Record new expense or income",
+                position = TooltipPosition.Below,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_add),
-                    contentDescription = "Add Entry",
-                    tint = ElectricLimeOn,
-                    modifier = Modifier.size(18.dp)
-                )
-                Text(
-                    text = "Add Entry",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = ElectricLimeOn,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(start = 6.dp)
-                )
+                Surface(
+                    onClick = onAddTransaction,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    color = ElectricLime
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_add),
+                            contentDescription = "Add Entry",
+                            tint = ElectricLimeOn,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Text(
+                            text = "Add Entry",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = ElectricLimeOn,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(start = 6.dp)
+                        )
+                    }
+                }
             }
         }
 
         // 2. Vibrant Cyan / Blue Pill (Period Filter)
-        Surface(
-            onClick = onFilterPeriodClick,
-            modifier = Modifier
-                .weight(1f)
-                .height(48.dp),
-            shape = RoundedCornerShape(24.dp),
-            color = Color(0xFF0099FF)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
+        Box(modifier = Modifier.weight(1f)) {
+            AppTooltip(
+                text = "Filter transactions by date range",
+                position = TooltipPosition.Below,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_date_range),
-                    contentDescription = "Period",
-                    tint = Color.White,
-                    modifier = Modifier.size(16.dp)
-                )
-                Text(
-                    text = periodLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(start = 6.dp)
-                )
+                Surface(
+                    onClick = onFilterPeriodClick,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    color = Color(0xFF0099FF)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_date_range),
+                            contentDescription = "Period",
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = periodLabel,
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(start = 6.dp)
+                        )
+                    }
+                }
             }
         }
     }

@@ -28,6 +28,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import com.example.expensetracker.presentation.common.TooltipPosition
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.expensetracker.Constants
 import com.example.expensetracker.R
+import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.data.local.entity.Category
 import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.ui.theme.ElectricLime
@@ -317,93 +319,105 @@ fun ExportPdfBottomSheet(
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 // Primary Option: Save in Phone / SD Storage
-                Button(
-                    onClick = {
-                        pendingAction = PdfExportAction.SAVE
-                        onSaveToStorage(currentFilter, currentTypeFilter, currentCategoryIds)
-                    },
-                    enabled = !isGenerating,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(26.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ElectricLime,
-                        contentColor = ElectricLimeOn
-                    )
+                AppTooltip(
+                    text = "Save statement to device storage or SD card Downloads",
+                    position = TooltipPosition.Above,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (isGenerating && pendingAction == PdfExportAction.SAVE) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = ElectricLimeOn,
-                            strokeWidth = 2.dp
+                    Button(
+                        onClick = {
+                            pendingAction = PdfExportAction.SAVE
+                            onSaveToStorage(currentFilter, currentTypeFilter, currentCategoryIds)
+                        },
+                        enabled = !isGenerating,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(26.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = ElectricLime,
+                            contentColor = ElectricLimeOn
                         )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Saving to Device...",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    } else {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_download),
-                            contentDescription = null,
-                            tint = ElectricLimeOn,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Save in Phone Storage",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp
-                        )
+                    ) {
+                        if (isGenerating && pendingAction == PdfExportAction.SAVE) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = ElectricLimeOn,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "Saving to Device...",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_download),
+                                contentDescription = null,
+                                tint = ElectricLimeOn,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Save in Phone Storage",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                        }
                     }
                 }
 
                 // Secondary Option: Share PDF
-                OutlinedButton(
-                    onClick = {
-                        pendingAction = PdfExportAction.SHARE
-                        onShare(currentFilter, currentTypeFilter, currentCategoryIds)
-                    },
-                    enabled = !isGenerating,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    shape = RoundedCornerShape(25.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        containerColor = extendedColors.cardElevated,
-                        contentColor = extendedColors.textPrimary
-                    ),
-                    border = BorderStroke(1.dp, extendedColors.cardBorder)
+                AppTooltip(
+                    text = "Share PDF statement via apps (WhatsApp, Drive, Email)",
+                    position = TooltipPosition.Above,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    if (isGenerating && pendingAction == PdfExportAction.SHARE) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(20.dp),
-                            color = extendedColors.textPrimary,
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(
-                            text = "Preparing PDF...",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Bold
-                        )
-                    } else {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_share),
-                            contentDescription = null,
-                            tint = extendedColors.textPrimary,
-                            modifier = Modifier.size(19.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Share PDF",
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp
-                        )
+                    OutlinedButton(
+                        onClick = {
+                            pendingAction = PdfExportAction.SHARE
+                            onShare(currentFilter, currentTypeFilter, currentCategoryIds)
+                        },
+                        enabled = !isGenerating,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        shape = RoundedCornerShape(25.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = extendedColors.cardElevated,
+                            contentColor = extendedColors.textPrimary
+                        ),
+                        border = BorderStroke(1.dp, extendedColors.cardBorder)
+                    ) {
+                        if (isGenerating && pendingAction == PdfExportAction.SHARE) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = extendedColors.textPrimary,
+                                strokeWidth = 2.dp
+                            )
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Text(
+                                text = "Preparing PDF...",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Bold
+                            )
+                        } else {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_share),
+                                contentDescription = null,
+                                tint = extendedColors.textPrimary,
+                                modifier = Modifier.size(19.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Share PDF",
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp
+                            )
+                        }
                     }
                 }
             }
