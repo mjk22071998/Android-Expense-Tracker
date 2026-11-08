@@ -59,14 +59,14 @@ fun TypeToggle(
                 .padding(4.dp),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            // Expense Tab Pill
+            // Expense Tab Pill (Calm Vivid Blue instead of danger-red)
             val expenseBg by animateColorAsState(
-                targetValue = if (isExpense) extendedColors.crimsonExpense else Color.Transparent,
+                targetValue = if (isExpense) Color(0xFF0099FF) else Color.Transparent,
                 animationSpec = tween(200),
                 label = "expenseBg"
             )
             val expenseText by animateColorAsState(
-                targetValue = if (isExpense) ElectricLimeOn else extendedColors.textSecondary,
+                targetValue = if (isExpense) Color.White else extendedColors.textSecondary,
                 animationSpec = tween(200),
                 label = "expenseText"
             )
@@ -99,9 +99,9 @@ fun TypeToggle(
                 }
             }
 
-            // Income Tab Pill
+            // Income Tab Pill (Vibrant Electric Lime)
             val incomeBg by animateColorAsState(
-                targetValue = if (isIncome) extendedColors.emeraldIncome else Color.Transparent,
+                targetValue = if (isIncome) ElectricLime else Color.Transparent,
                 animationSpec = tween(200),
                 label = "incomeBg"
             )
