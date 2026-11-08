@@ -60,6 +60,8 @@ import com.example.expensetracker.data.local.entity.Category
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
+import com.example.expensetracker.ui.theme.ForestTextPrimaryDark
+import com.example.expensetracker.ui.theme.ForestTextSecondaryDark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,7 +176,7 @@ fun TransactionFormScreen(
                             text = if (isIncome) "Income Amount" else "Expense Amount",
                             style = MaterialTheme.typography.labelMedium,
                             fontWeight = FontWeight.Medium,
-                            color = extendedColors.textSecondary,
+                            color = ForestTextSecondaryDark,
                             letterSpacing = 1.sp
                         )
 
@@ -182,7 +184,7 @@ fun TransactionFormScreen(
                             amount = uiState.amount,
                             currencySymbol = uiState.currencySymbol,
                             onAmountChanged = viewModel::onAmountChanged,
-                            textColor = extendedColors.textPrimary
+                            textColor = ForestTextPrimaryDark
                         )
                     }
                 }

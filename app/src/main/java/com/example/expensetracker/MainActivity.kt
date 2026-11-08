@@ -35,12 +35,12 @@ class MainActivity : ComponentActivity() {
             val isReady by startupViewModel.isReady.collectAsStateWithLifecycle()
 
             val themeMode by userPreferences.themeMode.collectAsStateWithLifecycle(
-                initialValue = Constants.ThemeMode.SYSTEM
+                initialValue = Constants.ThemeMode.DARK
             )
             val darkTheme = when (themeMode) {
                 Constants.ThemeMode.LIGHT -> false
                 Constants.ThemeMode.DARK -> true
-                else -> isSystemInDarkTheme()
+                else -> true // default to dark Organic Forest theme
             }
 
             DisposableEffect(darkTheme) {

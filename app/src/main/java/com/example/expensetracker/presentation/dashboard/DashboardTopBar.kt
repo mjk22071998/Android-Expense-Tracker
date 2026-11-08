@@ -4,8 +4,9 @@ import android.content.res.Configuration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,6 +20,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
@@ -43,6 +45,11 @@ import com.example.expensetracker.R
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
+import com.example.expensetracker.ui.theme.ForestBorderDark
+import com.example.expensetracker.ui.theme.ForestCardDark
+import com.example.expensetracker.ui.theme.ForestTextMutedDark
+import com.example.expensetracker.ui.theme.ForestTextPrimaryDark
+import com.example.expensetracker.ui.theme.ForestTextSecondaryDark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,8 +63,6 @@ fun DashboardTopBar(
     onFilterClick: () -> Unit,
     onSettingsClick: () -> Unit
 ) {
-    val extendedColors = ExpenseTrackerTheme.extendedColors
-
     if (isSearchActive) {
         val focusRequester = remember { FocusRequester() }
         val keyboardController = LocalSoftwareKeyboardController.current
@@ -69,13 +74,11 @@ fun DashboardTopBar(
 
         TopAppBar(
             title = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(24.dp))
-                        .background(extendedColors.cardBackground)
-                        .border(1.dp, extendedColors.cardBorder, RoundedCornerShape(24.dp))
-                        .padding(horizontal = 4.dp)
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(24.dp),
+                    color = ForestCardDark,
+                    border = BorderStroke(1.dp, ForestBorderDark)
                 ) {
                     TextField(
                         value = searchQuery,
@@ -84,7 +87,7 @@ fun DashboardTopBar(
                             Text(
                                 "Search note, category, or amount...",
                                 style = MaterialTheme.typography.bodyMedium,
-                                color = extendedColors.textMuted
+                                color = ForestTextMutedDark
                             )
                         },
                         singleLine = true,
@@ -93,8 +96,8 @@ fun DashboardTopBar(
                             unfocusedContainerColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
                             unfocusedIndicatorColor = Color.Transparent,
-                            focusedTextColor = extendedColors.textPrimary,
-                            unfocusedTextColor = extendedColors.textPrimary
+                            focusedTextColor = ForestTextPrimaryDark,
+                            unfocusedTextColor = ForestTextPrimaryDark
                         ),
                         textStyle = MaterialTheme.typography.bodyMedium.copy(fontSize = 15.sp),
                         modifier = Modifier
@@ -108,7 +111,7 @@ fun DashboardTopBar(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_arrow_back),
                         contentDescription = "Close search",
-                        tint = extendedColors.textPrimary
+                        tint = ForestTextPrimaryDark
                     )
                 }
             },
@@ -118,7 +121,7 @@ fun DashboardTopBar(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_close),
                             contentDescription = "Clear search",
-                            tint = extendedColors.textSecondary
+                            tint = ForestTextSecondaryDark
                         )
                     }
                 }
@@ -129,72 +132,106 @@ fun DashboardTopBar(
         )
     } else {
         TopAppBar(
+            navigationIcon = {
+                // Squircle account / ledger pill button from Inspiration Screen 1
+                Surface(
+                    modifier = Modifier
+                        .padding(start = 14.dp)
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(14.dp)),
+                    shape = RoundedCornerShape(14.dp),
+                    color = ForestCardDark,
+                    border = BorderStroke(1.dp, ForestBorderDark)
+                ) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_savings),
+                            contentDescription = "Account",
+                            tint = ElectricLime,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+            },
             title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.padding(start = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        text = "Expense Tracker",
-                        style = MaterialTheme.typography.titleLarge,
+                        text = "Personal Account",
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = extendedColors.textPrimary,
-                        letterSpacing = (-0.3).sp
+                        color = ForestTextPrimaryDark,
+                        letterSpacing = (-0.2).sp
                     )
                 }
             },
             actions = {
-                // Search Action
-                IconButton(
-                    onClick = onSearchActivated,
+                // Category Filter Pill with Lime Badge
+                Surface(
                     modifier = Modifier
-                        .padding(end = 4.dp)
-                        .clip(CircleShape)
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .clickable(onClick = onFilterClick),
+                    shape = RoundedCornerShape(14.dp),
+                    color = ForestCardDark,
+                    border = BorderStroke(1.dp, ForestBorderDark)
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_search),
-                        contentDescription = "Search",
-                        tint = extendedColors.textPrimary
-                    )
-                }
-
-                // Category Filter with Electric Lime Badge
-                IconButton(
-                    onClick = onFilterClick,
-                    modifier = Modifier
-                        .padding(end = 4.dp)
-                        .clip(CircleShape)
-                ) {
-                    BadgedBox(
-                        badge = {
-                            if (activeCategoryFilterCount > 0) {
-                                Badge(
-                                    containerColor = ElectricLime,
-                                    contentColor = ElectricLimeOn
-                                ) {
-                                    Text(
-                                        text = activeCategoryFilterCount.toString(),
-                                        fontWeight = FontWeight.Bold
-                                    )
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        BadgedBox(
+                            badge = {
+                                if (activeCategoryFilterCount > 0) {
+                                    Badge(
+                                        containerColor = ElectricLime,
+                                        contentColor = ElectricLimeOn
+                                    ) {
+                                        Text(
+                                            text = activeCategoryFilterCount.toString(),
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
                                 }
                             }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_filter_list),
+                                contentDescription = "Filter categories",
+                                tint = ForestTextPrimaryDark,
+                                modifier = Modifier.size(18.dp)
+                            )
                         }
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_filter_list),
-                            contentDescription = "Filter by category",
-                            tint = if (activeCategoryFilterCount > 0) ElectricLime else extendedColors.textPrimary
-                        )
                     }
                 }
 
-                // Settings Action
-                IconButton(
-                    onClick = onSettingsClick,
-                    modifier = Modifier.clip(CircleShape)
+                // Grid / Settings Squircle button
+                Surface(
+                    modifier = Modifier
+                        .padding(start = 8.dp, end = 14.dp)
+                        .size(40.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .clickable(onClick = onSettingsClick),
+                    shape = RoundedCornerShape(14.dp),
+                    color = ForestCardDark,
+                    border = BorderStroke(1.dp, ForestBorderDark)
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_settings),
-                        contentDescription = "Settings",
-                        tint = extendedColors.textPrimary
-                    )
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_settings),
+                            contentDescription = "Settings",
+                            tint = ForestTextSecondaryDark,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             },
             colors = TopAppBarDefaults.topAppBarColors(
@@ -204,10 +241,9 @@ fun DashboardTopBar(
     }
 }
 
-@Preview(name = "TopBar Inactive - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
-@Preview(name = "TopBar Inactive - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Preview(name = "Dashboard Top Bar - Normal", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun DashboardTopBarPreview() {
+private fun DashboardTopBarNormalPreview() {
     ExpenseTrackerTheme {
         DashboardTopBar(
             isSearchActive = false,

@@ -28,7 +28,7 @@ class UserPreferences @Inject constructor(
     }
 
     val themeMode: Flow<String> = context.dataStore.data.map { preferences ->
-        preferences[THEME_MODE] ?: Constants.ThemeMode.SYSTEM
+        preferences[THEME_MODE] ?: Constants.ThemeMode.DARK
     }
 
     suspend fun setCurrencyCode(code: String) {

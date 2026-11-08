@@ -153,7 +153,7 @@ fun TransactionItem(
                     text = "${if (isIncome) "+" else "-"} $currencySymbol ${formatAmount(transaction.amount)}",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = accentColor,
+                    color = if (isIncome) extendedColors.emeraldIncome else extendedColors.textPrimary,
                     letterSpacing = (-0.3).sp
                 )
 

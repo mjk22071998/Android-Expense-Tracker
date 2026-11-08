@@ -23,12 +23,15 @@ A production-grade, offline-first personal finance Android application built wit
 
 ## Design Language: Organic Forest Luxury
 
-The app features a bespoke **Organic Forest Luxury** fintech aesthetic inspired by modern wealth management interfaces (e.g. Wise, Monzo):
+The app features a bespoke **Organic Forest Luxury** fintech aesthetic inspired by modern wealth management interfaces (e.g. Wise, Monzo, Apple Card):
 
-- **Base Canvas**: Deep obsidian pine green (`#08140E`) with tactile raised cards (`#142B1F`) and subtle hairline borders (`#1F3D2B`).
-- **High-Energy Accents**: Electric Lime (`#D4F63D`) for primary calls to action, active filter pills, and FAB; Sky Cyan (`#00A3FF`) for secondary badges.
+- **Base Canvas**: Deep obsidian pine green (`#07140D` to `#0E2017`) with an atmospheric vertical gradient mesh.
+- **Stitched Leathercraft Hero Card**: Tactile hero card with a handcrafted dashed border (`PathEffect.dashPathEffect`), large bold balance typography (`PKR 27,420.00`), and integrated dual-tone Inflow (`ElectricLime` `#D4F63D`) and Outflow (`ElectricCyan` `#00A3FF`) interactive summary pills.
+- **High-Energy Action Pills**: Thumb-friendly quick actions row right below the hero balance (`+ Add Entry`, `Categories` filter, and circle `Settings`).
+- **Embedded Search Pill**: Floating dark search capsule (`🔍 Search transactions...`) directly embedded on the dashboard for instant, debounced real-time filtering.
+- **Floating Pill Bottom Navigation**: Floating dark glass navigation capsule (`#0B1A12` with 32dp corner radius) docked at the bottom with 4 circular glass icons (Home, Ledger, Categories, Settings) that float gracefully above scrolling content.
 - **Directional Cashflow**: Emerald Green (`#10B981`) with `+` sign for Inflow/Deposits; Crimson Rose (`#F43F5E`) with `−` sign for Outflow/Expenses.
-- **Humanized Micro-Copy**: Dynamic balance health indicators (*"✨ On track this month — healthy reserve"*), clear relative timestamps (*"Today, 2:30 PM • Food"*), and friendly conversational empty states.
+- **Humanized Micro-Copy**: Dynamic balance health indicators (*"✦ Healthy financial balance maintained"*), status badges (*"✦ Live Ledger"*), and conversational relative timestamps (*"Today, 2:30 PM • Food"*).
 - **Full Compose Preview Coverage**: 100% of standalone presentation components include light and dark `@Preview` annotations for instant design inspection in Android Studio.
 
 ---
