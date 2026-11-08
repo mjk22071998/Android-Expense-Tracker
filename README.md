@@ -17,6 +17,7 @@ A production-grade, offline-first personal finance Android application built wit
 - **Live Theme Switching** — dynamic System, Light, or Dark modes with edge-to-edge system bar synchronization.
 - **Branded App Startup** — official AndroidX `SplashScreen` API integrated before `super.onCreate()`, handing off to an organic branded Compose overlay gated on first-launch database seeding.
 - **Receipt-Style Transaction Detail** — tap any transaction for a modal breakdown, status badge, and one-tap edit routing.
+- **Export to PDF Statements** — generate professional, hardware-accelerated ISO A4 PDF statements with executive summary cards (inflow, outflow, net balance) and itemized ledger tables; automatically inherits dashboard filters and supports live in-modal customization before exporting via Android's secure `FileProvider`.
 - **Structured Error Handling** — sealed `UiError` hierarchy and `AppResult<T>` wrapper around all repository operations.
 
 ---
@@ -52,8 +53,9 @@ app/
 │   └── repository/             # Repository interfaces + Hilt @Singleton implementations
 │
 ├── domain/
-│   └── model/                  # Domain models, sealed classes, Strategy filters, Sync contracts
-│       └── sync/               # SyncableEntity and SyncStatus contracts for v0.3 roadmap
+│   ├── model/                  # Domain models, sealed classes, Strategy filters, Sync contracts
+│   │   └── sync/               # SyncableEntity and SyncStatus contracts for v0.3 roadmap
+│   └── usecase/                # Business logic use cases (PdfReportGenerator, etc.)
 │
 ├── presentation/
 │   ├── common/                 # BaseViewModel with CoroutineExceptionHandler

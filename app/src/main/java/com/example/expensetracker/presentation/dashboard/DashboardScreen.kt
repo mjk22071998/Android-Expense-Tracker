@@ -1,5 +1,6 @@
 package com.example.expensetracker.presentation.dashboard
 
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,10 +36,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
@@ -53,11 +56,14 @@ fun DashboardScreen(
     onNavigateToSettings: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTransaction by remember { mutableStateOf<TransactionWithCategory?>(null) }
     var showTotalCardsSheet by remember { mutableStateOf(false) }
     var showPeriodSheet by remember { mutableStateOf(false) }
     var showCustomDatePicker by remember { mutableStateOf(false) }
+    var showExportSheet by remember { mutableStateOf(false) }
+    var isGeneratingPdf by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -90,7 +96,8 @@ fun DashboardScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             DashboardTopBar(
-                title = "Savings Account"
+                title = "Savings Account",
+                onExportClick = { showExportSheet = true }
             )
         }
     ) { paddingValues ->
@@ -353,6 +360,45 @@ fun DashboardScreen(
             onClear = viewModel::onClearCategoryFilters,
             onApply = viewModel::onApplyCategoryFilters,
             onDismiss = { viewModel.onCategoryFilterSheetVisibilityChanged(false) }
+        )
+    }
+
+    // BottomSheet: Export to PDF Modal
+    if (showExportSheet) {
+        ExportPdfBottomSheet(
+            initialFilter = uiState.selectedFilter,
+            initialTypeFilter = uiState.selectedTypeFilter,
+            initialCategoryIds = uiState.selectedCategoryIds,
+            allCategories = uiState.allCategories,
+            isGenerating = isGeneratingPdf,
+            onGenerateAndShare = { filter, typeFilter, categoryIds ->
+                isGeneratingPdf = true
+                viewModel.generatePdfReport(
+                    filter = filter,
+                    typeFilter = typeFilter,
+                    categoryIds = categoryIds
+                ) { file ->
+                    isGeneratingPdf = false
+                    showExportSheet = false
+                    if (file != null) {
+                        val uri = FileProvider.getUriForFile(
+                            context,
+                            "${context.packageName}.fileprovider",
+                            file
+                        )
+                        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                            type = "application/pdf"
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            putExtra(Intent.EXTRA_SUBJECT, "Expense Report - Personal Account")
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        context.startActivity(Intent.createChooser(shareIntent, "Share Expense Report (PDF)"))
+                    }
+                }
+            },
+            onDismiss = {
+                if (!isGeneratingPdf) showExportSheet = false
+            }
         )
     }
 }

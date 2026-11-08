@@ -14,10 +14,12 @@ import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.domain.model.DateUtils
 import com.example.expensetracker.domain.model.UiError
 import com.example.expensetracker.domain.model.toUiError
+import com.example.expensetracker.domain.usecase.PdfReportGenerator
 import com.example.expensetracker.presentation.common.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import jakarta.inject.Inject
+import java.io.File
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +28,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 
 @HiltViewModel
@@ -200,6 +203,72 @@ class DashboardViewModel @Inject constructor(
             )
             if (result is AppResult.Error) handleError(result.error)
         }
+    }
+
+    // ---------- PDF Export ----------
+
+    fun generatePdfReport(
+        filter: DateRangeFilter,
+        typeFilter: String?,
+        categoryIds: Set<String>,
+        onComplete: (File?) -> Unit
+    ) {
+        val (startDate, endDate) = filter.calculateRange()
+        val filterDesc = buildFilterDescription(filter, typeFilter, categoryIds)
+
+        launchSafely(onError = { error ->
+            handleError(error)
+            onComplete(null)
+        }) {
+            val transactions = transactionRepository.getTransactions(
+                ledgerId = currentLedgerId,
+                startDate = startDate,
+                endDate = endDate,
+                searchQuery = "",
+                typeFilter = typeFilter,
+                categoryIds = categoryIds
+            ).first()
+
+            val ledgerName = "Personal Account"
+            val currencySymbol = _uiState.value.currencySymbol
+
+            val result = PdfReportGenerator.generate(
+                context = context,
+                transactions = transactions,
+                ledgerName = ledgerName,
+                currencySymbol = currencySymbol,
+                filterDescription = filterDesc
+            )
+
+            result.onSuccess { file ->
+                onComplete(file)
+            }.onFailure { err ->
+                handleError(err.toUiError())
+                onComplete(null)
+            }
+        }
+    }
+
+    private fun buildFilterDescription(
+        filter: DateRangeFilter,
+        typeFilter: String?,
+        categoryIds: Set<String>
+    ): String {
+        val periodStr = when (filter) {
+            is DateRangeFilter.AllTime -> "All Time"
+            is DateRangeFilter.Today -> "Today"
+            is DateRangeFilter.ThisWeek -> "This Week"
+            is DateRangeFilter.ThisMonth -> "This Month"
+            is DateRangeFilter.ThisYear -> "This Year"
+            is DateRangeFilter.Custom -> "Custom Range"
+        }
+        val typeStr = when (typeFilter) {
+            Constants.TransactionType.INCOME -> "Income only"
+            Constants.TransactionType.EXPENSE -> "Expenses only"
+            else -> "All Types"
+        }
+        val catStr = if (categoryIds.isEmpty()) "All Categories" else "${categoryIds.size} categories"
+        return "$periodStr • $typeStr • $catStr"
     }
 
     // ---------- errors ----------
