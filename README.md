@@ -176,3 +176,12 @@ All test suites execute cleanly via:
 # Assemble Debug APK
 ./gradlew assembleDebug
 ```
+
+---
+
+## CI/CD & Code Scanning
+
+The repository uses GitHub Actions for automated continuous integration and static application security testing (SAST):
+
+- **Android CI (`.github/workflows/android-ci.yml`)**: Checks out the code, configures Temurin JDK 17 with Gradle caching, runs `lint`, compiles the debug APK via `assembleDebug`, and uploads build artifacts.
+- **CodeQL Security Analysis (`.github/workflows/codeql.yml`)**: Advanced CodeQL security scanning for Java & Kotlin with `build-mode: manual`. Explicitly compiles the Android project with `./gradlew assembleDebug --no-daemon` using JDK 17, providing full bytecode tracing and vulnerability detection across the codebase.
