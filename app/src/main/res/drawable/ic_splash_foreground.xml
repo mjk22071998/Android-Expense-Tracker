@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Subtle Drop Shadow beneath Wallet -->
+    <group
+        android:scaleX="1.45"
+        android:scaleY="1.45"
+        android:translateX="36.6"
+        android:translateY="37.8">
+        <path
+            android:fillColor="#40030B05"
+            android:pathData="M6,20q-1.65,0-2.83-1.18T2,16V8Q2,6.35 3.18,5.18T6,4H18q1.65,0 2.83,1.18T22,8v8q0,1.65-1.17,2.82T18,20H6ZM6,8H18q0.55,0 1.05,0.13T20,8.52V8q0-0.82-0.59-1.41T18,6H6Q5.18,6 4.59,6.59Q4,7.18 4,8V8.52q0.45-0.27 0.95-0.4T6,8ZM4.15,11.25l11.13,2.7q0.22,0.05 0.45,0t0.43-0.2l3.47-2.9q-0.27-0.38-0.7-0.61T18,10H6q-0.65,0-1.14,0.34q-0.49,0.34-0.71,0.91Z" />
+    </group>
+
+    <!-- Main Electric Lime Wallet Vector -->
+    <group
+        android:scaleX="1.45"
+        android:scaleY="1.45"
+        android:translateX="36.6"
+        android:translateY="36.6">
+        <path
+            android:pathData="M6,20q-1.65,0-2.83-1.18T2,16V8Q2,6.35 3.18,5.18T6,4H18q1.65,0 2.83,1.18T22,8v8q0,1.65-1.17,2.82T18,20H6ZM6,8H18q0.55,0 1.05,0.13T20,8.52V8q0-0.82-0.59-1.41T18,6H6Q5.18,6 4.59,6.59Q4,7.18 4,8V8.52q0.45-0.27 0.95-0.4T6,8ZM4.15,11.25l11.13,2.7q0.22,0.05 0.45,0t0.43-0.2l3.47-2.9q-0.27-0.38-0.7-0.61T18,10H6q-0.65,0-1.14,0.34q-0.49,0.34-0.71,0.91Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:startX="12"
+                    android:startY="4"
+                    android:endX="12"
+                    android:endY="20"
+                    android:type="linear">
+                    <item android:offset="0.0" android:color="#F4FF8E" />
+                    <item android:offset="0.45" android:color="#D6F248" />
+                    <item android:offset="1.0" android:color="#B2D61A" />
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+</vector>
