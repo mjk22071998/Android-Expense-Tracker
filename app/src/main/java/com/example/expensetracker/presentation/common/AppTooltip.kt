@@ -1,5 +1,6 @@
 package com.example.expensetracker.presentation.common
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -10,8 +11,10 @@ import androidx.compose.material3.TooltipBox
 import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -26,6 +29,7 @@ enum class TooltipPosition {
  * Reusable, accessible tooltip wrapper styled for the Organic Forest Luxury theme.
  * Displays on long-press (touch screens) or pointer hover (accessibility/stylus/desktop).
  * Encapsulates Material 3 experimental tooltip internals so call sites remain clean.
+ * Tooltips and their text content are center-aligned for polished visual balance.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,12 +54,17 @@ fun AppTooltip(
                 containerColor = Color(0xFF0D2418),
                 contentColor = Color.White
             ) {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color(0xFFE4F5EB),
-                    fontSize = 12.sp
-                )
+                Box(
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color(0xFFE4F5EB),
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         },
         state = tooltipState,

@@ -141,7 +141,7 @@ fun TransactionItem(
         Box {
             AppTooltip(
                 text = "Transaction options",
-                position = TooltipPosition.Left
+                position = TooltipPosition.Below
             ) {
                 IconButton(
                     onClick = { isMenuExpanded = true },
