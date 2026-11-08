@@ -245,6 +245,21 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+    // ---------- clear all transactions ----------
+
+    fun clearAllTransactions(onSuccess: () -> Unit = {}) {
+        val ledgerId = currentLedgerId
+        if (ledgerId.isEmpty()) return
+        launchSafely(onError = ::handleError) {
+            val result = transactionRepository.clearAllTransactions(ledgerId)
+            if (result is AppResult.Error) {
+                handleError(result.error)
+            } else {
+                onSuccess()
+            }
+        }
+    }
+
     // ---------- PDF Export ----------
 
     fun generatePdfReport(

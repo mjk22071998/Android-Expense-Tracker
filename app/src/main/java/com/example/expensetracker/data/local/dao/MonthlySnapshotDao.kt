@@ -105,4 +105,7 @@ interface MonthlySnapshotDao {
         ORDER BY year DESC, month DESC
     """)
     fun getAllSnapshots(ledgerId: String): Flow<List<MonthlySnapshot>>
+
+    @Query("DELETE FROM monthly_snapshots WHERE ledgerId = :ledgerId")
+    suspend fun deleteAllForLedger(ledgerId: String)
 }

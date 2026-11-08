@@ -62,4 +62,8 @@ class TransactionRepositoryImpl @Inject constructor(
     override suspend fun softDeleteTransaction(transaction: Transaction): AppResult<Unit> = safeCall {
         transactionDao.softDeleteAndUpdateBalance(transaction, ledgerDao, snapshotDao)
     }
+
+    override suspend fun clearAllTransactions(ledgerId: String): AppResult<Unit> = safeCall {
+        transactionDao.clearAllTransactions(ledgerId, ledgerDao, snapshotDao)
+    }
 }

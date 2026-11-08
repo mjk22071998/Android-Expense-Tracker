@@ -201,4 +201,25 @@ interface TransactionDao {
         val prevYear = if (month == 1) year - 1 else year
         return snapshotDao.getSnapshot(ledgerId, prevMonth, prevYear)
     }
+
+    @Query(
+        """
+        UPDATE transactions
+        SET isDeleted = 1, updatedAt = :updatedAt
+        WHERE ledgerId = :ledgerId AND isDeleted = 0
+        """
+    )
+    suspend fun softDeleteAll(ledgerId: String, updatedAt: Long)
+
+    @androidx.room.Transaction
+    suspend fun clearAllTransactions(
+        ledgerId: String,
+        ledgerDao: LedgerDao,
+        snapshotDao: MonthlySnapshotDao
+    ) {
+        val now = System.currentTimeMillis()
+        softDeleteAll(ledgerId, now)
+        ledgerDao.resetBalances(ledgerId, now)
+        snapshotDao.deleteAllForLedger(ledgerId)
+    }
 }

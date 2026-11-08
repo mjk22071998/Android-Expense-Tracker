@@ -19,6 +19,8 @@ class FakeTransactionRepository : TransactionRepository {
     var errorToThrow: Throwable? = null
     var softDeleteResult: AppResult<Unit> = AppResult.Success(Unit)
     var lastSoftDeletedTransaction: Transaction? = null
+    var clearAllTransactionsResult: AppResult<Unit> = AppResult.Success(Unit)
+    var clearAllCalledWithLedgerId: String? = null
 
     fun emitTransactions(transactions: List<TransactionWithCategory>) {
         transactionsFlow.value = transactions
@@ -67,5 +69,10 @@ class FakeTransactionRepository : TransactionRepository {
     override suspend fun softDeleteTransaction(transaction: Transaction): AppResult<Unit> {
         lastSoftDeletedTransaction = transaction
         return softDeleteResult
+    }
+
+    override suspend fun clearAllTransactions(ledgerId: String): AppResult<Unit> {
+        clearAllCalledWithLedgerId = ledgerId
+        return clearAllTransactionsResult
     }
 }

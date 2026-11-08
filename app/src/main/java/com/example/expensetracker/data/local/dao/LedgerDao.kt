@@ -74,4 +74,16 @@ interface LedgerDao {
 
     @Query("SELECT * FROM ledgers WHERE isDefault = 1 LIMIT 1")
     suspend fun getDefaultLedgerSync(): Ledger?
+
+    @Query(
+        """
+        UPDATE ledgers 
+        SET balance = 0.0,
+            totalIncome = 0.0,
+            totalExpenses = 0.0,
+            updatedAt = :updatedAt
+        WHERE id = :ledgerId
+        """
+    )
+    suspend fun resetBalances(ledgerId: String, updatedAt: Long)
 }

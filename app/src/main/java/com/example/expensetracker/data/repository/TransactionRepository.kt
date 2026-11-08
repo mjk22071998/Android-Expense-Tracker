@@ -25,4 +25,5 @@ interface TransactionRepository {
     suspend fun insertTransaction(transaction: Transaction): AppResult<Unit>
     suspend fun updateTransaction(oldTransaction: Transaction, newTransaction: Transaction): AppResult<Unit>
     suspend fun softDeleteTransaction(transaction: Transaction): AppResult<Unit>
+    suspend fun clearAllTransactions(ledgerId: String): AppResult<Unit>
 }
