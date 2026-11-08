@@ -225,34 +225,11 @@ class DashboardViewModel @Inject constructor(
 
     // ---------- date range ----------
 
-    private fun getDateRange(filter: DateRangeFilter): Pair<Long, Long> {
-        val now = System.currentTimeMillis()
-        val calendar = Calendar.getInstance()
-
-        return when (filter) {
-            is DateRangeFilter.Today -> DateUtils.todayLocalRange()
-            is DateRangeFilter.ThisWeek -> {
-                calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY)
-                calendar.set(Calendar.HOUR_OF_DAY, 0)
-                calendar.set(Calendar.MINUTE, 0)
-                calendar.set(Calendar.SECOND, 0)
-                Pair(calendar.timeInMillis, now)
-            }
-            is DateRangeFilter.ThisMonth -> {
-                calendar.set(Calendar.DAY_OF_MONTH, 1)
-                calendar.set(Calendar.HOUR_OF_DAY, 0)
-                calendar.set(Calendar.MINUTE, 0)
-                calendar.set(Calendar.SECOND, 0)
-                Pair(calendar.timeInMillis, now)
-            }
-            is DateRangeFilter.ThisYear -> {
-                calendar.set(Calendar.DAY_OF_YEAR, 1)
-                calendar.set(Calendar.HOUR_OF_DAY, 0)
-                calendar.set(Calendar.MINUTE, 0)
-                calendar.set(Calendar.SECOND, 0)
-                Pair(calendar.timeInMillis, now)
-            }
-            is DateRangeFilter.Custom -> Pair(filter.startDate, filter.endDate)
-        }
+    private fun getDateRange(filter: DateRangeFilter): Pair<Long, Long> = when (filter) {
+        is DateRangeFilter.Today -> DateUtils.todayLocalRange()
+        is DateRangeFilter.ThisWeek -> DateUtils.thisWeekRange()
+        is DateRangeFilter.ThisMonth -> DateUtils.thisMonthRange()
+        is DateRangeFilter.ThisYear -> DateUtils.thisYearRange()
+        is DateRangeFilter.Custom -> Pair(filter.startDate, filter.endDate)
     }
 }

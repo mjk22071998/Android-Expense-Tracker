@@ -46,6 +46,62 @@ object DateUtils {
         }.timeInMillis
     }
 
+    // ---------- period ranges (local time, whole periods, inclusive on both ends) ----------
+
+    fun todayLocalRange(now: Long = System.currentTimeMillis()): Pair<Long, Long> {
+        val cal = Calendar.getInstance().apply { timeInMillis = now }
+        val start = cal.toStartOfDay().timeInMillis
+        val end = cal.toEndOfDay().timeInMillis
+        return start to end
+    }
+
+    /** Monday 00:00:00.000 through Sunday 23:59:59.999, regardless of the device's week-start setting. */
+    fun thisWeekRange(now: Long = System.currentTimeMillis()): Pair<Long, Long> {
+        val cal = Calendar.getInstance().apply { timeInMillis = now }
+        val daysSinceMonday = (cal.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY + 7) % 7
+        cal.add(Calendar.DAY_OF_YEAR, -daysSinceMonday)
+        val start = cal.toStartOfDay().timeInMillis
+        cal.add(Calendar.DAY_OF_YEAR, 6)
+        val end = cal.toEndOfDay().timeInMillis
+        return start to end
+    }
+
+    fun thisMonthRange(now: Long = System.currentTimeMillis()): Pair<Long, Long> {
+        val cal = Calendar.getInstance().apply { timeInMillis = now }
+        cal.set(Calendar.DAY_OF_MONTH, 1)
+        val start = cal.toStartOfDay().timeInMillis
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH))
+        val end = cal.toEndOfDay().timeInMillis
+        return start to end
+    }
+
+    fun thisYearRange(now: Long = System.currentTimeMillis()): Pair<Long, Long> {
+        val cal = Calendar.getInstance().apply { timeInMillis = now }
+        cal.set(Calendar.MONTH, Calendar.JANUARY)
+        cal.set(Calendar.DAY_OF_MONTH, 1)
+        val start = cal.toStartOfDay().timeInMillis
+        cal.set(Calendar.MONTH, Calendar.DECEMBER)
+        cal.set(Calendar.DAY_OF_MONTH, 31)
+        val end = cal.toEndOfDay().timeInMillis
+        return start to end
+    }
+
+    // ---------- private helpers ----------
+
+    private fun Calendar.toStartOfDay(): Calendar = apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    private fun Calendar.toEndOfDay(): Calendar = apply {
+        set(Calendar.HOUR_OF_DAY, 23)
+        set(Calendar.MINUTE, 59)
+        set(Calendar.SECOND, 59)
+        set(Calendar.MILLISECOND, 999)
+    }
+
     private fun localDatePartsToUtcMidnight(year: Int, month: Int, day: Int): Long {
         return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
             clear()
@@ -62,23 +118,5 @@ object DateUtils {
             utcCal.get(Calendar.MONTH),
             utcCal.get(Calendar.DAY_OF_MONTH)
         )
-    }
-
-    fun todayLocalRange(): Pair<Long, Long> {
-        val start = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-
-        val end = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 23)
-            set(Calendar.MINUTE, 59)
-            set(Calendar.SECOND, 59)
-            set(Calendar.MILLISECOND, 999)
-        }.timeInMillis
-
-        return start to end
     }
 }
