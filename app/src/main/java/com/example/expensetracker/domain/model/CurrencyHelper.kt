@@ -63,6 +63,14 @@ object CurrencyHelper {
         return String.format(Locale.getDefault(), "%,.2f", amount)
     }
 
+    fun formatCleanAmount(amount: Double): String {
+        return if (amount % 1.0 == 0.0) {
+            String.format(Locale.getDefault(), "%,d", amount.toLong())
+        } else {
+            String.format(Locale.getDefault(), "%,.2f", amount)
+        }
+    }
+
     fun getDefaultCurrencyCode(context: Context): String {
         return try {
             val simCountry = getSimCountry(context)

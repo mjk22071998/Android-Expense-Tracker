@@ -244,36 +244,6 @@ fun DashboardScreen(
                         overflow = TextOverflow.Ellipsis
                     )
 
-                    val monthlyDelta = uiState.monthlyTrendDelta
-                    val subtitleText = when {
-                        uiState.balance < 0 -> "Expenses exceeding income — review budget"
-                        uiState.hasLastMonthData && monthlyDelta != null -> {
-                            val sign = if (monthlyDelta >= 0) "+" else "−"
-                            "$sign${uiState.currencySymbol} ${formatAmount(kotlin.math.abs(monthlyDelta))} Than Last Month"
-                        }
-                        uiState.thisMonthNet != 0.0 -> {
-                            val sign = if (uiState.thisMonthNet >= 0) "+" else "−"
-                            "$sign${uiState.currencySymbol} ${formatAmount(kotlin.math.abs(uiState.thisMonthNet))} This Month"
-                        }
-                        else -> "Healthy financial balance maintained"
-                    }
-
-                    Row(
-                        modifier = Modifier.padding(top = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = "✦",
-                            color = ElectricLime,
-                            fontSize = 11.sp
-                        )
-                        Text(
-                            text = subtitleText,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFFA5C4B2)
-                        )
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
