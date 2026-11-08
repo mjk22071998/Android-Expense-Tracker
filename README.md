@@ -4,6 +4,18 @@ A production-grade, offline-first personal finance Android application built wit
 
 ---
 
+## Screenshots
+
+| Personal Expenses Dashboard | Add Entry (Calm Theme) | Financial Overview |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/dashboard.png" width="240" alt="Personal Expenses Dashboard" /> | <img src="docs/screenshots/transaction_form.png" width="240" alt="Calm Transaction Entry Form" /> | <img src="docs/screenshots/financial_overview.png" width="240" alt="Financial Overview Modal" /> |
+
+| PDF Statement Export | Proactive Permission Verification | System Share Sheet |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/pdf_export.png" width="240" alt="PDF Statement Export" /> | <img src="docs/screenshots/storage_permission.png" width="240" alt="Storage Permission Verification" /> | <img src="docs/screenshots/share_chooser.png" width="240" alt="System Share Sheet" /> |
+
+---
+
 ## Features
 
 ### Core Capabilities
