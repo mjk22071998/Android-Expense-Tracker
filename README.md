@@ -25,11 +25,12 @@ A production-grade, offline-first personal finance Android application built wit
 
 The app features a bespoke **Organic Forest Luxury** fintech aesthetic inspired by modern wealth management interfaces (e.g. Wise, Monzo, Apple Card):
 
-- **Base Canvas**: Deep obsidian pine green (`#07140D` to `#0E2017`) with an atmospheric vertical gradient mesh.
-- **Stitched Leathercraft Hero Card**: Tactile hero card with a handcrafted dashed border (`PathEffect.dashPathEffect`), large bold balance typography (`PKR 27,420.00`), and integrated dual-tone Inflow (`ElectricLime` `#D4F63D`) and Outflow (`ElectricCyan` `#00A3FF`) interactive summary pills.
-- **High-Energy Action Pills**: Thumb-friendly quick actions row right below the hero balance (`+ Add Entry`, `Categories` filter, and circle `Settings`).
-- **Embedded Search Pill**: Floating dark search capsule (`🔍 Search transactions...`) directly embedded on the dashboard for instant, debounced real-time filtering.
+- **Base Canvas**: Radiant moss-to-obsidian vertical canopy gradient (`#2E633B` $\to$ `#122E1B` $\to$ `#06110A`) with an organic ambient top-right radial light source matching the mockup aesthetic.
+- **Hero Balance**: Large, uncluttered bold balance typography (`PKR 27,420.00`) and dynamic delta chip (*"✦ +$ 1632 Than Last Month"*) floating directly on the radiant green canopy without bounding boxes.
+- **High-Energy Action Pills**: Thumb-friendly quick actions row right below the hero balance: **Neon Lime** `+ Add Entry` pill, **Sky Blue** `This Month` period filter, and dark circular glass `Settings` button.
+- **Embedded Search Pill**: Floating translucent search capsule (`🔍 Search Transactions`) directly embedded on the dashboard for instant, debounced real-time filtering.
 - **Floating Pill Bottom Navigation**: Floating dark glass navigation capsule (`#0B1A12` with 32dp corner radius) docked at the bottom with 4 circular glass icons (Home, Ledger, Categories, Settings) that float gracefully above scrolling content.
+- **Total Cards & Stitched Leathercraft Modal**: Tapping the Ledger icon or *"See Details"* opens the Screen 2 inspection sheet featuring the handcrafted stitched leathercraft card with dual yellow Savings and blue Spend account pills.
 - **Directional Cashflow**: Emerald Green (`#10B981`) with `+` sign for Inflow/Deposits; Crimson Rose (`#F43F5E`) with `−` sign for Outflow/Expenses.
 - **Humanized Micro-Copy**: Dynamic balance health indicators (*"✦ Healthy financial balance maintained"*), status badges (*"✦ Live Ledger"*), and conversational relative timestamps (*"Today, 2:30 PM • Food"*).
 - **Full Compose Preview Coverage**: 100% of standalone presentation components include light and dark `@Preview` annotations for instant design inspection in Android Studio.

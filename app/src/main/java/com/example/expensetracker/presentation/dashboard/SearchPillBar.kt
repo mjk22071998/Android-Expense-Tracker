@@ -19,16 +19,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.expensetracker.R
 import com.example.expensetracker.ui.theme.ElectricLime
-import com.example.expensetracker.ui.theme.ForestBorderDark
-import com.example.expensetracker.ui.theme.ForestCardDark
-import com.example.expensetracker.ui.theme.ForestTextMutedDark
-import com.example.expensetracker.ui.theme.ForestTextPrimaryDark
 
 @Composable
 fun SearchPillBar(
@@ -39,36 +36,35 @@ fun SearchPillBar(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(48.dp),
-        shape = RoundedCornerShape(24.dp),
-        color = ForestCardDark,
-        border = BorderStroke(1.dp, ForestBorderDark),
-        shadowElevation = 2.dp
+            .height(50.dp),
+        shape = RoundedCornerShape(25.dp),
+        color = Color(0x4012351E),
+        border = BorderStroke(1.dp, Color(0x28FFFFFF))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 14.dp),
+                .padding(horizontal = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_search),
                 contentDescription = "Search",
-                tint = ForestTextMutedDark,
-                modifier = Modifier.size(20.dp)
+                tint = Color(0xFFA5C4B2),
+                modifier = Modifier.size(19.dp)
             )
 
             Box(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 10.dp),
+                    .padding(horizontal = 12.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 if (query.isEmpty()) {
                     Text(
-                        text = "Search transactions...",
+                        text = "Search Transactions",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = ForestTextMutedDark,
+                        color = Color(0xFFA5C4B2),
                         fontSize = 14.sp
                     )
                 }
@@ -78,7 +74,7 @@ fun SearchPillBar(
                     onValueChange = onQueryChange,
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = ForestTextPrimaryDark,
+                        color = Color.White,
                         fontSize = 14.sp
                     ),
                     cursorBrush = SolidColor(ElectricLime),
@@ -96,7 +92,7 @@ fun SearchPillBar(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_close),
                         contentDescription = "Clear",
-                        tint = ForestTextMutedDark,
+                        tint = Color(0xFFA5C4B2),
                         modifier = Modifier.size(16.dp)
                     )
                 }

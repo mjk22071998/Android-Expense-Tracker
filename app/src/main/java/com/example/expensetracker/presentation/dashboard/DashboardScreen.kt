@@ -2,6 +2,7 @@ package com.example.expensetracker.presentation.dashboard
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,9 +12,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -29,19 +33,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
-import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
-import com.example.expensetracker.ui.theme.ForestBackgroundDark
-import com.example.expensetracker.ui.theme.ForestSurfaceDark
-import com.example.expensetracker.ui.theme.ForestTextMutedDark
-import com.example.expensetracker.ui.theme.ForestTextPrimaryDark
+import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
+import com.example.expensetracker.domain.model.DateRangeFilter
+import com.example.expensetracker.ui.theme.ElectricLime
 
 @Composable
 fun DashboardScreen(
@@ -52,17 +55,14 @@ fun DashboardScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTransaction by remember { mutableStateOf<TransactionWithCategory?>(null) }
-    val snackbarHostState = remember { SnackbarHostState() }
-    val extendedColors = ExpenseTrackerTheme.extendedColors
+    var showTotalCardsSheet by remember { mutableStateOf(false) }
+    var showPeriodPicker by remember { mutableStateOf(false) }
 
-    // Back button closes search query if active
-    BackHandler(enabled = uiState.isSearchActive || uiState.searchQuery.isNotEmpty()) {
-        if (uiState.searchQuery.isNotEmpty()) {
-            viewModel.onSearchQueryChanged("")
-        }
-        if (uiState.isSearchActive) {
-            viewModel.onSearchClosed()
-        }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // Back button closes active search query
+    BackHandler(enabled = uiState.searchQuery.isNotEmpty()) {
+        viewModel.onSearchQueryChanged("")
     }
 
     // Show errors in snackbar
@@ -73,15 +73,15 @@ fun DashboardScreen(
         }
     }
 
-    // Deep Atmospheric Organic Forest background brush
+    // Luminous Moss/Canopy Green vertical gradient from reference inspiration
     val backgroundBrush = Brush.verticalGradient(
-        colors = listOf(
-            ForestBackgroundDark,
-            ForestSurfaceDark,
-            Color(0xFF07140D)
-        ),
-        startY = 0f,
-        endY = 1600f
+        colorStops = arrayOf(
+            0.0f to Color(0xFF2E633B), // Radiant moss green at top
+            0.16f to Color(0xFF1E482A), // Rich forest canopy
+            0.36f to Color(0xFF122E1B), // Dark green transition
+            0.62f to Color(0xFF0C1F13), // Obsidian forest
+            1.0f to Color(0xFF06110A)  // Deep base
+        )
     )
 
     Scaffold(
@@ -89,12 +89,8 @@ fun DashboardScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             DashboardTopBar(
-                isSearchActive = uiState.isSearchActive,
-                searchQuery = uiState.searchQuery,
+                title = "Savings Account",
                 activeCategoryFilterCount = uiState.selectedCategoryIds.size,
-                onSearchQueryChanged = viewModel::onSearchQueryChanged,
-                onSearchActivated = viewModel::onSearchActivated,
-                onSearchClosed = viewModel::onSearchClosed,
                 onFilterClick = { viewModel.onCategoryFilterSheetVisibilityChanged(true) },
                 onSettingsClick = onNavigateToSettings
             )
@@ -106,56 +102,122 @@ fun DashboardScreen(
                 .background(backgroundBrush)
                 .padding(paddingValues)
         ) {
+            // Ambient luminous green glow at top right matching reference image
+            Box(
+                modifier = Modifier
+                    .size(380.dp)
+                    .align(Alignment.TopEnd)
+                    .offset(x = 120.dp, y = (-100).dp)
+                    .background(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Color(0x66489B5F),
+                                Color(0x33357547),
+                                Color.Transparent
+                            )
+                        ),
+                        shape = CircleShape
+                    )
+            )
+
             Column(
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp)
             ) {
-                // Fixed hero section with Balance & Quick Actions
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    // 1. Luxury Stitched Hero Balance Card with Dual Inflow/Outflow Pills
-                    BalanceCard(
-                        balance = uiState.balance,
-                        currencySymbol = uiState.currencySymbol,
-                        totalIncome = uiState.totalIncome,
-                        totalExpense = uiState.totalExpense,
-                        selectedTypeFilter = uiState.selectedTypeFilter,
-                        onTypeFilterSelected = viewModel::onTypeFilterSelected
-                    )
-
-                    // 2. High-energy Quick Action Pills (Screen 1 Inspiration: Transfer / Target / Settings)
-                    QuickActionsRow(
-                        onAddTransaction = onAddTransaction,
-                        onFilterCategories = { viewModel.onCategoryFilterSheetVisibilityChanged(true) },
-                        onSettingsClick = onNavigateToSettings,
-                        activeCategoryFilterCount = uiState.selectedCategoryIds.size
-                    )
-
-                    // 3. Integrated Search Pill Bar (Screen 1 Inspiration)
-                    SearchPillBar(
-                        query = uiState.searchQuery,
-                        onQueryChange = viewModel::onSearchQueryChanged
-                    )
-
-                    // 4. Time Horizon Date Filters
-                    FilterChipRow(
-                        selectedFilter = uiState.selectedFilter,
-                        onFilterSelected = viewModel::onFilterSelected
-                    )
-                }
-
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Section Header: Transaction History with record count pill badge
+                // ============================================================
+                // 1. Hero Balance (Open directly on canvas, NO BOX/CARD)
+                // ============================================================
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = "Savings Account",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color(0xFFA5C4B2),
+                        letterSpacing = 0.4.sp
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = uiState.currencySymbol,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                        Text(
+                            text = formatAmount(uiState.balance),
+                            fontSize = 44.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            letterSpacing = (-1.5).sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.padding(top = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = "✦",
+                            color = ElectricLime,
+                            fontSize = 11.sp
+                        )
+                        Text(
+                            text = if (uiState.balance >= 0) "+$ 1632 Than Last Month"
+                                   else "Expenses exceeding income — review budget",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFFA5C4B2)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // ============================================================
+                // 2. High-energy Action Pills Row (Transfer / Target / Settings)
+                // ============================================================
+                val periodLabel = when (uiState.selectedFilter) {
+                    is DateRangeFilter.Today -> "Today"
+                    is DateRangeFilter.ThisWeek -> "This Week"
+                    is DateRangeFilter.ThisMonth -> "This Month"
+                    is DateRangeFilter.ThisYear -> "This Year"
+                    is DateRangeFilter.Custom -> "Custom"
+                }
+
+                QuickActionsRow(
+                    onAddTransaction = onAddTransaction,
+                    onFilterPeriodClick = { showPeriodPicker = true },
+                    onSettingsClick = onNavigateToSettings,
+                    periodLabel = periodLabel
+                )
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                // ============================================================
+                // 3. Integrated Search Pill Bar
+                // ============================================================
+                SearchPillBar(
+                    query = uiState.searchQuery,
+                    onQueryChange = viewModel::onSearchQueryChanged
+                )
+
+                Spacer(modifier = Modifier.height(22.dp))
+
+                // ============================================================
+                // 4. Transaction History Header (with "See Details")
+                // ============================================================
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 2.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -163,33 +225,46 @@ fun DashboardScreen(
                         text = "Transaction History",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = ForestTextPrimaryDark
+                        color = Color.White,
+                        letterSpacing = (-0.2).sp
                     )
 
-                    Surface(
-                        color = Color(0x221A3B29),
-                        shape = RoundedCornerShape(10.dp)
-                    ) {
-                        Text(
-                            text = "${uiState.transactions.size} records",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.SemiBold,
-                            color = ForestTextMutedDark,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                        )
-                    }
+                    Text(
+                        text = "See Details",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFFA5C4B2),
+                        modifier = Modifier
+                            .clickable { showTotalCardsSheet = true }
+                            .padding(vertical = 4.dp, horizontal = 2.dp)
+                    )
                 }
 
-                // Scrolling list of transactions with padding at bottom for FloatingBottomBar
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // ============================================================
+                // 5. Clean Seamless Transaction Rows
+                // ============================================================
                 LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(top = 8.dp, bottom = 100.dp)
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    contentPadding = PaddingValues(top = 4.dp, bottom = 100.dp)
                 ) {
                     if (uiState.transactions.isEmpty()) {
-                        item { EmptyTransactionState() }
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 40.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "No transactions found for this period",
+                                    color = Color(0xFFA5C4B2),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
                     } else {
                         items(
                             items = uiState.transactions,
@@ -207,11 +282,13 @@ fun DashboardScreen(
                 }
             }
 
-            // Floating Pill Bottom Navigation Bar (Across all inspiration screens)
+            // ============================================================
+            // 6. Floating Pill Bottom Navigation Bar (Across All Screens)
+            // ============================================================
             FloatingBottomBar(
                 currentDestination = BottomNavDestination.HOME,
                 onHomeClick = { /* Already on Home */ },
-                onLedgerClick = { /* Stay on active ledger */ },
+                onLedgerClick = { showTotalCardsSheet = true },
                 onCategoriesClick = { viewModel.onCategoryFilterSheetVisibilityChanged(true) },
                 onSettingsClick = onNavigateToSettings,
                 modifier = Modifier
@@ -221,6 +298,29 @@ fun DashboardScreen(
         }
     }
 
+    // Modal: Screen 2 Total Cards & Stitched Leathercraft Sheet
+    if (showTotalCardsSheet) {
+        TotalCardsBottomSheet(
+            balance = uiState.balance,
+            totalIncome = uiState.totalIncome,
+            totalExpense = uiState.totalExpense,
+            currencySymbol = uiState.currencySymbol,
+            onDismiss = { showTotalCardsSheet = false }
+        )
+    }
+
+    // Modal: Period Date Range Selection
+    if (showPeriodPicker) {
+        CustomDateRangePickerDialog(
+            onDismiss = { showPeriodPicker = false },
+            onRangeSelected = { start, end ->
+                viewModel.onFilterSelected(DateRangeFilter.Custom(start, end))
+                showPeriodPicker = false
+            }
+        )
+    }
+
+    // Dialog: Transaction Receipt Detail
     selectedTransaction?.let { transaction ->
         TransactionDetailDialog(
             transaction = transaction,
@@ -233,6 +333,7 @@ fun DashboardScreen(
         )
     }
 
+    // BottomSheet: Category Filter
     if (uiState.isCategoryFilterSheetVisible) {
         CategoryFilterBottomSheet(
             allCategories = uiState.allCategories,

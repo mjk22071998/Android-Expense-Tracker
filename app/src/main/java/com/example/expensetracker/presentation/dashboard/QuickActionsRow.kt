@@ -1,7 +1,6 @@
 package com.example.expensetracker.presentation.dashboard
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -18,25 +17,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.expensetracker.R
-import com.example.expensetracker.ui.theme.ElectricCyan
-import com.example.expensetracker.ui.theme.ElectricCyanOn
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
-import com.example.expensetracker.ui.theme.ForestBorderDark
-import com.example.expensetracker.ui.theme.ForestCardDark
-import com.example.expensetracker.ui.theme.ForestTextPrimaryDark
 
 @Composable
 fun QuickActionsRow(
     onAddTransaction: () -> Unit,
-    onFilterCategories: () -> Unit,
+    onFilterPeriodClick: () -> Unit,
     onSettingsClick: () -> Unit,
-    activeCategoryFilterCount: Int = 0,
+    periodLabel: String = "This Month",
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -44,50 +39,47 @@ fun QuickActionsRow(
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Primary Lime Action Pill: + Add Entry
+        // 1. Primary Vibrant Yellow/Lime Pill (⇆ Transfer / Add Entry)
         Surface(
+            onClick = onAddTransaction,
             modifier = Modifier
                 .weight(1.3f)
-                .height(46.dp)
-                .clip(RoundedCornerShape(23.dp))
-                .clickable(onClick = onAddTransaction),
-            shape = RoundedCornerShape(23.dp),
-            color = ElectricLime,
-            shadowElevation = 4.dp
+                .height(48.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = ElectricLime
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 14.dp),
+                    .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center
             ) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_add),
-                    contentDescription = "Add Transaction",
+                    contentDescription = "Add Entry",
                     tint = ElectricLimeOn,
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier.size(17.dp)
                 )
                 Text(
                     text = "Add Entry",
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
                     color = ElectricLimeOn,
+                    fontSize = 14.sp,
                     modifier = Modifier.padding(start = 6.dp)
                 )
             }
         }
 
-        // Secondary Cyan Action Pill: Filter Categories
+        // 2. Vibrant Cyan / Blue Pill (🎯 Set Target / Period Filter)
         Surface(
+            onClick = onFilterPeriodClick,
             modifier = Modifier
                 .weight(1.3f)
-                .height(46.dp)
-                .clip(RoundedCornerShape(23.dp))
-                .clickable(onClick = onFilterCategories),
-            shape = RoundedCornerShape(23.dp),
-            color = ElectricCyan,
-            shadowElevation = 3.dp
+                .height(48.dp),
+            shape = RoundedCornerShape(24.dp),
+            color = Color(0xFF0099FF)
         ) {
             Row(
                 modifier = Modifier
@@ -97,31 +89,29 @@ fun QuickActionsRow(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_filter_list),
-                    contentDescription = "Filter",
-                    tint = ElectricCyanOn,
+                    painter = painterResource(id = R.drawable.ic_date_range),
+                    contentDescription = "Period",
+                    tint = Color.White,
                     modifier = Modifier.size(16.dp)
                 )
                 Text(
-                    text = if (activeCategoryFilterCount > 0) "Filtered ($activeCategoryFilterCount)" else "Categories",
+                    text = periodLabel,
                     style = MaterialTheme.typography.labelLarge,
                     fontWeight = FontWeight.Bold,
-                    color = ElectricCyanOn,
+                    color = Color.White,
+                    fontSize = 14.sp,
                     modifier = Modifier.padding(start = 6.dp)
                 )
             }
         }
 
-        // Circle Dark Glass Settings Button
+        // 3. Dark Circular Glass Button (⚙ Settings)
         Surface(
-            modifier = Modifier
-                .size(46.dp)
-                .clip(CircleShape)
-                .clickable(onClick = onSettingsClick),
+            onClick = onSettingsClick,
+            modifier = Modifier.size(48.dp),
             shape = CircleShape,
-            color = ForestCardDark,
-            border = BorderStroke(1.dp, ForestBorderDark),
-            shadowElevation = 2.dp
+            color = Color(0x28FFFFFF),
+            border = BorderStroke(1.dp, Color(0x33FFFFFF))
         ) {
             Box(
                 modifier = Modifier.fillMaxWidth(),
@@ -130,7 +120,7 @@ fun QuickActionsRow(
                 Icon(
                     painter = painterResource(id = R.drawable.ic_settings),
                     contentDescription = "Settings",
-                    tint = ForestTextPrimaryDark,
+                    tint = Color.White,
                     modifier = Modifier.size(20.dp)
                 )
             }
