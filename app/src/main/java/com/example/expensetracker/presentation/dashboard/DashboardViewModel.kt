@@ -27,7 +27,6 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
-import java.util.Calendar
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
@@ -96,6 +95,7 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+    @OptIn(kotlinx.coroutines.FlowPreview::class)
     private fun observeSearchQuery() {
         launchSafely(onError = ::handleError) {
             searchQueryFlow
