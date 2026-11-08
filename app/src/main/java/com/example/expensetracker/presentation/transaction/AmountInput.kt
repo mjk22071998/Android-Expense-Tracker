@@ -37,7 +37,7 @@ fun AmountInput(
     ) {
         Text(
             text = currencySymbol,
-            style = MaterialTheme.typography.headlineMedium,
+            style = MaterialTheme.typography.displayMedium,
             fontWeight = FontWeight.Bold,
             color = ElectricLime
         )

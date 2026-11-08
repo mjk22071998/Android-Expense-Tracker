@@ -11,7 +11,7 @@ data class DashboardUiState(
     val totalExpense: Double = 0.0,
     val transactions: List<TransactionWithCategory> = emptyList(),
     val selectedFilter: DateRangeFilter = DateRangeFilter.ThisMonth,
-    val currencySymbol: String = "₨",
+    val currencySymbol: String = "Rs",
     val isLoading: Boolean = false,
     val error: UiError? = null,
     val searchQuery: String = "",
@@ -19,5 +19,8 @@ data class DashboardUiState(
     val selectedTypeFilter: String? = null,
     val allCategories: List<Category> = emptyList(),
     val selectedCategoryIds: Set<String> = emptySet(),
-    val isCategoryFilterSheetVisible: Boolean = false
+    val isCategoryFilterSheetVisible: Boolean = false,
+    val monthlyTrendDelta: Double? = null,
+    val hasLastMonthData: Boolean = false,
+    val thisMonthNet: Double = 0.0
 )

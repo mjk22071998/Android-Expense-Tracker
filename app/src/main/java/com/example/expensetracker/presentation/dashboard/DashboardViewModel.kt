@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -45,6 +46,7 @@ class DashboardViewModel @Inject constructor(
 
     private var currentLedgerId: String = ""
     private var transactionsJob: Job? = null
+    private var monthlyComparisonJob: Job? = null
     private val searchQueryFlow = MutableStateFlow("")
 
     init {
@@ -93,8 +95,46 @@ class DashboardViewModel @Inject constructor(
                             )
                         }
                         loadTransactions()
+                        loadMonthlyComparison()
                     }
                 }
+        }
+    }
+
+    private fun loadMonthlyComparison() {
+        monthlyComparisonJob?.cancel()
+        if (currentLedgerId.isEmpty()) return
+
+        val (thisMonthStart, thisMonthEnd) = DateUtils.thisMonthRange()
+        val (lastMonthStart, lastMonthEnd) = DateUtils.lastMonthRange()
+
+        monthlyComparisonJob = launchSafely(onError = ::handleError) {
+            combine(
+                transactionRepository.getPeriodIncome(currentLedgerId, thisMonthStart, thisMonthEnd),
+                transactionRepository.getPeriodExpense(currentLedgerId, thisMonthStart, thisMonthEnd),
+                transactionRepository.getPeriodIncome(currentLedgerId, lastMonthStart, lastMonthEnd),
+                transactionRepository.getPeriodExpense(currentLedgerId, lastMonthStart, lastMonthEnd)
+            ) { thisInc, thisExp, lastInc, lastExp ->
+                val thisIncome = thisInc ?: 0.0
+                val thisExpense = thisExp ?: 0.0
+                val lastIncome = lastInc ?: 0.0
+                val lastExpense = lastExp ?: 0.0
+
+                val hasLastMonth = (lastIncome > 0.0 || lastExpense > 0.0)
+                val thisNet = thisIncome - thisExpense
+                val lastNet = lastIncome - lastExpense
+                val delta = if (hasLastMonth) thisNet - lastNet else null
+
+                Triple(delta, hasLastMonth, thisNet)
+            }.collect { (delta, hasLastMonth, thisNet) ->
+                _uiState.update { state ->
+                    state.copy(
+                        monthlyTrendDelta = delta,
+                        hasLastMonthData = hasLastMonth,
+                        thisMonthNet = thisNet
+                    )
+                }
+            }
         }
     }
 
@@ -280,6 +320,4 @@ class DashboardViewModel @Inject constructor(
     private fun handleError(error: UiError) {
         _uiState.update { it.copy(error = error) }
     }
-
-
 }

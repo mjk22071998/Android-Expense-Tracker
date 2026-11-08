@@ -75,6 +75,16 @@ object DateUtils {
         return start to end
     }
 
+    fun lastMonthRange(now: Long = System.currentTimeMillis()): Pair<Long, Long> {
+        val cal = Calendar.getInstance().apply { timeInMillis = now }
+        cal.add(Calendar.MONTH, -1)
+        cal.set(Calendar.DAY_OF_MONTH, 1)
+        val start = cal.toStartOfDay().timeInMillis
+        cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH))
+        val end = cal.toEndOfDay().timeInMillis
+        return start to end
+    }
+
     fun thisYearRange(now: Long = System.currentTimeMillis()): Pair<Long, Long> {
         val cal = Calendar.getInstance().apply { timeInMillis = now }
         cal.set(Calendar.MONTH, Calendar.JANUARY)

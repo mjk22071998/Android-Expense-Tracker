@@ -228,25 +228,34 @@ fun DashboardScreen(
                         letterSpacing = 0.4.sp
                     )
 
-                    Row(
-                        verticalAlignment = Alignment.Bottom,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = uiState.currencySymbol,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = formatAmount(uiState.balance),
-                            fontSize = 44.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            letterSpacing = (-1.5).sp,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
+                    val formattedBalance = if (uiState.balance < 0) {
+                        "− ${uiState.currencySymbol} ${formatAmount(kotlin.math.abs(uiState.balance))}"
+                    } else {
+                        "${uiState.currencySymbol} ${formatAmount(uiState.balance)}"
+                    }
+
+                    Text(
+                        text = formattedBalance,
+                        fontSize = 38.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White,
+                        letterSpacing = (-1.0).sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    val monthlyDelta = uiState.monthlyTrendDelta
+                    val subtitleText = when {
+                        uiState.balance < 0 -> "Expenses exceeding income — review budget"
+                        uiState.hasLastMonthData && monthlyDelta != null -> {
+                            val sign = if (monthlyDelta >= 0) "+" else "−"
+                            "$sign${uiState.currencySymbol} ${formatAmount(kotlin.math.abs(monthlyDelta))} Than Last Month"
+                        }
+                        uiState.thisMonthNet != 0.0 -> {
+                            val sign = if (uiState.thisMonthNet >= 0) "+" else "−"
+                            "$sign${uiState.currencySymbol} ${formatAmount(kotlin.math.abs(uiState.thisMonthNet))} This Month"
+                        }
+                        else -> "Healthy financial balance maintained"
                     }
 
                     Row(
@@ -260,8 +269,7 @@ fun DashboardScreen(
                             fontSize = 11.sp
                         )
                         Text(
-                            text = if (uiState.balance >= 0) "+$ 1632 Than Last Month"
-                                   else "Expenses exceeding income — review budget",
+                            text = subtitleText,
                             style = MaterialTheme.typography.bodySmall,
                             color = Color(0xFFA5C4B2)
                         )

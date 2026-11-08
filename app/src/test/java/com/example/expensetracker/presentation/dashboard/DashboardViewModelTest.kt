@@ -155,4 +155,24 @@ class DashboardViewModelTest {
 
         assertNotNull(viewModel.uiState.value.error)
     }
+
+    @Test
+    fun `when last month has transactions, monthlyTrendDelta is computed accurately`() = runTest {
+        transactionRepository.emitPeriodIncome(10000.0)
+        transactionRepository.emitPeriodExpense(4000.0)
+        ledgerRepository.emitDefaultLedger(sampleLedger())
+
+        assertEquals(6000.0, viewModel.uiState.value.thisMonthNet, 0.01)
+        assertTrue(viewModel.uiState.value.hasLastMonthData)
+    }
+
+    @Test
+    fun `when last month has no transactions, hasLastMonthData is false`() = runTest {
+        transactionRepository.emitPeriodIncome(null)
+        transactionRepository.emitPeriodExpense(null)
+        ledgerRepository.emitDefaultLedger(sampleLedger())
+
+        assertEquals(false, viewModel.uiState.value.hasLastMonthData)
+        assertEquals(null, viewModel.uiState.value.monthlyTrendDelta)
+    }
 }

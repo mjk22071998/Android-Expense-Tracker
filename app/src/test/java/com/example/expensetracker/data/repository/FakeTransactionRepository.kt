@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.flow
 class FakeTransactionRepository : TransactionRepository {
 
     private val transactionsFlow = MutableStateFlow<List<TransactionWithCategory>>(emptyList())
+    private val periodIncomeFlow = MutableStateFlow<Double?>(null)
+    private val periodExpenseFlow = MutableStateFlow<Double?>(null)
 
     // Test-only knobs — set these from inside a test to control behavior
     var errorToThrow: Throwable? = null
@@ -20,6 +22,14 @@ class FakeTransactionRepository : TransactionRepository {
 
     fun emitTransactions(transactions: List<TransactionWithCategory>) {
         transactionsFlow.value = transactions
+    }
+
+    fun emitPeriodIncome(income: Double?) {
+        periodIncomeFlow.value = income
+    }
+
+    fun emitPeriodExpense(expense: Double?) {
+        periodExpenseFlow.value = expense
     }
 
     override fun getTransactions(
@@ -35,10 +45,10 @@ class FakeTransactionRepository : TransactionRepository {
     }
 
     override fun getPeriodIncome(ledgerId: String, startDate: Long, endDate: Long): Flow<Double?> =
-        TODO("Not needed for current DashboardViewModel tests")
+        periodIncomeFlow
 
     override fun getPeriodExpense(ledgerId: String, startDate: Long, endDate: Long): Flow<Double?> =
-        TODO("Not needed for current DashboardViewModel tests")
+        periodExpenseFlow
 
     override fun getMonthlySnapshot(ledgerId: String, month: Int, year: Int): Flow<MonthlySnapshot?> =
         TODO("Not needed for current DashboardViewModel tests")

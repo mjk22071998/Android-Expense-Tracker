@@ -41,7 +41,7 @@ A production-grade, offline-first personal finance Android application built wit
 The app features a bespoke **Organic Forest Luxury** fintech aesthetic inspired by modern wealth management interfaces (e.g. Wise, Monzo, Apple Card):
 
 - **Base Canvas**: Radiant moss-to-obsidian vertical canopy gradient (`#2E633B` $\to$ `#122E1B` $\to$ `#06110A`) with an organic ambient top-right radial light source matching the mockup aesthetic.
-- **Hero Balance**: Large, uncluttered bold balance typography (`PKR 27,420.00`) and dynamic delta chip (*"✦ +$ 1632 Than Last Month"*) floating directly on the radiant green canopy without bounding boxes.
+- **Hero Balance**: Large, uncluttered bold balance typography (`Rs 156,532.00`) and dynamic delta chip (*"✦ +Rs 1,632.00 Than Last Month"* or *"−Rs 321,712.00 Than Last Month"*) floating directly on the radiant green canopy with unified optical scale and zero mockup data.
 - **High-Energy Action Pills**: Thumb-friendly quick actions row right below the hero balance: symmetrical 50/50 split with **Neon Lime** `+ Add Entry` pill and **Sky Blue** `This Month` period filter, providing balanced ergonomic reach without redundant actions.
 - **Embedded Search Pill**: Floating translucent search capsule (`🔍 Search Transactions`) directly embedded on the dashboard for instant, debounced real-time filtering.
 - **Floating Pill Bottom Navigation**: Floating dark glass navigation capsule (`#0B1A12` with 32dp corner radius) docked at the bottom with 4 circular glass icons (Home, Ledger, Categories, Settings) that float gracefully above scrolling content, serving as the single source of truth for global navigation.

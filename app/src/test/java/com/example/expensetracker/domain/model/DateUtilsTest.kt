@@ -93,4 +93,28 @@ class DateUtilsTest {
         assertEquals(at(2026, Calendar.NOVEMBER, 8), start)
         assertEquals(at(2026, Calendar.NOVEMBER, 8, 23, 59, 59, 999), end)
     }
+
+    @Test
+    fun `last month runs from first day to last day of previous month`() {
+        val (start, end) = DateUtils.lastMonthRange(sunday)
+
+        assertEquals(at(2026, Calendar.OCTOBER, 1), start)
+        assertEquals(at(2026, Calendar.OCTOBER, 31, 23, 59, 59, 999), end)
+    }
+
+    @Test
+    fun `last month in January wraps to December of previous year`() {
+        val (start, end) = DateUtils.lastMonthRange(at(2026, Calendar.JANUARY, 15))
+
+        assertEquals(at(2025, Calendar.DECEMBER, 1), start)
+        assertEquals(at(2025, Calendar.DECEMBER, 31, 23, 59, 59, 999), end)
+    }
+
+    @Test
+    fun `last month in March of leap year ends on Feb 29`() {
+        val (start, end) = DateUtils.lastMonthRange(at(2028, Calendar.MARCH, 15))
+
+        assertEquals(at(2028, Calendar.FEBRUARY, 1), start)
+        assertEquals(at(2028, Calendar.FEBRUARY, 29, 23, 59, 59, 999), end)
+    }
 }

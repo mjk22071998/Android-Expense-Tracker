@@ -6,7 +6,7 @@ import com.example.expensetracker.domain.model.UiError
 
 data class SettingsUiState(
     val currencyCode: String = "PKR",
-    val currencySymbol: String = "₨",
+    val currencySymbol: String = "Rs",
     val themeMode: String = Constants.ThemeMode.SYSTEM,
     val currencySearchQuery: String = "",
     val filteredCurrencies: List<CurrencyModel> = emptyList(),

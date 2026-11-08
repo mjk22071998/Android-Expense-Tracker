@@ -13,7 +13,7 @@ data class AddEditTransactionUiState(
     val filteredCategories: List<Category> = emptyList(),
     val note: String = "",
     val date: Long = System.currentTimeMillis(),
-    val currencySymbol: String = "Rs.",
+    val currencySymbol: String = "Rs",
     val isSaveEnabled: Boolean = false,
     val isLoading: Boolean = false,
     val isSaved: Boolean = false,
