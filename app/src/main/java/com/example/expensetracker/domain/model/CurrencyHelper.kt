@@ -7,12 +7,42 @@ import java.util.Locale
 
 object CurrencyHelper {
 
+    // Colloquial local symbols where standard Java returns 3-letter codes or cumbersome prefixes
+    private val OVERRIDE_SYMBOLS = mapOf(
+        "PKR" to "Rs",
+        "INR" to "₹",
+        "USD" to "$",
+        "CAD" to "$",
+        "AUD" to "$",
+        "NZD" to "$",
+        "SGD" to "$",
+        "HKD" to "$",
+        "EUR" to "€",
+        "GBP" to "£",
+        "JPY" to "¥",
+        "CNY" to "¥",
+        "BDT" to "৳",
+        "LKR" to "Rs",
+        "NPR" to "Rs",
+        "RUB" to "₽",
+        "TRY" to "₺",
+        "BRL" to "R$",
+        "PHP" to "₱",
+        "KRW" to "₩",
+        "VND" to "₫",
+        "THB" to "฿",
+        "MYR" to "RM",
+        "IDR" to "Rp",
+        "ZAR" to "R",
+        "NGN" to "₦"
+    )
+
     val allCurrencies: List<CurrencyModel> by lazy {
         Currency.getAvailableCurrencies()
             .map { currency ->
                 CurrencyModel(
                     code = currency.currencyCode,
-                    symbol = currency.symbol,
+                    symbol = getSymbol(currency.currencyCode),
                     name = currency.displayName
                 )
             }
@@ -24,7 +54,8 @@ object CurrencyHelper {
         val q = query.uppercase().trim()
         return allCurrencies.filter { currency ->
             currency.code.contains(q) ||
-                    currency.name.uppercase().contains(q)
+                    currency.name.uppercase().contains(q) ||
+                    currency.symbol.uppercase().contains(q)
         }
     }
 
@@ -48,20 +79,27 @@ object CurrencyHelper {
         }
     }
 
-    fun getSymbol(currencyCode: String, context: Context): String {
-        return try {
-            val currency = Currency.getInstance(currencyCode)
-            val simCountry = getSimCountry(context)
+    fun getSymbol(currencyCode: String, context: Context? = null): String {
+        val upperCode = currencyCode.uppercase().trim()
+        OVERRIDE_SYMBOLS[upperCode]?.let { return it }
 
+        return try {
+            val currency = Currency.getInstance(upperCode)
+            val simCountry = context?.let { getSimCountry(it) }.orEmpty()
             val locale = if (simCountry.isNotEmpty()) {
                 Locale.Builder().setRegion(simCountry).build()
             } else {
                 Locale.getDefault()
             }
 
-            currency.getSymbol(locale)
+            val symbol = currency.getSymbol(locale)
+            if (symbol == upperCode) {
+                currency.symbol
+            } else {
+                symbol
+            }
         } catch (e: Exception) {
-            currencyCode
+            upperCode
         }
     }
 
