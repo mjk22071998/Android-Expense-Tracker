@@ -1,16 +1,16 @@
 package com.example.expensetracker.presentation.dashboard
 
+import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
@@ -22,6 +22,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,18 +32,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import com.example.expensetracker.Constants
 import com.example.expensetracker.R
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
 import com.example.expensetracker.domain.model.getCategoryIcon
+import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -57,11 +60,13 @@ fun TransactionItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val extendedColors = ExpenseTrackerTheme.extendedColors
     var isMenuExpanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val isIncome = transaction.type == Constants.TransactionType.INCOME
-    val accentColor = if (isIncome) Color(0xFF2E7D32) else Color(0xFFC62828)
+    val accentColor = if (isIncome) extendedColors.emeraldIncome else extendedColors.crimsonExpense
+    val iconBg = if (isIncome) Color(0x2210B981) else Color(0x22F43F5E)
 
     if (showDeleteDialog) {
         DeleteConfirmationDialog(
@@ -76,137 +81,149 @@ fun TransactionItem(
     }
 
     Card(
-        modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = extendedColors.cardBackground
         ),
+        border = BorderStroke(1.dp, extendedColors.cardBorder),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            // Colored left accent border
+            // Circular Avatar Badge with Category Icon
             Box(
                 modifier = Modifier
-                    .width(4.dp)
-                    .fillMaxHeight()
-                    .background(accentColor)
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    .size(46.dp)
+                    .clip(CircleShape)
+                    .background(iconBg),
+                contentAlignment = Alignment.Center
             ) {
-                CategoryIcon(
-                    categoryIcon = transaction.categoryIcon,
-                    accentColor = accentColor
+                Icon(
+                    painter = painterResource(id = getCategoryIcon(transaction.categoryIcon)),
+                    contentDescription = transaction.categoryName,
+                    tint = accentColor,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+
+            // Note / Category & Humanized Timestamp
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                Text(
+                    text = transaction.note.ifBlank { transaction.categoryName },
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = extendedColors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = transaction.note.ifBlank { transaction.categoryName },
-                        style = MaterialTheme.typography.bodyMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = formatTransactionDate(transaction.date),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                    )
-                }
+                Text(
+                    text = buildString {
+                        append(formatTransactionDate(transaction.date))
+                        if (transaction.note.isNotBlank() && transaction.categoryName.isNotBlank()) {
+                            append(" • ")
+                            append(transaction.categoryName)
+                        }
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = extendedColors.textMuted,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
 
+            // Amount & Type Pill
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
                 Text(
                     text = "${if (isIncome) "+" else "-"} $currencySymbol ${formatAmount(transaction.amount)}",
-                    style = MaterialTheme.typography.bodyLarge,
+                    style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = accentColor,
                     letterSpacing = (-0.3).sp
                 )
 
-                Box {
-                    IconButton(
-                        onClick = { isMenuExpanded = true },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_more_vert),
-                            contentDescription = "More options",
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                        )
-                    }
+                Surface(
+                    color = if (isIncome) Color(0x1810B981) else Color(0x18F43F5E),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Text(
+                        text = if (isIncome) "Deposit" else "Expense",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = accentColor,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+            }
 
-                    DropdownMenu(
-                        expanded = isMenuExpanded,
-                        onDismissRequest = { isMenuExpanded = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text("Edit") },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_edit),
-                                    contentDescription = "Edit"
-                                )
-                            },
-                            onClick = {
-                                isMenuExpanded = false
-                                onEdit()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "Delete",
-                                    color = MaterialTheme.colorScheme.error
-                                )
-                            },
-                            leadingIcon = {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.ic_delete),
-                                    contentDescription = "Delete",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            },
-                            onClick = {
-                                isMenuExpanded = false
-                                showDeleteDialog = true
-                            }
-                        )
-                    }
+            // Contextual Menu
+            Box {
+                IconButton(
+                    onClick = { isMenuExpanded = true },
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_more_vert),
+                        contentDescription = "More options",
+                        modifier = Modifier.size(18.dp),
+                        tint = extendedColors.textSecondary
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = isMenuExpanded,
+                    onDismissRequest = { isMenuExpanded = false }
+                ) {
+                    DropdownMenuItem(
+                        text = { Text("Edit") },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_edit),
+                                contentDescription = "Edit"
+                            )
+                        },
+                        onClick = {
+                            isMenuExpanded = false
+                            onEdit()
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = "Delete",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        leadingIcon = {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_delete),
+                                contentDescription = "Delete",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        },
+                        onClick = {
+                            isMenuExpanded = false
+                            showDeleteDialog = true
+                        }
+                    )
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun CategoryIcon(
-    categoryIcon: String,
-    accentColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .size(44.dp)
-            .clip(CircleShape)
-            .background(accentColor.copy(alpha = 0.12f)),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(
-            painter = painterResource(id = getCategoryIcon(categoryIcon)),
-            contentDescription = null,
-            tint = accentColor,
-            modifier = Modifier.size(22.dp)
-        )
     }
 }
 
@@ -224,8 +241,8 @@ private fun DeleteConfirmationDialog(
                 tint = MaterialTheme.colorScheme.error
             )
         },
-        title = { Text(text = "Delete Transaction") },
-        text = { Text(text = "Are you sure you want to delete this transaction? This action cannot be undone.") },
+        title = { Text(text = "Delete Transaction", fontWeight = FontWeight.Bold) },
+        text = { Text(text = "Are you sure you want to remove this transaction? Your balance will be recalculated automatically.") },
         confirmButton = {
             TextButton(
                 onClick = onConfirm,
@@ -233,7 +250,7 @@ private fun DeleteConfirmationDialog(
                     contentColor = MaterialTheme.colorScheme.error
                 )
             ) {
-                Text("Delete")
+                Text("Delete", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -249,9 +266,11 @@ fun formatTransactionDate(timestamp: Long): String {
     val today = Calendar.getInstance()
     val transactionCal = Calendar.getInstance().apply { time = date }
 
+    val timeFormat = SimpleDateFormat("h:mm a", Locale.getDefault()).format(date)
+
     return when {
-        isSameDay(today, transactionCal) -> "Today"
-        isYesterday(transactionCal) -> "Yesterday"
+        isSameDay(today, transactionCal) -> "Today, $timeFormat"
+        isYesterday(transactionCal) -> "Yesterday, $timeFormat"
         else -> SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(date)
     }
 }
@@ -266,4 +285,57 @@ private fun isYesterday(other: Calendar): Boolean {
         add(Calendar.DAY_OF_YEAR, -1)
     }
     return isSameDay(yesterday, other)
+}
+
+@Preview(name = "Transaction Item - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Transaction Item - Light", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_NO)
+@Composable
+private fun TransactionItemPreview() {
+    ExpenseTrackerTheme {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            TransactionItem(
+                transaction = TransactionWithCategory(
+                    id = "1",
+                    ledgerId = "ledger_default",
+                    categoryId = "cat_food",
+                    categoryIcon = "restaurant",
+                    categoryName = "Food & Dining",
+                    amount = 46.70,
+                    type = "EXPENSE",
+                    note = "Dinner with team",
+                    date = System.currentTimeMillis(),
+                    createdAt = System.currentTimeMillis(),
+                    updatedAt = System.currentTimeMillis(),
+                    isDeleted = false
+                ),
+                currencySymbol = "$",
+                onEdit = {},
+                onDelete = {},
+                onClick = {}
+            )
+            TransactionItem(
+                transaction = TransactionWithCategory(
+                    id = "2",
+                    ledgerId = "ledger_default",
+                    categoryId = "cat_salary",
+                    categoryIcon = "salary",
+                    categoryName = "Salary",
+                    amount = 3450.00,
+                    type = "INCOME",
+                    note = "Monthly Client Retainer",
+                    date = System.currentTimeMillis(),
+                    createdAt = System.currentTimeMillis(),
+                    updatedAt = System.currentTimeMillis(),
+                    isDeleted = false
+                ),
+                currencySymbol = "$",
+                onEdit = {},
+                onDelete = {},
+                onClick = {}
+            )
+        }
+    }
 }

@@ -1,5 +1,7 @@
 package com.example.expensetracker.presentation.transaction
 
+import android.content.res.Configuration
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,8 +16,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.expensetracker.ui.theme.ElectricLime
+import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
 @Composable
 fun AmountInput(
@@ -23,18 +28,18 @@ fun AmountInput(
     amount: String,
     currencySymbol: String,
     onAmountChanged: (String) -> Unit,
-    textColor: Color = MaterialTheme.colorScheme.onSurface
+    textColor: Color = Color.White
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
             text = currencySymbol,
-            style = MaterialTheme.typography.displaySmall,
+            style = MaterialTheme.typography.headlineMedium,
             fontWeight = FontWeight.Bold,
-            color = textColor.copy(alpha = 0.8f),
-            modifier = Modifier.padding(end = 8.dp)
+            color = ElectricLime
         )
 
         TextField(
@@ -43,12 +48,12 @@ fun AmountInput(
             placeholder = {
                 Text(
                     text = "0.00",
-                    style = MaterialTheme.typography.displaySmall,
+                    style = MaterialTheme.typography.displayMedium,
                     fontWeight = FontWeight.Bold,
-                    color = textColor.copy(alpha = 0.4f)
+                    color = textColor.copy(alpha = 0.35f)
                 )
             },
-            textStyle = MaterialTheme.typography.displaySmall.copy(
+            textStyle = MaterialTheme.typography.displayMedium.copy(
                 fontWeight = FontWeight.ExtraBold,
                 letterSpacing = (-1).sp,
                 color = textColor
@@ -57,12 +62,24 @@ fun AmountInput(
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
                 unfocusedContainerColor = Color.Transparent,
-                focusedIndicatorColor = textColor.copy(alpha = 0.6f),
-                unfocusedIndicatorColor = textColor.copy(alpha = 0.3f),
-                cursorColor = textColor
+                focusedIndicatorColor = Color.Transparent,
+                unfocusedIndicatorColor = Color.Transparent,
+                cursorColor = ElectricLime
             ),
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
+@Preview(name = "Amount Input - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun AmountInputPreview() {
+    ExpenseTrackerTheme {
+        AmountInput(
+            amount = "124.50",
+            currencySymbol = "$",
+            onAmountChanged = {}
         )
     }
 }

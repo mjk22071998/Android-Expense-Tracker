@@ -1,11 +1,14 @@
 package com.example.expensetracker.presentation.dashboard
 
+import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
@@ -18,9 +21,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.R
+import com.example.expensetracker.domain.model.DateRangeFilter
+import com.example.expensetracker.ui.theme.ElectricLime
+import com.example.expensetracker.ui.theme.ElectricLimeOn
+import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
 @Composable
 fun FilterChipRow(
@@ -43,26 +51,21 @@ fun FilterChipRow(
         contentPadding = PaddingValues(horizontal = 4.dp)
     ) {
         items(filters) { (filter, label) ->
-            FilterChip(
-                selected = selectedFilter == filter,
-                onClick = { onFilterSelected(filter) },
-                label = { Text(text = label, style = MaterialTheme.typography.labelMedium) },
-                leadingIcon = if (selectedFilter == filter) {
-                    {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_check),
-                            contentDescription = null,
-                            modifier = Modifier.size(FilterChipDefaults.IconSize)
-                        )
-                    }
-                } else null
+            val isSelected = selectedFilter == filter
+            StyledFilterChip(
+                label = label,
+                isSelected = isSelected,
+                onClick = { onFilterSelected(filter) }
             )
         }
 
         item {
-            CustomRangeChip(
-                isSelected = selectedFilter is DateRangeFilter.Custom,
-                onSelected = { showDateRangePicker = true } // was: onFilterSelected(DateRangeFilter.Custom(0L, 0L))
+            val isCustomSelected = selectedFilter is DateRangeFilter.Custom
+            StyledFilterChip(
+                label = "Custom",
+                isSelected = isCustomSelected,
+                leadingIconRes = if (isCustomSelected) R.drawable.ic_check else R.drawable.ic_settings,
+                onClick = { showDateRangePicker = true }
             )
         }
     }
@@ -79,35 +82,58 @@ fun FilterChipRow(
 }
 
 @Composable
-private fun CustomRangeChip(
+fun StyledFilterChip(
+    label: String,
     isSelected: Boolean,
-    onSelected: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    leadingIconRes: Int? = if (isSelected) R.drawable.ic_check else null
 ) {
+    val extendedColors = ExpenseTrackerTheme.extendedColors
+
     FilterChip(
         selected = isSelected,
-        onClick = onSelected,
+        onClick = onClick,
+        shape = CircleShape,
+        modifier = modifier,
         label = {
             Text(
-                text = "Custom",
-                style = MaterialTheme.typography.labelMedium
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
             )
         },
-        leadingIcon = if (isSelected) {
+        leadingIcon = leadingIconRes?.let { iconId ->
             {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_check),
+                    painter = painterResource(id = iconId),
                     contentDescription = null,
-                    modifier = Modifier.size(FilterChipDefaults.IconSize)
+                    modifier = Modifier.size(14.dp)
                 )
             }
-        } else {
-            {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_settings),
-                    contentDescription = null,
-                    modifier = Modifier.size(FilterChipDefaults.IconSize)
-                )
-            }
-        }
+        },
+        border = BorderStroke(
+            1.dp,
+            if (isSelected) ElectricLime else extendedColors.cardBorder
+        ),
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = ElectricLime,
+            selectedLabelColor = ElectricLimeOn,
+            selectedLeadingIconColor = ElectricLimeOn,
+            containerColor = extendedColors.cardBackground,
+            labelColor = extendedColors.textSecondary,
+            iconColor = extendedColors.textMuted
+        )
     )
+}
+
+@Preview(name = "Filter Chips - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun FilterChipRowPreview() {
+    ExpenseTrackerTheme {
+        FilterChipRow(
+            selectedFilter = DateRangeFilter.ThisMonth,
+            onFilterSelected = {}
+        )
+    }
 }

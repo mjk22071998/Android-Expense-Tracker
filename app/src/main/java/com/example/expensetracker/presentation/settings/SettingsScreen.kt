@@ -1,11 +1,18 @@
 package com.example.expensetracker.presentation.settings
 
+import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -15,22 +22,28 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expensetracker.R
-import androidx.compose.foundation.clickable
+import com.example.expensetracker.ui.theme.ElectricLime
+import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +53,7 @@ fun SettingsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
+    val extendedColors = ExpenseTrackerTheme.extendedColors
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
@@ -53,15 +67,31 @@ fun SettingsScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Settings", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = "Settings",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = extendedColors.textPrimary
+                    )
+                },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
+                    IconButton(
+                        onClick = onNavigateBack,
+                        modifier = Modifier
+                            .padding(start = 8.dp)
+                            .clip(CircleShape)
+                    ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_arrow_back),
-                            contentDescription = "Back"
+                            contentDescription = "Back",
+                            tint = extendedColors.textPrimary
                         )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
             )
         }
     ) { paddingValues ->
@@ -69,44 +99,95 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
+                .padding(horizontal = 20.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            // Currency Section
-            SettingsCard(title = "Currency") {
+            // Currency Preferences Section
+            SettingsSectionCard(
+                title = "Currency & Locale",
+                subtitle = "Configure how monetary figures are displayed"
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
                         .clickable {
                             viewModel.onCurrencyPickerVisibilityChanged(true)
-                        },
+                        }
+                        .padding(vertical = 6.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = uiState.currencyCode,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = extendedColors.textPrimary
+                            )
+                            Surface(
+                                color = Color(0x22D4F63D),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Text(
+                                    text = uiState.currencySymbol,
+                                    color = ElectricLime,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
                         Text(
-                            text = uiState.currencyCode,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Text(
-                            text = "Symbol: ${uiState.currencySymbol}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                            text = "Tap to choose from 150+ international currencies",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = extendedColors.textMuted
                         )
                     }
+
                     Icon(
                         painter = painterResource(id = R.drawable.ic_chevron_right),
-                        contentDescription = "Change currency"
+                        contentDescription = "Change currency",
+                        tint = extendedColors.textSecondary
                     )
                 }
             }
 
-            // Theme Section
-            SettingsCard(title = "Appearance") {
+            // Appearance & Theme Mode Section
+            SettingsSectionCard(
+                title = "Appearance",
+                subtitle = "Choose light, dark, or system matching theme"
+            ) {
                 ThemeModeSelector(
                     selectedMode = uiState.themeMode,
                     onModeSelected = viewModel::setThemeMode
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            // Footer Information
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(
+                    text = "Expense Tracker • v0.2",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    color = extendedColors.textSecondary
+                )
+                Text(
+                    text = "Offline-First Financial Architecture",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = extendedColors.textMuted
                 )
             }
         }
@@ -125,27 +206,47 @@ fun SettingsScreen(
 }
 
 @Composable
-private fun SettingsCard(
+private fun SettingsSectionCard(
     title: String,
+    subtitle: String,
     content: @Composable () -> Unit
 ) {
+    val extendedColors = ExpenseTrackerTheme.extendedColors
+
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-        )
+            containerColor = extendedColors.cardBackground
+        ),
+        border = BorderStroke(1.dp, extendedColors.cardBorder)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(20.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.SemiBold
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = extendedColors.textPrimary
+                )
+                Text(
+                    text = subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = extendedColors.textMuted
+                )
+            }
             content()
         }
+    }
+}
+
+@Preview(name = "Settings - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun SettingsScreenPreview() {
+    ExpenseTrackerTheme {
+        SettingsScreen(onNavigateBack = {})
     }
 }

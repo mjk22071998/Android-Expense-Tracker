@@ -1,9 +1,12 @@
 package com.example.expensetracker.presentation.transaction
 
+import android.content.res.Configuration
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilterChip
@@ -18,9 +21,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.expensetracker.R
 import com.example.expensetracker.data.local.entity.Category
 import com.example.expensetracker.domain.model.getCategoryIcon
+import com.example.expensetracker.ui.theme.ElectricLime
+import com.example.expensetracker.ui.theme.ElectricLimeOn
+import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
 @Composable
 fun CategoryChip(
@@ -30,22 +39,25 @@ fun CategoryChip(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val extendedColors = ExpenseTrackerTheme.extendedColors
     var showMenu by remember { mutableStateOf(false) }
 
     FilterChip(
         selected = isSelected,
         onClick = onClick,
+        shape = CircleShape,
         label = {
             Text(
                 text = category.name,
-                style = MaterialTheme.typography.labelMedium
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium
             )
         },
         leadingIcon = {
             Icon(
                 painter = painterResource(id = getCategoryIcon(category.icon)),
                 contentDescription = null,
-                modifier = Modifier.size(FilterChipDefaults.IconSize)
+                modifier = Modifier.size(16.dp)
             )
         },
         trailingIcon = if (!category.isDefault) {
@@ -53,9 +65,9 @@ fun CategoryChip(
                 Box {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_more_vert),
-                        contentDescription = "More options for ${category.name}",
+                        contentDescription = "Options for ${category.name}",
                         modifier = Modifier
-                            .size(FilterChipDefaults.IconSize)
+                            .size(16.dp)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = null
@@ -100,6 +112,33 @@ fun CategoryChip(
                     }
                 }
             }
-        } else null
+        } else null,
+        border = BorderStroke(
+            1.dp,
+            if (isSelected) ElectricLime else extendedColors.cardBorder
+        ),
+        colors = FilterChipDefaults.filterChipColors(
+            selectedContainerColor = ElectricLime,
+            selectedLabelColor = ElectricLimeOn,
+            selectedLeadingIconColor = ElectricLimeOn,
+            selectedTrailingIconColor = ElectricLimeOn,
+            containerColor = extendedColors.cardBackground,
+            labelColor = extendedColors.textSecondary,
+            iconColor = extendedColors.textSecondary
+        )
     )
+}
+
+@Preview(name = "Category Chip - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Composable
+private fun CategoryChipPreview() {
+    ExpenseTrackerTheme {
+        CategoryChip(
+            category = Category("cat_food", "Groceries", "restaurant", "EXPENSE", true),
+            isSelected = true,
+            onClick = {},
+            onEdit = {},
+            onDelete = {}
+        )
+    }
 }
