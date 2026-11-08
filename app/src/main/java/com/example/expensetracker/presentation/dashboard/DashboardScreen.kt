@@ -1,5 +1,6 @@
 package com.example.expensetracker.presentation.dashboard
 
+import android.content.ClipData
 import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -390,9 +391,13 @@ fun DashboardScreen(
                             type = "application/pdf"
                             putExtra(Intent.EXTRA_STREAM, uri)
                             putExtra(Intent.EXTRA_SUBJECT, "Expense Report - Personal Account")
+                            clipData = ClipData.newRawUri("Expense Report", uri)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
-                        context.startActivity(Intent.createChooser(shareIntent, "Share Expense Report (PDF)"))
+                        val chooserIntent = Intent.createChooser(shareIntent, "Share Expense Report (PDF)").apply {
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        context.startActivity(chooserIntent)
                     }
                 }
             },
