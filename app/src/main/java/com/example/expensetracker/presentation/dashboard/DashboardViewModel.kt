@@ -229,7 +229,7 @@ class DashboardViewModel @Inject constructor(
                 categoryIds = categoryIds
             ).first()
 
-            val ledgerName = "Personal Account"
+            val ledgerName = "Personal Ledger"
             val currencySymbol = _uiState.value.currencySymbol
 
             val result = PdfReportGenerator.generate(

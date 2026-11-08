@@ -77,14 +77,14 @@ fun TotalCardsBottomSheet(
                 .padding(horizontal = 20.dp, vertical = 20.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            // Header: Total Cards
+            // Header: Financial Overview
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Total Cards",
+                    text = "Financial Overview",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -145,7 +145,7 @@ fun TotalCardsBottomSheet(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        // Yellow Savings Account Pill
+                        // Electric Lime Total Income Pill
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(14.dp),
@@ -164,12 +164,12 @@ fun TotalCardsBottomSheet(
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_savings),
-                                        contentDescription = "Savings",
+                                        contentDescription = "Income",
                                         tint = ElectricLimeOn,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
-                                        text = "Savings Account",
+                                        text = "Total Income",
                                         fontWeight = FontWeight.Bold,
                                         color = ElectricLimeOn,
                                         fontSize = 13.sp
@@ -184,7 +184,7 @@ fun TotalCardsBottomSheet(
                             }
                         }
 
-                        // Blue Spend Account Pill
+                        // Blue Total Expenses Pill
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(14.dp),
@@ -203,12 +203,12 @@ fun TotalCardsBottomSheet(
                                 ) {
                                     Icon(
                                         painter = painterResource(id = R.drawable.ic_shopping_cart),
-                                        contentDescription = "Spend",
+                                        contentDescription = "Expenses",
                                         tint = Color.White,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
-                                        text = "Spend Account",
+                                        text = "Total Expenses",
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White,
                                         fontSize = 13.sp
@@ -256,9 +256,9 @@ fun TotalCardsBottomSheet(
                 }
             }
 
-            // Manage Cards Grouped Container (Screen 2 Inspiration)
+            // Manage Preferences Grouped Container
             Text(
-                text = "Manage Cards",
+                text = "Ledger Preferences",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
                 color = Color.White

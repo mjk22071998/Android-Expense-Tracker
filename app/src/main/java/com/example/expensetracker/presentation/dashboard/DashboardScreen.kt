@@ -97,7 +97,7 @@ fun DashboardScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             DashboardTopBar(
-                title = "Savings Account",
+                title = "Personal Expenses",
                 onExportClick = { showExportSheet = true }
             )
         }
@@ -141,7 +141,7 @@ fun DashboardScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "Savings Account",
+                        text = "Total Balance",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color(0xFFA5C4B2),
                         letterSpacing = 0.4.sp
@@ -390,7 +390,7 @@ fun DashboardScreen(
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "application/pdf"
                             putExtra(Intent.EXTRA_STREAM, uri)
-                            putExtra(Intent.EXTRA_SUBJECT, "Expense Report - Personal Account")
+                            putExtra(Intent.EXTRA_SUBJECT, "Expense Report - Personal Ledger")
                             clipData = ClipData.newRawUri("Expense Report", uri)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
