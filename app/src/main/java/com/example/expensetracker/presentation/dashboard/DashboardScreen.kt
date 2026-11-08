@@ -363,10 +363,11 @@ fun DashboardScreen(
     // Modal: Screen 2 Total Cards & Stitched Leathercraft Sheet
     if (showTotalCardsSheet) {
         TotalCardsBottomSheet(
-            balance = uiState.balance,
-            totalIncome = uiState.totalIncome,
-            totalExpense = uiState.totalExpense,
+            selectedFilter = uiState.selectedFilter,
+            transactions = uiState.transactions,
+            allTimeBalance = uiState.balance,
             currencySymbol = uiState.currencySymbol,
+            onFilterSelected = viewModel::onFilterSelected,
             onDismiss = { showTotalCardsSheet = false }
         )
     }

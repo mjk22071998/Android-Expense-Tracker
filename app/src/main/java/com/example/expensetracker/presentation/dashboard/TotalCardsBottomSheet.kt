@@ -11,18 +11,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -44,26 +44,54 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.expensetracker.Constants
 import com.example.expensetracker.R
+import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
+import com.example.expensetracker.domain.model.DateRangeFilter
+import com.example.expensetracker.presentation.common.AppTooltip
+import com.example.expensetracker.presentation.common.TooltipPosition
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
 import com.example.expensetracker.ui.theme.ForestBackgroundDark
 import com.example.expensetracker.ui.theme.ForestBorderDark
 import com.example.expensetracker.ui.theme.ForestCardDark
-import com.example.expensetracker.ui.theme.ForestSurfaceDark
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TotalCardsBottomSheet(
-    balance: Double,
-    totalIncome: Double,
-    totalExpense: Double,
+    selectedFilter: DateRangeFilter,
+    transactions: List<TransactionWithCategory>,
+    allTimeBalance: Double,
     currencySymbol: String,
+    onFilterSelected: (DateRangeFilter) -> Unit,
     onDismiss: () -> Unit
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    var isCardLocked by remember { mutableStateOf(false) }
+    var showPeriodSheet by remember { mutableStateOf(false) }
+    var showCustomDateDialog by remember { mutableStateOf(false) }
+
+    val periodLabel = when (selectedFilter) {
+        is DateRangeFilter.AllTime -> "All Time"
+        is DateRangeFilter.Today -> "Today"
+        is DateRangeFilter.ThisWeek -> "This Week"
+        is DateRangeFilter.ThisMonth -> "This Month"
+        is DateRangeFilter.ThisYear -> "This Year"
+        is DateRangeFilter.Custom -> "Custom Range"
+    }
+
+    val periodIncome = remember(transactions) {
+        transactions
+            .filter { it.type == Constants.TransactionType.INCOME }
+            .sumOf { it.amount }
+    }
+    val periodExpense = remember(transactions) {
+        transactions
+            .filter { it.type == Constants.TransactionType.EXPENSE }
+            .sumOf { it.amount }
+    }
+    val periodNet = periodIncome - periodExpense
+
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -74,8 +102,9 @@ fun TotalCardsBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Header: Financial Overview
             Row(
@@ -83,25 +112,106 @@ fun TotalCardsBottomSheet(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Financial Overview",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+                Column {
+                    Text(
+                        text = "Financial Overview",
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Text(
+                        text = "Inspection of period cashflow & ledger",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFFA5C4B2)
+                    )
+                }
 
-                Surface(
-                    modifier = Modifier.size(36.dp),
-                    shape = CircleShape,
-                    color = Color(0x28FFFFFF)
+                AppTooltip(
+                    text = "Close financial overview",
+                    position = TooltipPosition.Below
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_close),
-                            contentDescription = "Close",
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
+                    Surface(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(36.dp),
+                        shape = CircleShape,
+                        color = Color(0x28FFFFFF)
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.ic_close),
+                                contentDescription = "Close",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Period Selector Card (Defaults to dashboard active period, customizable here)
+            AppTooltip(
+                text = "Change timeframe for financial overview",
+                position = TooltipPosition.Below
+            ) {
+                Surface(
+                    onClick = { showPeriodSheet = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(16.dp),
+                    color = ForestCardDark,
+                    border = BorderStroke(1.dp, ForestBorderDark)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = Color(0x220099FF),
+                                modifier = Modifier.size(34.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.ic_date_range),
+                                        contentDescription = "Period",
+                                        tint = Color(0xFF0099FF),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                            Column {
+                                Text(
+                                    text = "Time Period",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = Color(0xFFA5C4B2)
+                                )
+                                Text(
+                                    text = periodLabel,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color.White
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0x22D4F63D)
+                        ) {
+                            Text(
+                                text = "Change",
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = ElectricLime,
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
+                            )
+                        }
                     }
                 }
             }
@@ -145,7 +255,7 @@ fun TotalCardsBottomSheet(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(14.dp)
                     ) {
-                        // Electric Lime Total Income Pill
+                        // Electric Lime Income Pill
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(14.dp),
@@ -159,6 +269,7 @@ fun TotalCardsBottomSheet(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(
+                                    modifier = Modifier.weight(1f, fill = false),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
@@ -169,14 +280,16 @@ fun TotalCardsBottomSheet(
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
-                                        text = "Total Income",
+                                        text = if (selectedFilter is DateRangeFilter.AllTime) "Total Income" else "Income",
                                         fontWeight = FontWeight.Bold,
                                         color = ElectricLimeOn,
-                                        fontSize = 13.sp
+                                        fontSize = 13.sp,
+                                        maxLines = 1
                                     )
                                 }
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "$currencySymbol ${formatAmount(totalIncome)}",
+                                    text = "$currencySymbol ${formatAmount(periodIncome)}",
                                     fontWeight = FontWeight.ExtraBold,
                                     color = ElectricLimeOn,
                                     fontSize = 14.sp
@@ -184,7 +297,7 @@ fun TotalCardsBottomSheet(
                             }
                         }
 
-                        // Blue Total Expenses Pill
+                        // Blue Expenses Pill
                         Surface(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(14.dp),
@@ -198,6 +311,7 @@ fun TotalCardsBottomSheet(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Row(
+                                    modifier = Modifier.weight(1f, fill = false),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
@@ -208,14 +322,16 @@ fun TotalCardsBottomSheet(
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Text(
-                                        text = "Total Expenses",
+                                        text = if (selectedFilter is DateRangeFilter.AllTime) "Total Expenses" else "Expenses",
                                         fontWeight = FontWeight.Bold,
                                         color = Color.White,
-                                        fontSize = 13.sp
+                                        fontSize = 13.sp,
+                                        maxLines = 1
                                     )
                                 }
+                                Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = "$currencySymbol ${formatAmount(totalExpense)}",
+                                    text = "$currencySymbol ${formatAmount(periodExpense)}",
                                     fontWeight = FontWeight.ExtraBold,
                                     color = Color.White,
                                     fontSize = 14.sp
@@ -225,15 +341,16 @@ fun TotalCardsBottomSheet(
 
                         Spacer(modifier = Modifier.height(4.dp))
 
-                        // Total Balance Section
+                        // Period Net Balance Section
                         Text(
-                            text = "Total Balance",
+                            text = if (selectedFilter is DateRangeFilter.AllTime) "Total Balance" else "Net Cashflow ($periodLabel)",
                             style = MaterialTheme.typography.labelMedium,
                             color = Color(0xFFA5C4B2)
                         )
 
+                        val netSign = if (periodNet < 0) "− " else ""
                         Text(
-                            text = "$currencySymbol ${formatAmount(balance)}",
+                            text = "$netSign$currencySymbol ${formatAmount(kotlin.math.abs(periodNet))}",
                             style = MaterialTheme.typography.headlineLarge,
                             fontWeight = FontWeight.ExtraBold,
                             color = Color.White,
@@ -246,95 +363,53 @@ fun TotalCardsBottomSheet(
                         ) {
                             Text(text = "✦", color = ElectricLime, fontSize = 12.sp)
                             Text(
-                                text = if (balance >= 0) "Healthy financial balance maintained"
+                                text = if (periodNet >= 0) "Healthy financial balance maintained"
                                        else "Expenses exceeding income — review budget",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = Color(0xFFA5C4B2)
                             )
                         }
+
+                        if (selectedFilter !is DateRangeFilter.AllTime) {
+                            Text(
+                                text = "All-Time Account Balance: $currencySymbol ${formatAmount(allTimeBalance)}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0x88A5C4B2),
+                                fontSize = 11.sp
+                            )
+                        }
                     }
                 }
             }
-
-            // Manage Preferences Grouped Container
-            Text(
-                text = "Ledger Preferences",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = ForestCardDark),
-                border = BorderStroke(1.dp, ForestBorderDark)
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    // Row 1: Lock Card
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Lock ledger entries",
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.White,
-                                fontSize = 14.sp
-                            )
-                            Text(
-                                text = "Prevent unintentional modifications",
-                                color = Color(0xFFA5C4B2),
-                                fontSize = 12.sp
-                            )
-                        }
-                        Switch(
-                            checked = isCardLocked,
-                            onCheckedChange = { isCardLocked = it },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = ElectricLime
-                            )
-                        )
-                    }
-
-                    HorizontalDivider(color = ForestBorderDark)
-
-                    // Row 2: Control Card Usage
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column {
-                            Text(
-                                text = "Category usage",
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.White,
-                                fontSize = 14.sp
-                            )
-                            Text(
-                                text = "Active categories in period",
-                                color = Color(0xFFA5C4B2),
-                                fontSize = 12.sp
-                            )
-                        }
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_chevron_right),
-                            contentDescription = "Details",
-                            tint = Color(0xFFA5C4B2)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    // Modal: Period Filter Selection inside Financial Overview
+    if (showPeriodSheet) {
+        PeriodFilterBottomSheet(
+            selectedFilter = selectedFilter,
+            onFilterSelected = { filter ->
+                onFilterSelected(filter)
+                showPeriodSheet = false
+            },
+            onCustomRangeClick = {
+                showPeriodSheet = false
+                showCustomDateDialog = true
+            },
+            onDismiss = { showPeriodSheet = false }
+        )
+    }
+
+    // Modal: Custom Date Range Picker inside Financial Overview
+    if (showCustomDateDialog) {
+        CustomDateRangePickerDialog(
+            onDismiss = { showCustomDateDialog = false },
+            onRangeSelected = { start, end ->
+                val customFilter = DateRangeFilter.Custom(start, end)
+                onFilterSelected(customFilter)
+                showCustomDateDialog = false
+            }
+        )
     }
 }
