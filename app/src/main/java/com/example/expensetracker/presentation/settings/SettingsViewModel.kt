@@ -2,6 +2,9 @@ package com.example.expensetracker.presentation.settings
 
 import android.content.Context
 import com.example.expensetracker.data.local.UserPreferences
+import com.example.expensetracker.data.repository.LedgerRepository
+import com.example.expensetracker.data.repository.TransactionRepository
+import com.example.expensetracker.domain.model.AppResult
 import com.example.expensetracker.domain.model.CurrencyHelper
 import com.example.expensetracker.domain.model.UiError
 import com.example.expensetracker.presentation.common.BaseViewModel
@@ -11,11 +14,14 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val userPreferences: UserPreferences,
+    private val transactionRepository: TransactionRepository,
+    private val ledgerRepository: LedgerRepository,
     @param:ApplicationContext private val context: Context
 ) : BaseViewModel() {
 
@@ -84,6 +90,19 @@ class SettingsViewModel @Inject constructor(
     fun setThemeMode(mode: String) {
         launchSafely(onError = ::handleError) {
             userPreferences.setThemeMode(mode)
+        }
+    }
+
+    fun clearAllTransactions(onSuccess: () -> Unit = {}) {
+        launchSafely(onError = ::handleError) {
+            val defaultLedger = ledgerRepository.getDefaultLedger().first()
+            val ledgerId = defaultLedger?.id ?: return@launchSafely
+            val result = transactionRepository.clearAllTransactions(ledgerId)
+            if (result is AppResult.Error) {
+                handleError(result.error)
+            } else {
+                onSuccess()
+            }
         }
     }
 

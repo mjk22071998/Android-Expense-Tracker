@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -32,6 +33,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -58,6 +63,8 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val extendedColors = ExpenseTrackerTheme.extendedColors
+    val coroutineScope = rememberCoroutineScope()
+    var showClearRecordsDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val appVersion = remember(context) {
         try {
@@ -186,6 +193,55 @@ fun SettingsScreen(
                 )
             }
 
+            // Data Management Section
+            SettingsSectionCard(
+                title = "Data Management",
+                subtitle = "Manage ledger records and stored data"
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(14.dp))
+                        .clickable { showClearRecordsDialog = true }
+                        .padding(vertical = 6.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Text(
+                            text = "Clear All Records",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = extendedColors.crimsonExpense
+                        )
+                        Text(
+                            text = "Permanently remove transactions and reset balance to 0.00",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = extendedColors.textMuted
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Surface(
+                        color = Color(0x22FF5252),
+                        shape = RoundedCornerShape(10.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_delete),
+                            contentDescription = "Clear All Records",
+                            tint = extendedColors.crimsonExpense,
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .size(18.dp)
+                        )
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.weight(1f))
 
             // Footer Information
@@ -202,6 +258,22 @@ fun SettingsScreen(
                 )
             }
         }
+    }
+
+
+    if (showClearRecordsDialog) {
+        ClearAllRecordsDialog(
+            currencySymbol = uiState.currencySymbol,
+            onConfirm = {
+                showClearRecordsDialog = false
+                viewModel.clearAllTransactions {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("All transaction records cleared successfully")
+                    }
+                }
+            },
+            onDismiss = { showClearRecordsDialog = false }
+        )
     }
 
     if (uiState.isCurrencyPickerVisible) {

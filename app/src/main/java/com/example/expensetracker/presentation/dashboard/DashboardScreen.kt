@@ -84,7 +84,6 @@ fun DashboardScreen(
     var showCustomDatePicker by remember { mutableStateOf(false) }
     var showExportSheet by remember { mutableStateOf(false) }
     var isGeneratingPdf by remember { mutableStateOf(false) }
-    var showClearAllDialog by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -301,50 +300,12 @@ fun DashboardScreen(
                         letterSpacing = (-0.2).sp
                     )
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "${uiState.transactions.size} records",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFFA5C4B2)
-                        )
-
-                        if (uiState.transactions.isNotEmpty()) {
-                            AppTooltip(
-                                text = "Clear all transactions",
-                                position = TooltipPosition.Below
-                            ) {
-                                Surface(
-                                    onClick = { showClearAllDialog = true },
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = Color(0x26FF5252),
-                                    border = BorderStroke(1.dp, Color(0x40FF5252))
-                                ) {
-                                    Row(
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.ic_delete),
-                                            contentDescription = "Clear all transactions",
-                                            tint = Color(0xFFFF5252),
-                                            modifier = Modifier.size(12.dp)
-                                        )
-                                        Text(
-                                            text = "Clear All",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontWeight = FontWeight.SemiBold,
-                                            color = Color(0xFFFF5252)
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    Text(
+                        text = "${uiState.transactions.size} records",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFFA5C4B2)
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -549,19 +510,4 @@ fun DashboardScreen(
         )
     }
 
-    // Dialog: Confirmation to Clear All Transactions
-    if (showClearAllDialog) {
-        ClearAllTransactionsDialog(
-            currencySymbol = uiState.currencySymbol,
-            onConfirm = {
-                showClearAllDialog = false
-                viewModel.clearAllTransactions {
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar("All transactions cleared")
-                    }
-                }
-            },
-            onDismiss = { showClearAllDialog = false }
-        )
-    }
 }

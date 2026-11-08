@@ -3,6 +3,12 @@ package com.example.expensetracker.presentation.settings
 import android.content.Context
 import com.example.expensetracker.Constants
 import com.example.expensetracker.data.local.UserPreferences
+import com.example.expensetracker.data.local.entity.Ledger
+import com.example.expensetracker.data.repository.FakeLedgerRepository
+import com.example.expensetracker.data.repository.FakeTransactionRepository
+import com.example.expensetracker.domain.model.AppResult
+import com.example.expensetracker.domain.model.UiError
+
 import com.example.expensetracker.util.MainDispatcherRule
 import io.mockk.coVerify
 import io.mockk.every
@@ -30,6 +36,8 @@ class SettingsViewModelTest {
     private val themeModeFlow = MutableStateFlow(Constants.ThemeMode.SYSTEM)
 
     private lateinit var userPreferences: UserPreferences
+    private lateinit var transactionRepository: FakeTransactionRepository
+    private lateinit var ledgerRepository: FakeLedgerRepository
     private lateinit var context: Context
     private lateinit var viewModel: SettingsViewModel
 
@@ -40,7 +48,9 @@ class SettingsViewModelTest {
             every { currencyCode } returns currencyCodeFlow
             every { themeMode } returns themeModeFlow
         }
-        viewModel = SettingsViewModel(userPreferences, context)
+        transactionRepository = FakeTransactionRepository()
+        ledgerRepository = FakeLedgerRepository()
+        viewModel = SettingsViewModel(userPreferences, transactionRepository, ledgerRepository, context)
     }
 
     @Test
@@ -88,7 +98,7 @@ class SettingsViewModelTest {
             every { themeMode } returns themeModeFlow
         }
 
-        val brokenViewModel = SettingsViewModel(brokenPreferences, context)
+        val brokenViewModel = SettingsViewModel(brokenPreferences, transactionRepository, ledgerRepository, context)
 
         assertNotNull(brokenViewModel.uiState.value.error)
     }
@@ -99,10 +109,54 @@ class SettingsViewModelTest {
             every { currencyCode } returns flow { throw RuntimeException("boom") }
             every { themeMode } returns themeModeFlow
         }
-        val brokenViewModel = SettingsViewModel(brokenPreferences, context)
+        val brokenViewModel = SettingsViewModel(brokenPreferences, transactionRepository, ledgerRepository, context)
 
         brokenViewModel.clearError()
 
         assertNull(brokenViewModel.uiState.value.error)
+    }
+
+    @Test
+    fun `clearAllTransactions calls repository with default ledger id and invokes onSuccess`() = runTest {
+        val ledger = Ledger(
+            id = "ledger_default",
+            name = "Personal",
+            currencyCode = "PKR",
+            balance = 500.0,
+            totalIncome = 1000.0,
+            totalExpenses = 500.0,
+            createdAt = 0L,
+            updatedAt = 0L,
+            isDefault = true
+        )
+        ledgerRepository.emitDefaultLedger(ledger)
+        var onSuccessCalled = false
+
+        viewModel.clearAllTransactions(onSuccess = { onSuccessCalled = true })
+
+        assertEquals("ledger_default", transactionRepository.clearAllCalledWithLedgerId)
+        assertTrue(onSuccessCalled)
+    }
+
+    @Test
+    fun `when clearAllTransactions fails, error state is populated`() = runTest {
+        val ledger = Ledger(
+            id = "ledger_default",
+            name = "Personal",
+            currencyCode = "PKR",
+            balance = 500.0,
+            totalIncome = 1000.0,
+            totalExpenses = 500.0,
+            createdAt = 0L,
+            updatedAt = 0L,
+            isDefault = true
+        )
+        ledgerRepository.emitDefaultLedger(ledger)
+        val testError = UiError.Database("Failed to clear")
+        transactionRepository.clearAllTransactionsResult = AppResult.Error(testError)
+
+        viewModel.clearAllTransactions()
+
+        assertEquals(testError, viewModel.uiState.value.error)
     }
 }

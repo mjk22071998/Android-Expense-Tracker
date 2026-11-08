@@ -1,4 +1,4 @@
-package com.example.expensetracker.presentation.dashboard
+package com.example.expensetracker.presentation.settings
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
@@ -20,7 +20,7 @@ import com.example.expensetracker.R
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
 @Composable
-fun ClearAllTransactionsDialog(
+fun ClearAllRecordsDialog(
     currencySymbol: String = "Rs",
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
@@ -40,7 +40,7 @@ fun ClearAllTransactionsDialog(
         },
         title = {
             Text(
-                text = "Clear All Transactions?",
+                text = "Clear All Records?",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = extendedColors.textPrimary
@@ -62,7 +62,7 @@ fun ClearAllTransactionsDialog(
                 ),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Clear All", fontWeight = FontWeight.Bold)
+                Text("Clear Records", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
@@ -77,11 +77,11 @@ fun ClearAllTransactionsDialog(
     )
 }
 
-@Preview(name = "Clear All Dialog - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
+@Preview(name = "Clear Records Dialog - Dark", showBackground = true, uiMode = Configuration.UI_MODE_NIGHT_YES)
 @Composable
-private fun ClearAllTransactionsDialogPreview() {
+private fun ClearAllRecordsDialogPreview() {
     ExpenseTrackerTheme {
-        ClearAllTransactionsDialog(
+        ClearAllRecordsDialog(
             currencySymbol = "Rs",
             onConfirm = {},
             onDismiss = {}
