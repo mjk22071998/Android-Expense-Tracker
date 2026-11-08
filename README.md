@@ -14,6 +14,10 @@ A production-grade, offline-first personal finance Android application built wit
 | :---: | :---: | :---: |
 | <img src="docs/screenshots/pdf_export.png" width="240" alt="PDF Statement Export" /> | <img src="docs/screenshots/storage_permission.png" width="240" alt="Storage Permission Verification" /> | <img src="docs/screenshots/share_chooser.png" width="240" alt="System Share Sheet" /> |
 
+| Native Branded Splash | Adaptive Launcher Icon | Round Launcher Icon |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/native_splash.png" width="240" alt="Native Splash Screen" /> | <img src="docs/screenshots/launcher_icon.png" width="120" alt="Adaptive Launcher Icon" /> | <img src="docs/screenshots/launcher_icon_round.png" width="120" alt="Round Launcher Icon" /> |
+
 ---
 
 ## Features
