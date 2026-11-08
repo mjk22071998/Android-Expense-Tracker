@@ -4,6 +4,7 @@ import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +34,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -56,6 +58,15 @@ fun SettingsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val extendedColors = ExpenseTrackerTheme.extendedColors
+    val context = LocalContext.current
+    val appVersion = remember(context) {
+        try {
+            val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            "Version ${pInfo.versionName ?: "0.2"}"
+        } catch (_: Exception) {
+            "Version 0.2"
+        }
+    }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
@@ -178,21 +189,14 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             // Footer Information
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "Expense Tracker • v0.2",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = extendedColors.textSecondary
-                )
-                Text(
-                    text = "Offline-First Financial Architecture",
+                    text = appVersion,
                     style = MaterialTheme.typography.labelSmall,
                     color = extendedColors.textMuted
                 )
