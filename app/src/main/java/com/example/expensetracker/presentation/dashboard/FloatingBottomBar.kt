@@ -24,6 +24,7 @@ import com.example.expensetracker.R
 import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
+import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import com.example.expensetracker.ui.theme.ForestBorderDark
 import com.example.expensetracker.ui.theme.ForestTextSecondaryDark
 
@@ -43,14 +44,21 @@ fun FloatingBottomBar(
     onSettingsClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
+    val extendedColors = ExpenseTrackerTheme.extendedColors
+    val barColor = if (extendedColors.isDark) Color(0xF00B1A12) else Color(0xF8FFFFFF)
+    val barBorder = if (extendedColors.isDark) ForestBorderDark else extendedColors.cardBorder
+    val selectedBg = if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34)
+    val selectedTint = if (extendedColors.isDark) ElectricLimeOn else Color.White
+    val unselectedTint = if (extendedColors.isDark) ForestTextSecondaryDark else extendedColors.textSecondary
+
     Surface(
         modifier = modifier
             .height(64.dp)
             .clip(RoundedCornerShape(32.dp)),
         shape = RoundedCornerShape(32.dp),
-        color = Color(0xF00B1A12),
-        border = BorderStroke(1.dp, ForestBorderDark),
-        shadowElevation = 10.dp
+        color = barColor,
+        border = BorderStroke(1.dp, barBorder),
+        shadowElevation = if (extendedColors.isDark) 10.dp else 8.dp
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
@@ -64,14 +72,14 @@ fun FloatingBottomBar(
                     modifier = Modifier
                         .size(46.dp)
                         .clip(CircleShape)
-                        .background(if (isHome) ElectricLime else Color.Transparent)
+                        .background(if (isHome) selectedBg else Color.Transparent)
                         .clickable(onClick = onHomeClick),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_home),
                         contentDescription = "Home",
-                        tint = if (isHome) ElectricLimeOn else ForestTextSecondaryDark,
+                        tint = if (isHome) selectedTint else unselectedTint,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -84,14 +92,14 @@ fun FloatingBottomBar(
                     modifier = Modifier
                         .size(46.dp)
                         .clip(CircleShape)
-                        .background(if (isLedger) ElectricLime else Color.Transparent)
+                        .background(if (isLedger) selectedBg else Color.Transparent)
                         .clickable(onClick = onLedgerClick),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_savings),
                         contentDescription = "Ledger",
-                        tint = if (isLedger) ElectricLimeOn else ForestTextSecondaryDark,
+                        tint = if (isLedger) selectedTint else unselectedTint,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -104,14 +112,14 @@ fun FloatingBottomBar(
                     modifier = Modifier
                         .size(46.dp)
                         .clip(CircleShape)
-                        .background(if (isCategories) ElectricLime else Color.Transparent)
+                        .background(if (isCategories) selectedBg else Color.Transparent)
                         .clickable(onClick = onCategoriesClick),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_category),
                         contentDescription = "Categories",
-                        tint = if (isCategories) ElectricLimeOn else ForestTextSecondaryDark,
+                        tint = if (isCategories) selectedTint else unselectedTint,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -124,14 +132,14 @@ fun FloatingBottomBar(
                     modifier = Modifier
                         .size(46.dp)
                         .clip(CircleShape)
-                        .background(if (isSettings) ElectricLime else Color.Transparent)
+                        .background(if (isSettings) selectedBg else Color.Transparent)
                         .clickable(onClick = onSettingsClick),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_settings),
                         contentDescription = "Settings",
-                        tint = if (isSettings) ElectricLimeOn else ForestTextSecondaryDark,
+                        tint = if (isSettings) selectedTint else unselectedTint,
                         modifier = Modifier.size(22.dp)
                     )
                 }

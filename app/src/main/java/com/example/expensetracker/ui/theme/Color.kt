@@ -50,6 +50,7 @@ val ForestTextMutedLight = Color(0xFF7D9688)
 // Semantic extended colors bundle for easy access in Composables
 @Immutable
 data class ExtendedColors(
+    val isDark: Boolean = true,
     val electricLime: Color,
     val electricCyan: Color,
     val emeraldIncome: Color,
@@ -64,6 +65,7 @@ data class ExtendedColors(
 
 val LocalExtendedColors = staticCompositionLocalOf {
     ExtendedColors(
+        isDark = true,
         electricLime = ElectricLime,
         electricCyan = ElectricCyan,
         emeraldIncome = EmeraldIncome,

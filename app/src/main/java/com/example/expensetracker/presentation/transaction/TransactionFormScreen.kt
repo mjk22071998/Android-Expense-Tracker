@@ -297,8 +297,8 @@ fun TransactionFormScreen(
                 enabled = uiState.isSaveEnabled && !uiState.isLoading,
                 shape = RoundedCornerShape(18.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = ElectricLime,
-                    contentColor = ElectricLimeOn,
+                    containerColor = if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34),
+                    contentColor = if (extendedColors.isDark) ElectricLimeOn else Color.White,
                     disabledContainerColor = extendedColors.cardBorder,
                     disabledContentColor = extendedColors.textMuted
                 ),

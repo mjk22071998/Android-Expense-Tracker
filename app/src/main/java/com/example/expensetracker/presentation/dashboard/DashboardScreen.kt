@@ -63,6 +63,7 @@ import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
 import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.domain.usecase.PdfStorageHelper
 import com.example.expensetracker.ui.theme.ElectricLime
+import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -77,6 +78,7 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val extendedColors = ExpenseTrackerTheme.extendedColors
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedTransaction by remember { mutableStateOf<TransactionWithCategory?>(null) }
     var showTotalCardsSheet by remember { mutableStateOf(false) }
@@ -168,16 +170,27 @@ fun DashboardScreen(
         }
     }
 
-    // Luminous Moss/Canopy Green vertical gradient from reference inspiration
-    val backgroundBrush = Brush.verticalGradient(
-        colorStops = arrayOf(
-            0.0f to Color(0xFF2E633B), // Radiant moss green at top
-            0.16f to Color(0xFF1E482A), // Rich forest canopy
-            0.36f to Color(0xFF122E1B), // Dark green transition
-            0.62f to Color(0xFF0C1F13), // Obsidian forest
-            1.0f to Color(0xFF06110A)  // Deep base
+    // Luxury Organic Forest vertical gradient with full light/dark responsiveness
+    val backgroundBrush = if (extendedColors.isDark) {
+        Brush.verticalGradient(
+            colorStops = arrayOf(
+                0.0f to Color(0xFF2E633B), // Radiant moss green at top
+                0.16f to Color(0xFF1E482A), // Rich forest canopy
+                0.36f to Color(0xFF122E1B), // Dark green transition
+                0.62f to Color(0xFF0C1F13), // Obsidian forest
+                1.0f to Color(0xFF06110A)   // Deep base
+            )
         )
-    )
+    } else {
+        Brush.verticalGradient(
+            colorStops = arrayOf(
+                0.0f to Color(0xFFDCE8E0), // Soft luminous sage tint at top
+                0.18f to Color(0xFFE9F1EC), // Subtle mint transition
+                0.45f to Color(0xFFF2F7F4), // Clean surface (ForestBackgroundLight)
+                1.0f to Color(0xFFF7FAF8)   // Base background
+            )
+        )
+    }
 
     Scaffold(
         containerColor = Color.Transparent,
@@ -203,11 +216,19 @@ fun DashboardScreen(
                     .offset(x = 120.dp, y = (-100).dp)
                     .background(
                         brush = Brush.radialGradient(
-                            colors = listOf(
-                                Color(0x66489B5F),
-                                Color(0x33357547),
-                                Color.Transparent
-                            )
+                            colors = if (extendedColors.isDark) {
+                                listOf(
+                                    Color(0x66489B5F),
+                                    Color(0x33357547),
+                                    Color.Transparent
+                                )
+                            } else {
+                                listOf(
+                                    Color(0x33A3D9B5),
+                                    Color(0x1A85C49A),
+                                    Color.Transparent
+                                )
+                            }
                         ),
                         shape = CircleShape
                     )
@@ -230,7 +251,7 @@ fun DashboardScreen(
                     Text(
                         text = "Total Balance",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFFA5C4B2),
+                        color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary,
                         letterSpacing = 0.4.sp
                     )
 
@@ -244,7 +265,7 @@ fun DashboardScreen(
                         text = formattedBalance,
                         fontSize = 38.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                        color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
                         letterSpacing = (-1.0).sp,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -296,7 +317,7 @@ fun DashboardScreen(
                         text = "Transaction History",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                        color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
                         letterSpacing = (-0.2).sp
                     )
 
@@ -304,7 +325,7 @@ fun DashboardScreen(
                         text = "${uiState.transactions.size} records",
                         style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFFA5C4B2)
+                        color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary
                     )
                 }
 
@@ -328,7 +349,7 @@ fun DashboardScreen(
                             ) {
                                 Text(
                                     text = "No transactions found for this period",
-                                    color = Color(0xFFA5C4B2),
+                                    color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                             }

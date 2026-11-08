@@ -33,13 +33,15 @@ fun DashboardTopBar(
     title: String = "Personal Account",
     onExportClick: (() -> Unit)? = null
 ) {
+    val extendedColors = ExpenseTrackerTheme.extendedColors
+
     TopAppBar(
         title = {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White,
+                color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
                 letterSpacing = (-0.2).sp
             )
         },
@@ -55,14 +57,17 @@ fun DashboardTopBar(
                             .padding(end = 8.dp)
                             .size(38.dp),
                         shape = CircleShape,
-                        color = Color(0x28FFFFFF),
-                        border = BorderStroke(1.dp, Color(0x33FFFFFF))
+                        color = if (extendedColors.isDark) Color(0x28FFFFFF) else Color(0xFFFFFFFF),
+                        border = BorderStroke(
+                            1.dp,
+                            if (extendedColors.isDark) Color(0x33FFFFFF) else extendedColors.cardBorder
+                        )
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_picture_as_pdf),
                                 contentDescription = "Export to PDF",
-                                tint = Color.White,
+                                tint = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
                                 modifier = Modifier.size(18.dp)
                             )
                         }

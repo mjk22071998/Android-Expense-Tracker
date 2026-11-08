@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.example.expensetracker.R
 import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.ui.theme.ElectricLime
+import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
 @Composable
 fun SearchPillBar(
@@ -34,13 +35,18 @@ fun SearchPillBar(
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val extendedColors = ExpenseTrackerTheme.extendedColors
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
             .height(50.dp),
         shape = RoundedCornerShape(25.dp),
-        color = Color(0x4012351E),
-        border = BorderStroke(1.dp, Color(0x28FFFFFF))
+        color = if (extendedColors.isDark) Color(0x4012351E) else Color(0xFFFFFFFF),
+        border = BorderStroke(
+            1.dp,
+            if (extendedColors.isDark) Color(0x28FFFFFF) else extendedColors.cardBorder
+        )
     ) {
         Row(
             modifier = Modifier
@@ -51,7 +57,7 @@ fun SearchPillBar(
             Icon(
                 painter = painterResource(id = R.drawable.ic_search),
                 contentDescription = "Search",
-                tint = Color(0xFFA5C4B2),
+                tint = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary,
                 modifier = Modifier.size(19.dp)
             )
 
@@ -65,7 +71,7 @@ fun SearchPillBar(
                     Text(
                         text = "Search Transactions",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color(0xFFA5C4B2),
+                        color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textMuted,
                         fontSize = 14.sp
                     )
                 }
@@ -75,10 +81,10 @@ fun SearchPillBar(
                     onValueChange = onQueryChange,
                     singleLine = true,
                     textStyle = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.White,
+                        color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
                         fontSize = 14.sp
                     ),
-                    cursorBrush = SolidColor(ElectricLime),
+                    cursorBrush = SolidColor(if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34)),
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -96,7 +102,7 @@ fun SearchPillBar(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_close),
                             contentDescription = "Clear",
-                            tint = Color(0xFFA5C4B2),
+                            tint = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary,
                             modifier = Modifier.size(16.dp)
                         )
                     }

@@ -55,6 +55,8 @@ import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
 import com.example.expensetracker.ui.theme.ForestBackgroundDark
 import com.example.expensetracker.ui.theme.ForestBorderDark
+import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
+import com.example.expensetracker.ui.theme.ForestBackgroundLight
 import com.example.expensetracker.ui.theme.ForestCardDark
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,6 +69,7 @@ fun TotalCardsBottomSheet(
     onFilterSelected: (DateRangeFilter) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val extendedColors = ExpenseTrackerTheme.extendedColors
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showPeriodSheet by remember { mutableStateOf(false) }
     var showCustomDateDialog by remember { mutableStateOf(false) }
@@ -96,7 +99,7 @@ fun TotalCardsBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = ForestBackgroundDark,
+        containerColor = if (extendedColors.isDark) ForestBackgroundDark else ForestBackgroundLight,
         dragHandle = null
     ) {
         Column(
@@ -117,12 +120,12 @@ fun TotalCardsBottomSheet(
                         text = "Financial Overview",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary
                     )
                     Text(
                         text = "Inspection of period cashflow & ledger",
                         style = MaterialTheme.typography.bodySmall,
-                        color = Color(0xFFA5C4B2)
+                        color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary
                     )
                 }
 
@@ -134,13 +137,13 @@ fun TotalCardsBottomSheet(
                         onClick = onDismiss,
                         modifier = Modifier.size(36.dp),
                         shape = CircleShape,
-                        color = Color(0x28FFFFFF)
+                        color = if (extendedColors.isDark) Color(0x28FFFFFF) else Color(0xFFE2EBE5)
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 painter = painterResource(id = R.drawable.ic_close),
                                 contentDescription = "Close",
-                                tint = Color.White,
+                                tint = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -157,8 +160,8 @@ fun TotalCardsBottomSheet(
                     onClick = { showPeriodSheet = true },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(16.dp),
-                    color = ForestCardDark,
-                    border = BorderStroke(1.dp, ForestBorderDark)
+                    color = if (extendedColors.isDark) ForestCardDark else extendedColors.cardElevated,
+                    border = BorderStroke(1.dp, if (extendedColors.isDark) ForestBorderDark else extendedColors.cardBorder)
                 ) {
                     Row(
                         modifier = Modifier
@@ -189,26 +192,26 @@ fun TotalCardsBottomSheet(
                                 Text(
                                     text = "Time Period",
                                     style = MaterialTheme.typography.labelSmall,
-                                    color = Color(0xFFA5C4B2)
+                                    color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary
                                 )
                                 Text(
                                     text = periodLabel,
                                     style = MaterialTheme.typography.bodyLarge,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary
                                 )
                             }
                         }
 
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Color(0x22D4F63D)
+                            color = if (extendedColors.isDark) Color(0x22D4F63D) else Color(0x1F1B4D34)
                         ) {
                             Text(
                                 text = "Change",
                                 style = MaterialTheme.typography.labelMedium,
                                 fontWeight = FontWeight.Bold,
-                                color = ElectricLime,
+                                color = if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34),
                                 modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                             )
                         }
@@ -217,13 +220,23 @@ fun TotalCardsBottomSheet(
             }
 
             // Screen 2 Stitched Leathercraft Card
-            val cardBrush = Brush.verticalGradient(
-                colors = listOf(
-                    Color(0xFF163E24),
-                    Color(0xFF0F2B19),
-                    Color(0xFF08170E)
+            val cardBrush = if (extendedColors.isDark) {
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF163E24),
+                        Color(0xFF0F2B19),
+                        Color(0xFF08170E)
+                    )
                 )
-            )
+            } else {
+                Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0xFF1E5238),
+                        Color(0xFF153F2B),
+                        Color(0xFF0E2C1E)
+                    )
+                )
+            }
 
             Card(
                 modifier = Modifier.fillMaxWidth(),
@@ -242,7 +255,7 @@ fun TotalCardsBottomSheet(
                             val cornerRadius = 22.dp.toPx()
                             val inset = 6.dp.toPx()
                             drawRoundRect(
-                                color = Color(0x55D4F63D),
+                                color = if (extendedColors.isDark) Color(0x55D4F63D) else Color(0x55A3D9B5),
                                 topLeft = Offset(inset, inset),
                                 size = Size(size.width - inset * 2, size.height - inset * 2),
                                 cornerRadius = CornerRadius(cornerRadius, cornerRadius),

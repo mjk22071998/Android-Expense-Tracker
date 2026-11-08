@@ -56,6 +56,7 @@ private val LightColorScheme = lightColorScheme(
 )
 
 private val DarkExtendedColors = ExtendedColors(
+    isDark = true,
     electricLime = ElectricLime,
     electricCyan = ElectricCyan,
     emeraldIncome = EmeraldIncome,
@@ -69,6 +70,7 @@ private val DarkExtendedColors = ExtendedColors(
 )
 
 private val LightExtendedColors = ExtendedColors(
+    isDark = false,
     electricLime = Color(0xFF1B4D34),
     electricCyan = Color(0xFF0284C7),
     emeraldIncome = Color(0xFF059669),

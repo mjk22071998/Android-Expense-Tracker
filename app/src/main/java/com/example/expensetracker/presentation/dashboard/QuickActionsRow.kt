@@ -25,6 +25,7 @@ import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.presentation.common.TooltipPosition
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
+import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
 @Composable
 fun QuickActionsRow(
@@ -33,12 +34,17 @@ fun QuickActionsRow(
     periodLabel: String = "This Month",
     modifier: Modifier = Modifier
 ) {
+    val extendedColors = ExpenseTrackerTheme.extendedColors
+    val addContainerColor = if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34)
+    val addContentColor = if (extendedColors.isDark) ElectricLimeOn else Color.White
+    val periodContainerColor = if (extendedColors.isDark) Color(0xFF0099FF) else Color(0xFF0284C7)
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 1. Primary Vibrant Yellow/Lime Pill (Add Entry)
+        // 1. Primary Action Pill (Add Entry)
         Box(modifier = Modifier.weight(1f)) {
             AppTooltip(
                 text = "Record new expense or income",
@@ -51,7 +57,7 @@ fun QuickActionsRow(
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(24.dp),
-                    color = ElectricLime
+                    color = addContainerColor
                 ) {
                     Row(
                         modifier = Modifier
@@ -63,14 +69,14 @@ fun QuickActionsRow(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_add),
                             contentDescription = "Add Entry",
-                            tint = ElectricLimeOn,
+                            tint = addContentColor,
                             modifier = Modifier.size(18.dp)
                         )
                         Text(
                             text = "Add Entry",
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
-                            color = ElectricLimeOn,
+                            color = addContentColor,
                             fontSize = 14.sp,
                             modifier = Modifier.padding(start = 6.dp)
                         )
@@ -79,7 +85,7 @@ fun QuickActionsRow(
             }
         }
 
-        // 2. Vibrant Cyan / Blue Pill (Period Filter)
+        // 2. Secondary Filter Pill (Period Filter)
         Box(modifier = Modifier.weight(1f)) {
             AppTooltip(
                 text = "Filter transactions by date range",
@@ -92,7 +98,7 @@ fun QuickActionsRow(
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(24.dp),
-                    color = Color(0xFF0099FF)
+                    color = periodContainerColor
                 ) {
                     Row(
                         modifier = Modifier

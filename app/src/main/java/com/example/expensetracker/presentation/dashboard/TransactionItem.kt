@@ -56,6 +56,7 @@ fun TransactionItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val extendedColors = ExpenseTrackerTheme.extendedColors
     val isIncome = transaction.type == Constants.TransactionType.INCOME
     var isMenuExpanded by remember { mutableStateOf(false) }
 
@@ -71,13 +72,13 @@ fun TransactionItem(
         Surface(
             modifier = Modifier.size(46.dp),
             shape = CircleShape,
-            color = Color(0x28FFFFFF)
+            color = if (extendedColors.isDark) Color(0x28FFFFFF) else Color(0xFFE2EBE5)
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
                     painter = painterResource(id = getCategoryIcon(transaction.categoryIcon)),
                     contentDescription = transaction.categoryName,
-                    tint = Color.White,
+                    tint = if (extendedColors.isDark) Color.White else Color(0xFF1B4D34),
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -92,7 +93,7 @@ fun TransactionItem(
                 text = transaction.categoryName.ifBlank { "Uncategorized" },
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.SemiBold,
-                color = Color.White,
+                color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
                 fontSize = 15.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -107,7 +108,7 @@ fun TransactionItem(
             Text(
                 text = displaySubtitle,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFFA5C4B2),
+                color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary,
                 fontSize = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -123,7 +124,7 @@ fun TransactionItem(
                 text = "${if (isIncome) "+" else "-"} $currencySymbol ${formatAmount(transaction.amount)}",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
                 fontSize = 15.sp,
                 letterSpacing = (-0.3).sp
             )
@@ -131,7 +132,11 @@ fun TransactionItem(
             Text(
                 text = if (isIncome) "Deposit" else "Expense",
                 style = MaterialTheme.typography.labelSmall,
-                color = if (isIncome) ElectricLime else Color(0xFFA5C4B2),
+                color = if (isIncome) {
+                    if (extendedColors.isDark) ElectricLime else extendedColors.emeraldIncome
+                } else {
+                    if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary
+                },
                 fontSize = 11.sp,
                 fontWeight = FontWeight.Medium
             )
@@ -150,7 +155,7 @@ fun TransactionItem(
                     Icon(
                         painter = painterResource(id = R.drawable.ic_more_vert),
                         contentDescription = "More",
-                        tint = Color(0xFFA5C4B2),
+                        tint = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary,
                         modifier = Modifier.size(18.dp)
                     )
                 }

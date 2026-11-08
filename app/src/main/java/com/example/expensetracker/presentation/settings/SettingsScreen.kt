@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
@@ -32,16 +31,15 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -53,6 +51,7 @@ import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.presentation.common.TooltipPosition
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -64,7 +63,6 @@ fun SettingsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val extendedColors = ExpenseTrackerTheme.extendedColors
     val coroutineScope = rememberCoroutineScope()
-    var showClearRecordsDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val appVersion = remember(context) {
         try {
@@ -74,6 +72,7 @@ fun SettingsScreen(
             "Version 0.2"
         }
     }
+    var showClearRecordsDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
@@ -125,13 +124,10 @@ fun SettingsScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 20.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Currency Preferences Section
-            SettingsSectionCard(
-                title = "Currency & Locale",
-                subtitle = "Configure how monetary figures are displayed"
-            ) {
+            // Currency Section
+            SettingsSectionCard(title = "Currency") {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -139,39 +135,32 @@ fun SettingsScreen(
                         .clickable {
                             viewModel.onCurrencyPickerVisibilityChanged(true)
                         }
-                        .padding(vertical = 6.dp),
+                        .padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = uiState.currencyCode,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = extendedColors.textPrimary
+                        )
+                        Surface(
+                            color = Color(0x22D4F63D),
+                            shape = RoundedCornerShape(8.dp)
                         ) {
                             Text(
-                                text = uiState.currencyCode,
-                                style = MaterialTheme.typography.titleMedium,
+                                text = uiState.currencySymbol,
+                                color = ElectricLime,
+                                style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.Bold,
-                                color = extendedColors.textPrimary
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                             )
-                            Surface(
-                                color = Color(0x22D4F63D),
-                                shape = RoundedCornerShape(8.dp)
-                            ) {
-                                Text(
-                                    text = uiState.currencySymbol,
-                                    color = ElectricLime,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                                )
-                            }
                         }
-                        Text(
-                            text = "Tap to choose from 150+ international currencies",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = extendedColors.textMuted
-                        )
                     }
 
                     Icon(
@@ -182,11 +171,8 @@ fun SettingsScreen(
                 }
             }
 
-            // Appearance & Theme Mode Section
-            SettingsSectionCard(
-                title = "Appearance",
-                subtitle = "Choose light, dark, or system matching theme"
-            ) {
+            // Appearance Section
+            SettingsSectionCard(title = "Appearance") {
                 ThemeModeSelector(
                     selectedMode = uiState.themeMode,
                     onModeSelected = viewModel::setThemeMode
@@ -194,37 +180,22 @@ fun SettingsScreen(
             }
 
             // Data Management Section
-            SettingsSectionCard(
-                title = "Data Management",
-                subtitle = "Manage ledger records and stored data"
-            ) {
+            SettingsSectionCard(title = "Data Management") {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(14.dp))
                         .clickable { showClearRecordsDialog = true }
-                        .padding(vertical = 6.dp),
+                        .padding(vertical = 4.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        verticalArrangement = Arrangement.spacedBy(2.dp)
-                    ) {
-                        Text(
-                            text = "Clear All Records",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = extendedColors.crimsonExpense
-                        )
-                        Text(
-                            text = "Permanently remove transactions and reset balance to 0.00",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = extendedColors.textMuted
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Clear All Records",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = extendedColors.crimsonExpense
+                    )
 
                     Surface(
                         color = Color(0x22FF5252),
@@ -260,7 +231,6 @@ fun SettingsScreen(
         }
     }
 
-
     if (showClearRecordsDialog) {
         ClearAllRecordsDialog(
             currencySymbol = uiState.currencySymbol,
@@ -291,7 +261,6 @@ fun SettingsScreen(
 @Composable
 private fun SettingsSectionCard(
     title: String,
-    subtitle: String,
     content: @Composable () -> Unit
 ) {
     val extendedColors = ExpenseTrackerTheme.extendedColors
@@ -306,21 +275,14 @@ private fun SettingsSectionCard(
     ) {
         Column(
             modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = extendedColors.textPrimary
-                )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = extendedColors.textMuted
-                )
-            }
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = extendedColors.textPrimary
+            )
             content()
         }
     }
