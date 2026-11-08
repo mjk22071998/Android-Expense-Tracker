@@ -9,12 +9,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -48,7 +48,7 @@ fun TypeToggle(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(54.dp),
+            .height(50.dp),
         shape = CircleShape,
         color = extendedColors.cardBackground,
         border = BorderStroke(1.dp, extendedColors.cardBorder)
@@ -56,8 +56,10 @@ fun TypeToggle(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
+                .fillMaxHeight()
                 .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // Expense Tab Pill (Calm Vivid Blue instead of danger-red)
             val expenseBg by animateColorAsState(
@@ -74,10 +76,10 @@ fun TypeToggle(
             Box(
                 modifier = Modifier
                     .weight(1f)
+                    .fillMaxHeight()
                     .clip(CircleShape)
                     .background(expenseBg)
-                    .clickable { onTypeSelected(Constants.TransactionType.EXPENSE) }
-                    .padding(vertical = 10.dp),
+                    .clickable { onTypeSelected(Constants.TransactionType.EXPENSE) },
                 contentAlignment = Alignment.Center
             ) {
                 Row(
@@ -114,10 +116,10 @@ fun TypeToggle(
             Box(
                 modifier = Modifier
                     .weight(1f)
+                    .fillMaxHeight()
                     .clip(CircleShape)
                     .background(incomeBg)
-                    .clickable { onTypeSelected(Constants.TransactionType.INCOME) }
-                    .padding(vertical = 10.dp),
+                    .clickable { onTypeSelected(Constants.TransactionType.INCOME) },
                 contentAlignment = Alignment.Center
             ) {
                 Row(
