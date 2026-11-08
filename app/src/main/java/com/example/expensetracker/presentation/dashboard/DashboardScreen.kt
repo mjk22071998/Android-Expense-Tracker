@@ -1,8 +1,12 @@
 package com.example.expensetracker.presentation.dashboard
 
+import android.Manifest
 import android.content.ClipData
 import android.content.Intent
+import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,8 +27,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +38,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,7 +55,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
 import com.example.expensetracker.domain.model.DateRangeFilter
+import com.example.expensetracker.domain.usecase.PdfStorageHelper
 import com.example.expensetracker.ui.theme.ElectricLime
+import kotlinx.coroutines.launch
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun DashboardScreen(
@@ -67,6 +80,74 @@ fun DashboardScreen(
     var isGeneratingPdf by remember { mutableStateOf(false) }
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+    var pendingSaveFile by remember { mutableStateOf<File?>(null) }
+
+    // Fallback or explicit Document creation launcher (Storage Access Framework)
+    val createDocumentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { destinationUri ->
+        val file = pendingSaveFile
+        if (destinationUri != null && file != null) {
+            try {
+                context.contentResolver.openOutputStream(destinationUri)?.use { outStream ->
+                    file.inputStream().use { inStream ->
+                        inStream.copyTo(outStream)
+                    }
+                }
+                Toast.makeText(context, "Report saved successfully", Toast.LENGTH_SHORT).show()
+                coroutineScope.launch {
+                    val res = snackbarHostState.showSnackbar(
+                        message = "Report saved successfully",
+                        actionLabel = "Open",
+                        duration = SnackbarDuration.Long
+                    )
+                    if (res == SnackbarResult.ActionPerformed) {
+                        PdfStorageHelper.openPdf(context, destinationUri)
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Failed to save: ${e.message}", Toast.LENGTH_LONG).show()
+            } finally {
+                pendingSaveFile = null
+            }
+        } else {
+            pendingSaveFile = null
+        }
+    }
+
+    // Permission launcher for Android 9 and below (API <= 28)
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        val file = pendingSaveFile
+        if (file != null) {
+            if (isGranted) {
+                val saveResult = PdfStorageHelper.saveReportToStorage(context, file)
+                saveResult.onSuccess { result ->
+                    Toast.makeText(context, "Saved to ${result.displayPath}", Toast.LENGTH_LONG).show()
+                    coroutineScope.launch {
+                        val snackbarRes = snackbarHostState.showSnackbar(
+                            message = "Saved to ${result.displayPath}",
+                            actionLabel = "Open",
+                            duration = SnackbarDuration.Long
+                        )
+                        if (snackbarRes == SnackbarResult.ActionPerformed) {
+                            PdfStorageHelper.openPdf(context, result.uri)
+                        }
+                    }
+                    pendingSaveFile = null
+                }.onFailure {
+                    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                    createDocumentLauncher.launch("Expense_Report_$timeStamp.pdf")
+                }
+            } else {
+                Toast.makeText(context, "Storage permission denied. Choose location to save:", Toast.LENGTH_SHORT).show()
+                val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                createDocumentLauncher.launch("Expense_Report_$timeStamp.pdf")
+            }
+        }
+    }
 
     // Back button closes active search query
     BackHandler(enabled = uiState.searchQuery.isNotEmpty()) {
@@ -372,7 +453,44 @@ fun DashboardScreen(
             initialCategoryIds = uiState.selectedCategoryIds,
             allCategories = uiState.allCategories,
             isGenerating = isGeneratingPdf,
-            onGenerateAndShare = { filter, typeFilter, categoryIds ->
+            onSaveToStorage = { filter, typeFilter, categoryIds ->
+                isGeneratingPdf = true
+                viewModel.generatePdfReport(
+                    filter = filter,
+                    typeFilter = typeFilter,
+                    categoryIds = categoryIds
+                ) { file ->
+                    isGeneratingPdf = false
+                    showExportSheet = false
+                    if (file != null) {
+                        pendingSaveFile = file
+                        // Check permissions first!
+                        if (PdfStorageHelper.hasStoragePermission(context)) {
+                            val saveResult = PdfStorageHelper.saveReportToStorage(context, file)
+                            saveResult.onSuccess { result ->
+                                Toast.makeText(context, "Saved to ${result.displayPath}", Toast.LENGTH_LONG).show()
+                                coroutineScope.launch {
+                                    val snackbarRes = snackbarHostState.showSnackbar(
+                                        message = "Saved to ${result.displayPath}",
+                                        actionLabel = "Open",
+                                        duration = SnackbarDuration.Long
+                                    )
+                                    if (snackbarRes == SnackbarResult.ActionPerformed) {
+                                        PdfStorageHelper.openPdf(context, result.uri)
+                                    }
+                                }
+                                pendingSaveFile = null
+                            }.onFailure {
+                                val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                                createDocumentLauncher.launch("Expense_Report_$timeStamp.pdf")
+                            }
+                        } else {
+                            permissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        }
+                    }
+                }
+            },
+            onShare = { filter, typeFilter, categoryIds ->
                 isGeneratingPdf = true
                 viewModel.generatePdfReport(
                     filter = filter,

@@ -17,7 +17,9 @@ A production-grade, offline-first personal finance Android application built wit
 - **Live Theme Switching** — dynamic System, Light, or Dark modes with edge-to-edge system bar synchronization.
 - **Branded App Startup** — official AndroidX `SplashScreen` API integrated before `super.onCreate()`, handing off to an organic branded Compose overlay gated on first-launch database seeding.
 - **Receipt-Style Transaction Detail** — tap any transaction for a modal breakdown, status badge, and one-tap edit routing.
-- **Export to PDF Statements** — generate professional, hardware-accelerated ISO A4 PDF statements with executive summary cards (inflow, outflow, net balance) and itemized ledger tables; automatically inherits dashboard filters and supports live in-modal customization before exporting via Android's secure `FileProvider`.
+- **Export to PDF Statements** — generate professional, hardware-accelerated ISO A4 PDF statements with executive summary cards (inflow, outflow, net balance) and itemized ledger tables; automatically inherits dashboard filters and supports live in-modal customization with two dedicated export flows:
+  - **Save in Phone / SD Storage**: Proactively verifies storage permissions (with `WRITE_EXTERNAL_STORAGE` on API $\le 28$ and Scoped Storage `MediaStore` on Android 10+), automatically detects preferred storage (Phone Storage or external SD Card), and writes directly to `Download/ExpenseTracker/` with an interactive "Open" snackbar and SAF fallback.
+  - **Share PDF**: Seamlessly shares the generated statement via Android's secure `FileProvider` and system chooser.
 - **Structured Error Handling** — sealed `UiError` hierarchy and `AppResult<T>` wrapper around all repository operations.
 
 ---
@@ -163,6 +165,7 @@ UNIQUE INDEX    (ledgerId, month, year)
 Unit test suite (`src/test`):
 - `DateRangeFilterTest` — verifies Strategy pattern implementations and period boundary correctness.
 - `CurrencyHelperTest` — tests colloquial local currency symbol resolution across global currency codes.
+- `PdfStorageHelperTest` — tests storage path resolution and storage property contract for phone vs SD card targets.
 - `DashboardViewModelTest` — tests search debounce, filter state changes, and soft-delete propagation.
 - `SettingsViewModelTest` — tests live theme and currency preference persistence.
 - `DateUtilsTest` — validates UTC-to-local midnight conversions and period boundaries.

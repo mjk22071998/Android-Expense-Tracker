@@ -3,7 +3,6 @@ package com.example.expensetracker.presentation.dashboard
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,8 +13,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -49,6 +51,11 @@ import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
+enum class PdfExportAction {
+    SAVE,
+    SHARE
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExportPdfBottomSheet(
@@ -57,7 +64,8 @@ fun ExportPdfBottomSheet(
     initialCategoryIds: Set<String>,
     allCategories: List<Category>,
     isGenerating: Boolean = false,
-    onGenerateAndShare: (filter: DateRangeFilter, typeFilter: String?, categoryIds: Set<String>) -> Unit,
+    onSaveToStorage: (filter: DateRangeFilter, typeFilter: String?, categoryIds: Set<String>) -> Unit,
+    onShare: (filter: DateRangeFilter, typeFilter: String?, categoryIds: Set<String>) -> Unit,
     onDismiss: () -> Unit
 ) {
     val extendedColors = ExpenseTrackerTheme.extendedColors
@@ -66,6 +74,8 @@ fun ExportPdfBottomSheet(
     var currentFilter by remember { mutableStateOf(initialFilter) }
     var currentTypeFilter by remember { mutableStateOf(initialTypeFilter) }
     var currentCategoryIds by remember { mutableStateOf(initialCategoryIds) }
+
+    var pendingAction by remember { mutableStateOf<PdfExportAction?>(null) }
 
     var showPeriodSheet by remember { mutableStateOf(false) }
     var showCustomDateDialog by remember { mutableStateOf(false) }
@@ -98,6 +108,7 @@ fun ExportPdfBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp, vertical = 6.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
@@ -115,7 +126,7 @@ fun ExportPdfBottomSheet(
                         color = extendedColors.textPrimary
                     )
                     Text(
-                        text = "Customize statement parameters or export as-is",
+                        text = "Save statement to device storage or share via apps",
                         style = MaterialTheme.typography.bodySmall,
                         color = extendedColors.textSecondary
                     )
@@ -300,47 +311,100 @@ fun ExportPdfBottomSheet(
 
             Spacer(modifier = Modifier.height(2.dp))
 
-            // Action Button: Generate & Share PDF
-            Button(
-                onClick = {
-                    onGenerateAndShare(currentFilter, currentTypeFilter, currentCategoryIds)
-                },
-                enabled = !isGenerating,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp),
-                shape = RoundedCornerShape(26.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = ElectricLime,
-                    contentColor = ElectricLimeOn
-                )
+            // Action Buttons: Save to Phone Storage + Share PDF
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                if (isGenerating) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(22.dp),
-                        color = ElectricLimeOn,
-                        strokeWidth = 2.dp
+                // Primary Option: Save in Phone / SD Storage
+                Button(
+                    onClick = {
+                        pendingAction = PdfExportAction.SAVE
+                        onSaveToStorage(currentFilter, currentTypeFilter, currentCategoryIds)
+                    },
+                    enabled = !isGenerating,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(26.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = ElectricLime,
+                        contentColor = ElectricLimeOn
                     )
-                    Spacer(modifier = Modifier.width(10.dp))
-                    Text(
-                        text = "Generating PDF...",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_picture_as_pdf),
-                        contentDescription = null,
-                        tint = ElectricLimeOn,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Generate & Share PDF",
-                        style = MaterialTheme.typography.labelLarge,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp
-                    )
+                ) {
+                    if (isGenerating && pendingAction == PdfExportAction.SAVE) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = ElectricLimeOn,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Saving to Device...",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_download),
+                            contentDescription = null,
+                            tint = ElectricLimeOn,
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Save in Phone Storage",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        )
+                    }
+                }
+
+                // Secondary Option: Share PDF
+                OutlinedButton(
+                    onClick = {
+                        pendingAction = PdfExportAction.SHARE
+                        onShare(currentFilter, currentTypeFilter, currentCategoryIds)
+                    },
+                    enabled = !isGenerating,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    shape = RoundedCornerShape(25.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        containerColor = extendedColors.cardElevated,
+                        contentColor = extendedColors.textPrimary
+                    ),
+                    border = BorderStroke(1.dp, extendedColors.cardBorder)
+                ) {
+                    if (isGenerating && pendingAction == PdfExportAction.SHARE) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            color = extendedColors.textPrimary,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Preparing PDF...",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_share),
+                            contentDescription = null,
+                            tint = extendedColors.textPrimary,
+                            modifier = Modifier.size(19.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Share PDF",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp
+                        )
+                    }
                 }
             }
 
@@ -441,7 +505,8 @@ private fun ExportPdfBottomSheetPreview() {
             initialTypeFilter = null,
             initialCategoryIds = emptySet(),
             allCategories = emptyList(),
-            onGenerateAndShare = { _, _, _ -> },
+            onSaveToStorage = { _, _, _ -> },
+            onShare = { _, _, _ -> },
             onDismiss = {}
         )
     }
