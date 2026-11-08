@@ -89,10 +89,7 @@ fun DashboardScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             DashboardTopBar(
-                title = "Savings Account",
-                activeCategoryFilterCount = uiState.selectedCategoryIds.size,
-                onFilterClick = { viewModel.onCategoryFilterSheetVisibilityChanged(true) },
-                onSettingsClick = onNavigateToSettings
+                title = "Savings Account"
             )
         }
     ) { paddingValues ->
@@ -197,7 +194,6 @@ fun DashboardScreen(
                 QuickActionsRow(
                     onAddTransaction = onAddTransaction,
                     onFilterPeriodClick = { showPeriodPicker = true },
-                    onSettingsClick = onNavigateToSettings,
                     periodLabel = periodLabel
                 )
 
@@ -214,7 +210,7 @@ fun DashboardScreen(
                 Spacer(modifier = Modifier.height(22.dp))
 
                 // ============================================================
-                // 4. Transaction History Header (with "See Details")
+                // 4. Transaction History Header
                 // ============================================================
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -230,13 +226,10 @@ fun DashboardScreen(
                     )
 
                     Text(
-                        text = "See Details",
-                        style = MaterialTheme.typography.labelMedium,
+                        text = "${uiState.transactions.size} records",
+                        style = MaterialTheme.typography.labelSmall,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFFA5C4B2),
-                        modifier = Modifier
-                            .clickable { showTotalCardsSheet = true }
-                            .padding(vertical = 4.dp, horizontal = 2.dp)
+                        color = Color(0xFFA5C4B2)
                     )
                 }
 

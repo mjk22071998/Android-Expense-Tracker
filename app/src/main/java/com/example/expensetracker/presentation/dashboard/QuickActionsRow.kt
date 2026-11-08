@@ -1,14 +1,11 @@
 package com.example.expensetracker.presentation.dashboard
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -30,20 +27,19 @@ import com.example.expensetracker.ui.theme.ElectricLimeOn
 fun QuickActionsRow(
     onAddTransaction: () -> Unit,
     onFilterPeriodClick: () -> Unit,
-    onSettingsClick: () -> Unit,
     periodLabel: String = "This Month",
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 1. Primary Vibrant Yellow/Lime Pill (⇆ Transfer / Add Entry)
+        // 1. Primary Vibrant Yellow/Lime Pill (Add Entry)
         Surface(
             onClick = onAddTransaction,
             modifier = Modifier
-                .weight(1.3f)
+                .weight(1f)
                 .height(48.dp),
             shape = RoundedCornerShape(24.dp),
             color = ElectricLime
@@ -59,7 +55,7 @@ fun QuickActionsRow(
                     painter = painterResource(id = R.drawable.ic_add),
                     contentDescription = "Add Entry",
                     tint = ElectricLimeOn,
-                    modifier = Modifier.size(17.dp)
+                    modifier = Modifier.size(18.dp)
                 )
                 Text(
                     text = "Add Entry",
@@ -72,11 +68,11 @@ fun QuickActionsRow(
             }
         }
 
-        // 2. Vibrant Cyan / Blue Pill (🎯 Set Target / Period Filter)
+        // 2. Vibrant Cyan / Blue Pill (Period Filter)
         Surface(
             onClick = onFilterPeriodClick,
             modifier = Modifier
-                .weight(1.3f)
+                .weight(1f)
                 .height(48.dp),
             shape = RoundedCornerShape(24.dp),
             color = Color(0xFF0099FF)
@@ -101,27 +97,6 @@ fun QuickActionsRow(
                     color = Color.White,
                     fontSize = 14.sp,
                     modifier = Modifier.padding(start = 6.dp)
-                )
-            }
-        }
-
-        // 3. Dark Circular Glass Button (⚙ Settings)
-        Surface(
-            onClick = onSettingsClick,
-            modifier = Modifier.size(48.dp),
-            shape = CircleShape,
-            color = Color(0x28FFFFFF),
-            border = BorderStroke(1.dp, Color(0x33FFFFFF))
-        ) {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_settings),
-                    contentDescription = "Settings",
-                    tint = Color.White,
-                    modifier = Modifier.size(20.dp)
                 )
             }
         }
