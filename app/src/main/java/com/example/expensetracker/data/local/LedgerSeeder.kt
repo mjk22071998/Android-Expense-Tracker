@@ -20,16 +20,12 @@ class LedgerSeeder @Inject constructor(
             val defaultCurrency = CurrencyHelper.getDefaultCurrencyCode(context)
 
             ledgerDao.insert(
-                Ledger(
+                Ledger.create(
                     id = "ledger_default",
                     name = "Personal",
                     currencyCode = defaultCurrency,
-                    balance = 0.0,
-                    totalIncome = 0.0,
-                    totalExpenses = 0.0,
-                    createdAt = now,
-                    updatedAt = now,
-                    isDefault = true
+                    isDefault = true,
+                    timestamp = now
                 )
             )
         }

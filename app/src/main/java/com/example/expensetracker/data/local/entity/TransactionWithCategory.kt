@@ -13,4 +13,20 @@ data class TransactionWithCategory(
     val createdAt: Long,
     val updatedAt: Long,
     val isDeleted: Boolean
-)
+) {
+    /**
+     * Maps the joined relation model back into the core Transaction entity.
+     */
+    fun toTransaction(): Transaction = Transaction(
+        id = id,
+        ledgerId = ledgerId,
+        categoryId = categoryId,
+        amount = amount,
+        type = type,
+        note = note,
+        date = date,
+        createdAt = createdAt,
+        updatedAt = updatedAt,
+        isDeleted = isDeleted
+    )
+}

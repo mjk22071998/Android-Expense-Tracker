@@ -178,16 +178,14 @@ class AddEditTransactionViewModel @Inject constructor(
                     newTransaction = updatedTransaction
                 )
             } else {
-                val newTransaction = Transaction(
-                    id = UUID.randomUUID().toString(),
-                    ledgerId = state.currentLedgerId,
-                    categoryId = state.selectedCategoryId,
+                val newTransaction = Transaction.create(
                     amount = amountValue,
                     type = state.type,
+                    categoryId = state.selectedCategoryId,
+                    ledgerId = state.currentLedgerId,
                     note = state.note,
                     date = state.date,
-                    createdAt = now,
-                    updatedAt = now
+                    timestamp = now
                 )
                 transactionRepository.insertTransaction(newTransaction)
             }
@@ -204,12 +202,10 @@ class AddEditTransactionViewModel @Inject constructor(
 
     fun addCategory(name: String, icon: String) {
         launchSafely(onError = ::handleError) {
-            val newCategory = Category(
-                id = UUID.randomUUID().toString(),
+            val newCategory = Category.create(
                 name = name,
                 icon = icon,
-                transactionType = _uiState.value.type,
-                isDefault = false
+                transactionType = _uiState.value.type
             )
             when (val result = categoryRepository.insertCategory(newCategory)) {
                 is AppResult.Success -> {

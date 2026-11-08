@@ -110,7 +110,7 @@ class DashboardViewModel @Inject constructor(
     private fun loadTransactions() {
         transactionsJob?.cancel() // stop the previous listener before starting a new one
 
-        val (startDate, endDate) = getDateRange(_uiState.value.selectedFilter)
+        val (startDate, endDate) = _uiState.value.selectedFilter.calculateRange()
         val query = _uiState.value.searchQuery
         val typeFilter = _uiState.value.selectedTypeFilter
         val categoryIds = _uiState.value.selectedCategoryIds
@@ -196,18 +196,7 @@ class DashboardViewModel @Inject constructor(
     fun softDeleteTransaction(transaction: TransactionWithCategory) {
         launchSafely(onError = ::handleError) {
             val result = transactionRepository.softDeleteTransaction(
-                Transaction(
-                    id = transaction.id,
-                    ledgerId = transaction.ledgerId,
-                    categoryId = transaction.categoryId,
-                    amount = transaction.amount,
-                    type = transaction.type,
-                    note = transaction.note,
-                    date = transaction.date,
-                    createdAt = transaction.createdAt,
-                    updatedAt = System.currentTimeMillis(),
-                    isDeleted = true
-                )
+                transaction.toTransaction().toSoftDeleted()
             )
             if (result is AppResult.Error) handleError(result.error)
         }
@@ -223,13 +212,5 @@ class DashboardViewModel @Inject constructor(
         _uiState.update { it.copy(error = error) }
     }
 
-    // ---------- date range ----------
 
-    private fun getDateRange(filter: DateRangeFilter): Pair<Long, Long> = when (filter) {
-        is DateRangeFilter.Today -> DateUtils.todayLocalRange()
-        is DateRangeFilter.ThisWeek -> DateUtils.thisWeekRange()
-        is DateRangeFilter.ThisMonth -> DateUtils.thisMonthRange()
-        is DateRangeFilter.ThisYear -> DateUtils.thisYearRange()
-        is DateRangeFilter.Custom -> Pair(filter.startDate, filter.endDate)
-    }
 }
