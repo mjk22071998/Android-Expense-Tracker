@@ -67,9 +67,9 @@ fun SettingsScreen(
     val appVersion = remember(context) {
         try {
             val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
-            "Version ${pInfo.versionName ?: "0.2"}"
+            "Version ${pInfo.versionName ?: "0.3"}"
         } catch (_: Exception) {
-            "Version 0.2"
+            "Version 0.3"
         }
     }
     var showClearRecordsDialog by remember { mutableStateOf(false) }
