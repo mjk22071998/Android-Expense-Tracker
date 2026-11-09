@@ -31,7 +31,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.expensetracker.R
 import com.example.expensetracker.domain.model.DateUtils
-import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -73,7 +72,7 @@ fun DatePickerField(
             Icon(
                 painter = painterResource(id = R.drawable.ic_date_range),
                 contentDescription = "Pick date",
-                tint = ElectricLime
+                tint = MaterialTheme.colorScheme.primary
             )
         }
     }
@@ -92,7 +91,7 @@ fun DatePickerField(
                     }
                     showDialog = false
                 }) {
-                    Text("Select", fontWeight = FontWeight.Bold, color = ElectricLime)
+                    Text("Select", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
                 }
             },
             dismissButton = {

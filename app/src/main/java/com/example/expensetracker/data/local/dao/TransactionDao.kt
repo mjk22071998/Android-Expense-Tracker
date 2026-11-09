@@ -156,6 +156,26 @@ interface TransactionDao {
             snapshotDao.reverseExpense(oldTransaction.ledgerId, oldMonth, oldYear, oldTransaction.amount, now)
         }
 
+        // Ensure snapshot exists for the target month before applying new transaction
+        val existingSnapshot = snapshotDao.getSnapshot(newTransaction.ledgerId, newMonth, newYear)
+        if (existingSnapshot == null) {
+            val previousSnapshot = getPreviousMonthSnapshot(
+                newTransaction.ledgerId, newMonth, newYear, snapshotDao
+            )
+            snapshotDao.insert(
+                MonthlySnapshot(
+                    id = UUID.randomUUID().toString(),
+                    ledgerId = newTransaction.ledgerId,
+                    month = newMonth,
+                    year = newYear,
+                    openingBalance = previousSnapshot?.closingBalance ?: 0.0,
+                    closingBalance = previousSnapshot?.closingBalance ?: 0.0,
+                    createdAt = now,
+                    updatedAt = now
+                )
+            )
+        }
+
         // Apply new transaction effect
         if (newTransaction.type == Constants.TransactionType.INCOME) {
             ledgerDao.addIncome(newTransaction.ledgerId, newTransaction.amount, now)

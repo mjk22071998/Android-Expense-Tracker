@@ -47,12 +47,9 @@ ksp {
 }
 
 dependencies {
-    implementation(libs.androidx.material3)
     implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.ui)
     ksp(libs.androidx.room.compiler)
     implementation(libs.room.ktx)
-    implementation(libs.androidx.room.paging)
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)

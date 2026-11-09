@@ -6,6 +6,7 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -40,10 +41,11 @@ class MainActivity : ComponentActivity() {
             val themeMode by userPreferences.themeMode.collectAsStateWithLifecycle(
                 initialValue = Constants.ThemeMode.DARK
             )
+            val isSystemDark = isSystemInDarkTheme()
             val darkTheme = when (themeMode) {
                 Constants.ThemeMode.LIGHT -> false
                 Constants.ThemeMode.DARK -> true
-                else -> true // default to dark Organic Forest theme
+                else -> isSystemDark
             }
 
             DisposableEffect(darkTheme) {

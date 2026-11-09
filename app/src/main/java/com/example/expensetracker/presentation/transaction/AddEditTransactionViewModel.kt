@@ -67,6 +67,7 @@ class AddEditTransactionViewModel @Inject constructor(
                 .collect { ledger ->
                     ledger?.let {
                         _uiState.update { state -> state.copy(currentLedgerId = it.id) }
+                        validate()
                     }
                 }
         }
@@ -152,12 +153,17 @@ class AddEditTransactionViewModel @Inject constructor(
         val state = _uiState.value
         val amountValue = state.amount.toDoubleOrNull() ?: 0.0
         _uiState.update {
-            it.copy(isSaveEnabled = amountValue > 0.0 && it.selectedCategoryId != null)
+            it.copy(
+                isSaveEnabled = amountValue > 0.0 &&
+                    it.selectedCategoryId != null &&
+                    it.currentLedgerId.isNotBlank()
+            )
         }
     }
 
     fun saveTransaction() {
         val state = _uiState.value
+        if (state.currentLedgerId.isBlank()) return
         val amountValue = state.amount.toDoubleOrNull() ?: return
         val now = System.currentTimeMillis()
 

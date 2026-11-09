@@ -21,6 +21,11 @@ class FakeTransactionRepository : TransactionRepository {
     var lastSoftDeletedTransaction: Transaction? = null
     var clearAllTransactionsResult: AppResult<Unit> = AppResult.Success(Unit)
     var clearAllCalledWithLedgerId: String? = null
+    var insertTransactionResult: AppResult<Unit> = AppResult.Success(Unit)
+    var updateTransactionResult: AppResult<Unit> = AppResult.Success(Unit)
+    var insertedTransaction: Transaction? = null
+    var updatedTransaction: Transaction? = null
+    var transactionToReturn: Transaction? = null
 
     fun emitTransactions(transactions: List<TransactionWithCategory>) {
         transactionsFlow.value = transactions
@@ -56,15 +61,20 @@ class FakeTransactionRepository : TransactionRepository {
         TODO("Not needed for current DashboardViewModel tests")
 
     override suspend fun getTransactionById(id: String): AppResult<Transaction?> =
-        TODO("Not needed for current DashboardViewModel tests")
+        AppResult.Success(transactionToReturn)
 
-    override suspend fun insertTransaction(transaction: Transaction): AppResult<Unit> =
-        TODO("Not needed for current DashboardViewModel tests")
+    override suspend fun insertTransaction(transaction: Transaction): AppResult<Unit> {
+        insertedTransaction = transaction
+        return insertTransactionResult
+    }
 
     override suspend fun updateTransaction(
         oldTransaction: Transaction,
         newTransaction: Transaction
-    ): AppResult<Unit> = TODO("Not needed for current DashboardViewModel tests")
+    ): AppResult<Unit> {
+        updatedTransaction = newTransaction
+        return updateTransactionResult
+    }
 
     override suspend fun softDeleteTransaction(transaction: Transaction): AppResult<Unit> {
         lastSoftDeletedTransaction = transaction

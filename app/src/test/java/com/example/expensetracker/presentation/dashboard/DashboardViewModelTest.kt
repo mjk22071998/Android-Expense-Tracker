@@ -176,25 +176,4 @@ class DashboardViewModelTest {
         assertEquals(null, viewModel.uiState.value.monthlyTrendDelta)
     }
 
-    @Test
-    fun `clearAllTransactions calls repository with active ledger id and triggers onSuccess`() = runTest {
-        ledgerRepository.emitDefaultLedger(sampleLedger())
-        var onSuccessCalled = false
-
-        viewModel.clearAllTransactions(onSuccess = { onSuccessCalled = true })
-
-        assertEquals("ledger_1", transactionRepository.clearAllCalledWithLedgerId)
-        assertTrue(onSuccessCalled)
-    }
-
-    @Test
-    fun `when clearAllTransactions returns error, uiState error is populated`() = runTest {
-        ledgerRepository.emitDefaultLedger(sampleLedger())
-        val testError = UiError.Database("Failed to clear ledger records")
-        transactionRepository.clearAllTransactionsResult = AppResult.Error(testError)
-
-        viewModel.clearAllTransactions()
-
-        assertEquals(testError, viewModel.uiState.value.error)
-    }
 }

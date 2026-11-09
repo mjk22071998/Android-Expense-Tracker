@@ -86,6 +86,7 @@ class DashboardViewModel @Inject constructor(
                 .catch { e -> handleError(e.toUiError()) }
                 .collect { ledger ->
                     ledger?.let {
+                        val ledgerChanged = currentLedgerId != it.id
                         currentLedgerId = it.id
                         _uiState.update { state ->
                             state.copy(
@@ -94,8 +95,10 @@ class DashboardViewModel @Inject constructor(
                                 totalExpense = ledger.totalExpenses
                             )
                         }
-                        loadTransactions()
-                        loadMonthlyComparison()
+                        if (ledgerChanged) {
+                            loadTransactions()
+                            loadMonthlyComparison()
+                        }
                     }
                 }
         }
@@ -242,21 +245,6 @@ class DashboardViewModel @Inject constructor(
                 transaction.toTransaction().toSoftDeleted()
             )
             if (result is AppResult.Error) handleError(result.error)
-        }
-    }
-
-    // ---------- clear all transactions ----------
-
-    fun clearAllTransactions(onSuccess: () -> Unit = {}) {
-        val ledgerId = currentLedgerId
-        if (ledgerId.isEmpty()) return
-        launchSafely(onError = ::handleError) {
-            val result = transactionRepository.clearAllTransactions(ledgerId)
-            if (result is AppResult.Error) {
-                handleError(result.error)
-            } else {
-                onSuccess()
-            }
         }
     }
 
