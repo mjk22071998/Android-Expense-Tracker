@@ -4,7 +4,6 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.example.expensetracker.domain.model.sync.SyncableEntity
 import java.util.UUID
 
 @Entity(
@@ -30,7 +29,7 @@ import java.util.UUID
     ]
 )
 data class Transaction(
-    @PrimaryKey override val id: String,
+    @PrimaryKey val id: String,
     val ledgerId: String,
     val categoryId: String? = null,
     val amount: Double,
@@ -38,9 +37,9 @@ data class Transaction(
     val note: String,
     val date: Long,
     val createdAt: Long,
-    override val updatedAt: Long,
+    val updatedAt: Long,
     val isDeleted: Boolean = false
-) : SyncableEntity {
+) {
 
     /**
      * Factory helper to produce a soft-deleted clone with an updated timestamp.

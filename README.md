@@ -49,7 +49,7 @@ The app features a bespoke **Organic Forest Luxury** fintech aesthetic inspired 
 - **Hero Balance**: Large, uncluttered bold balance typography (`Rs 156,532.00`) floating directly on the radiant green canopy with unified optical scale, zero clutter, and direct visual hierarchy flowing straight into the action pills.
 - **High-Energy Action Pills**: Thumb-friendly quick actions row right below the hero balance: symmetrical 50/50 split with **Neon Lime** `+ Add Entry` pill and **Sky Blue** `This Month` period filter, providing balanced ergonomic reach without redundant actions.
 - **Embedded Search Pill**: Floating translucent search capsule (`🔍 Search Transactions`) directly embedded on the dashboard for instant, debounced real-time filtering.
-- **Floating Pill Bottom Navigation**: Floating dark glass navigation capsule (`#0B1A12` with 32dp corner radius) docked at the bottom with 4 circular glass icons (Home, Ledger, Categories, Settings) that float gracefully above scrolling content, serving as the single source of truth for global navigation.
+- **Floating Pill Bottom Navigation**: Floating dark glass navigation capsule (`#0B1A12` with 32dp corner radius) docked at the bottom with 4 circular glass icons (Home, Overview, Categories, Settings) that float gracefully above scrolling content, serving as the single source of truth for global navigation.
 - **Total Cards & Stitched Leathercraft Modal**: Tapping the Ledger icon (`🏛`) in the floating bottom bar opens the Screen 2 inspection sheet featuring the handcrafted stitched leathercraft card with dual yellow Savings and blue Spend account pills.
 - **Streamlined Non-Redundant Navigation**: Each action has exactly one clear, dedicated home — Settings is accessed exclusively via the floating bar's profile tab, Categories filter via the bottom bar tag, and Total Cards via the ledger icon, eliminating duplicate triggers and back-button ambiguity.
 - **Directional Cashflow**: Emerald Green (`#10B981`) with `+` sign for Inflow/Deposits; Crimson Rose (`#F43F5E`) with `−` sign for Outflow/Expenses.
@@ -72,8 +72,7 @@ app/
 │   └── repository/             # Repository interfaces + Hilt @Singleton implementations
 │
 ├── domain/
-│   ├── model/                  # Domain models, sealed classes, Strategy filters, Sync contracts
-│   │   └── sync/               # SyncableEntity and SyncStatus contracts for v0.3 roadmap
+│   ├── model/                  # Domain models, sealed classes, Strategy filters
 │   └── usecase/                # Business logic use cases (PdfReportGenerator, etc.)
 │
 ├── presentation/
@@ -94,8 +93,8 @@ app/
   Entity companion objects provide `.create(...)` factory methods that handle UUID generation, timestamp synchronization (`createdAt`, `updatedAt`), and invariant defaults. A `.toSoftDeleted()` transition method handles soft-deletion state cleanly.
 - **Singleton Pattern (Hilt Dependency Injection)**:
   `AppDatabase`, `UserPreferences`, and all repository bindings are scoped as `@Singleton`, ensuring memory efficiency and centralized coordination.
-- **Roadmap Sync Contracts (`SyncableEntity`)**:
-  `Transaction` and `Ledger` implement `SyncableEntity` (`id`, `updatedAt`), laying the architectural foundation for v0.3 offline-first cloud sync with Last-Write-Wins (LWW) conflict resolution.
+- **Offline-First Standalone Architecture**:
+  100% on-device operation with zero remote server dependencies or network tracking. The local SQLite Room database is the sole single source of truth, backed by secure on-device DataStore preferences.
 - **Modern Edge-to-Edge Architecture**:
   Utilizes Android 15 standard `enableEdgeToEdge()` on `ComponentActivity` paired with dynamic `DisposableEffect` system bar updating for seamless status and navigation bar blending.
 

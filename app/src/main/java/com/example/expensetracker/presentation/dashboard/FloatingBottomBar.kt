@@ -87,7 +87,7 @@ fun FloatingBottomBar(
 
             // 2. Ledger / Accounts
             val isLedger = currentDestination == BottomNavDestination.LEDGER
-            AppTooltip(text = "Financial Overview & Ledger") {
+            AppTooltip(text = "Financial Overview") {
                 Box(
                     modifier = Modifier
                         .size(46.dp)
