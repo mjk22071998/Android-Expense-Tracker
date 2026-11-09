@@ -42,7 +42,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: gradle
 
       # 2. Set up Gradle
       - name: Setup Gradle
