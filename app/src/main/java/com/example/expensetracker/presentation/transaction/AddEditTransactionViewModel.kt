@@ -129,8 +129,13 @@ class AddEditTransactionViewModel @Inject constructor(
     }
 
     fun onAmountChanged(value: String) {
-        val filtered = value.filterIndexed { index, c ->
-            c.isDigit() || (c == '.' && !value.take(index).contains('.'))
+        val trimmed = value.trim()
+        val hasInvalidChars = trimmed.startsWith("-") || trimmed.any { !it.isDigit() && it != '.' }
+        val hasMultipleDots = trimmed.count { it == '.' } > 1
+        val filtered = if (hasInvalidChars || hasMultipleDots) {
+            ""
+        } else {
+            trimmed
         }
         _uiState.update { it.copy(amount = filtered) }
         validate()
@@ -155,6 +160,7 @@ class AddEditTransactionViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 isSaveEnabled = amountValue > 0.0 &&
+                    amountValue.isFinite() &&
                     it.selectedCategoryId != null &&
                     it.currentLedgerId.isNotBlank()
             )
@@ -165,6 +171,7 @@ class AddEditTransactionViewModel @Inject constructor(
         val state = _uiState.value
         if (state.currentLedgerId.isBlank()) return
         val amountValue = state.amount.toDoubleOrNull() ?: return
+        if (!amountValue.isFinite() || amountValue <= 0.0) return
         val now = System.currentTimeMillis()
 
         launchSafely(onError = ::handleError) {

@@ -89,6 +89,7 @@ object CurrencyHelper {
 
     fun getSymbol(currencyCode: String, context: Context? = null): String {
         val upperCode = currencyCode.uppercase().trim()
+        if (upperCode.isBlank()) return "$"
         OVERRIDE_SYMBOLS[upperCode]?.let { return it }
 
         return try {
