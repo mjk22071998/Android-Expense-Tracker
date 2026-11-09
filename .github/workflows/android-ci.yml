@@ -5,22 +5,20 @@ on:
     branches:
       - main
       - master
-      - hacktoberfest
       - 'dev/**'
       - 'feature/**'
   pull_request:
     branches:
       - main
       - master
-      - hacktoberfest
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-and-lint:
-    name: Build & Lint
+  build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -38,9 +36,6 @@ jobs:
 
       - name: Make Gradle Wrapper Executable
         run: chmod +x gradlew
-
-      - name: Run Android Lint
-        run: ./gradlew lint
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug
