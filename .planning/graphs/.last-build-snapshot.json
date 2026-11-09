@@ -10215,14 +10215,14 @@
       "source_location": "L18"
     },
     {
-      "id": "contributing_4_checkout_to_hacktoberfest",
-      "label": "4. Checkout to `hacktoberfest`",
+      "id": "contributing_4_checkout_to_master",
+      "label": "4. Checkout to `master`",
       "_origin": "ast",
       "community": 6,
       "community_name": "🛠️ Contribution Workflow",
       "file_type": "document",
       "node_kind": "heading",
-      "norm_label": "4. checkout to `hacktoberfest`",
+      "norm_label": "4. checkout to `master`",
       "source_file": "CONTRIBUTING.md",
       "source_location": "L25"
     },
@@ -41569,7 +41569,7 @@
     },
     {
       "source": "contributing_contribution_workflow",
-      "target": "contributing_4_checkout_to_hacktoberfest",
+      "target": "contributing_4_checkout_to_master",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",

@@ -110,7 +110,7 @@ Nodes (18): Category, getCategoryIcon(), CategoryCheckboxRow(), CategoryFilterBo
 
 ### Community 6 - "🛠️ Contribution Workflow"
 Cohesion: 0.18
-Nodes (10): 1. Find or Pick an Issue, 2. Fork the Repository, 3. Clone Your Fork, 4. Checkout to `hacktoberfest`, 5. Do Your Changes, 6. Make Sure It Builds Successfully, 7. Push Your Changes, 8. Make a Pull Request (PR) (+2 more)
+Nodes (10): 1. Find or Pick an Issue, 2. Fork the Repository, 3. Clone Your Fork, 4. Checkout to `master`, 5. Do Your Changes, 6. Make Sure It Builds Successfully, 7. Push Your Changes, 8. Make a Pull Request (PR) (+2 more)
 
 ### Community 8 - "AppResult"
 Cohesion: 0.15

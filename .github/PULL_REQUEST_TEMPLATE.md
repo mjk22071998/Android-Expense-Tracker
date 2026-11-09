@@ -8,6 +8,7 @@
 
 ## Checklist
 
-- [ ] My branch was created from and targets `hacktoberfest`
-- [ ] The project builds successfully (`./gradlew assembleDebug` or Android Studio Build)
+- [ ] My branch was created from and targets `master`
+- [ ] All unit and stress tests pass (`./gradlew testDebugUnitTest`)
+- [ ] The project builds successfully (`./gradlew assembleDebug`)
 - [ ] I have tested my changes manually

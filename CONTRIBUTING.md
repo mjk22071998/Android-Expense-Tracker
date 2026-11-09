@@ -1,63 +1,59 @@
 # Contributing to Expense Tracker 🚀
 
-Thank you for contributing! Whether you are taking on an open issue or participating in **Hacktoberfest**, follow the steps below to contribute.
-
-> [!IMPORTANT]
-> All contributions **MUST** originate from and target the **`hacktoberfest`** branch (not `main`).
+Thank you for contributing! Whether you are fixing a bug, adding a new feature, or improving documentation, follow the guidelines below.
 
 ---
 
 ## 🛠️ Contribution Workflow
 
-### 1. Find or Pick an Issue
-Look for open issues in the repository or pick up a task tagged for Hacktoberfest. Feel free to comment on an issue or create a new one if you have an idea or bug report.
+### 1. Find or Create an Issue
+Check existing issues on GitHub or create a new one to discuss the bug or feature before opening a pull request.
 
 ### 2. Fork the Repository
 Click **Fork** at the top right of the repository page to create a copy under your GitHub account.
 
 ### 3. Clone Your Fork
-Clone your forked repository to your local machine:
+Clone your forked repository locally:
 ```bash
 git clone https://github.com/YOUR-USERNAME/Android-Expense-Tracker.git
 cd Android-Expense-Tracker
 ```
 
-### 4. Checkout to `hacktoberfest`
-Switch to the `hacktoberfest` branch before starting your work:
+### 4. Create a Feature Branch
+Create a new branch off `master`:
 ```bash
-git checkout hacktoberfest
+git checkout master
+git pull origin master
+git checkout -b feat/your-feature-name
 ```
-*(Optionally, create a feature branch from `hacktoberfest`: `git checkout -b fix/my-feature`)*
+*(Use `fix/` for bug fixes, `feat/` for new features, `chore/` for maintenance)*
 
-### 5. Do Your Changes
-Open the project in Android Studio and implement your changes. Keep your edits focused and clean.
+### 5. Code & Style Guidelines
+- **Offline-First & Standalone**: Never add network permissions, cloud dependencies, or tracking. The app must remain 100% functional locally.
+- **Architecture**: Adhere to Clean Architecture and MVVM (Data -> Domain -> Presentation).
+- **Design System**: Follow the Organic Forest Luxury design aesthetic (radiant canopy, high contrast, WCAG AA touch targets).
+- **Quality**: Ensure new business logic and ViewModel changes include unit tests.
 
-### 6. Make Sure It Builds Successfully
-Verify that the project builds cleanly without errors:
-- **In Android Studio:** `Build > Make Project`
-- **Via Terminal:**
-  ```bash
-  # Linux / macOS
-  ./gradlew assembleDebug
+### 6. Verify Build & Tests
+Before committing, make sure all tests pass and the APK builds without errors:
+```bash
+# Run unit and stress tests
+./gradlew testDebugUnitTest
 
-  # Windows
-  gradlew.bat assembleDebug
-  ```
+# Assemble debug build
+./gradlew assembleDebug
+```
 
-### 7. Push Your Changes
-Commit and push your changes to your fork on GitHub:
+### 7. Commit & Push
+Write clear, concise commit messages following Conventional Commits (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `chore:`):
 ```bash
 git add .
 git commit -m "feat: brief description of changes"
-git push origin hacktoberfest
+git push origin feat/your-feature-name
 ```
 
-### 8. Make a Pull Request (PR)
-1. Navigate to the original repository on GitHub.
+### 8. Open a Pull Request
+1. Go to the original repository on GitHub.
 2. Click **New Pull Request**.
-3. Ensure the **base branch** is set to **`hacktoberfest`**.
-4. Fill out the PR template with details about your changes.
-
----
-
-Happy Coding! 🎃
+3. Set the base branch to **`master`** and compare against your feature branch.
+4. Fill out the PR template with description and checklist.
