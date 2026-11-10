@@ -200,26 +200,21 @@
 
 ---
 
-### 🧠 Milestone v1.1 — AI Intelligence & External APIs ("Talk to Your Data") (PLANNED)
-**Goal:** Enable users to converse directly with their financial records using natural language and leverage external APIs like WhatsApp for automated entry.
-- [ ] **"Talk to Your Financial Data" (Conversational AI Assistant)**:
-  - In-app chat interface allowing users to query their spending in plain English:
-    - *"How much did I spend on dining out this month?"*
-    - *"What was my single biggest expense in October?"*
-    - *"Compare my fuel spending between September and November."*
-    - *"Show me all expenses over $100 without notes."*
-  - **Function Calling & Safe Read-Only Queries**: The AI model uses structured tool calling to execute safe, parameterized read-only queries against local SQLite data.
-  - **Financial Health Summaries**: Natural language narrative summaries of monthly trends, recurring leaks, and anomaly spikes.
-- [ ] **External APIs & Messaging Integrations**:
-  - **Conversational Messaging Logging (WhatsApp / Telegram Integration)**:
-    - User sends a natural language message on WhatsApp (e.g. *"I bought milk for Rs 250"*, *"Paid Rs 1,500 electricity bill"*, or *"Received Rs 80,000 salary"*).
-    - **LLM Entity & Action Extraction**: The model parses unstructured text via function calling into structured parameters (`amount: 250.0`, `type: EXPENSE`, `note: "Milk"`, `category: "Groceries"`).
-    - **Cloud Webhook Pathway**: WhatsApp Cloud API webhook triggers a Supabase Edge Function running Gemini/LLM, inserts the transaction directly into the user's cloud ledger, syncs to the Android device, and sends a WhatsApp confirmation reply: *"✅ Logged Rs 250 for Milk under Groceries. Current balance: Rs 14,200"*.
-    - **On-Device Android Notification Alternative**: Optional Android `NotificationListenerService` to detect financial SMS or messaging notifications and offer one-tap expense logging without third-party webhooks.
-  - **Live Currency Exchange Rates API**: Fetch and cache daily global FX rates for foreign transactions and multi-currency conversion.
-  - **Smart Receipt Scanner & OCR API**: Snap a photo of a receipt or invoice; extract merchant, total amount, date, and suggested category with one-tap confirmation.
-  - **Bank Notification / Statement Parser API**: Smart parsing of bank transaction SMS or CSV statements.
-- [ ] **Privacy & Low-Spec Performance Architecture**:
-  - **Zero Raw Database Exposure**: Database records stay strictly local; only schema tool definitions and specific aggregated metrics are exchanged with the model.
-  - **Streaming Responses**: Token-by-token streaming in Compose with graceful typing animations for low perceived latency on 3GB RAM devices.
-  - **Offline Resilience**: Clear, graceful fallback explaining that AI conversational queries require an active connection, while core offline ledger features remain 100% accessible.
+### 💬 Milestone v1.1 — Optional WhatsApp AI Companion (PLANNED)
+**Goal:** Allow users to optionally link their phone number to an official WhatsApp Business bot, enabling friction-free expense logging and balance queries directly from WhatsApp without adding any in-app chat clutter or SDK bloat to the Android app.
+- [ ] **WhatsApp Account Binding (In-App Settings)**:
+  - Optional setting in `SettingsScreen`: *"Link WhatsApp Assistant"*.
+  - User binds their phone number with a quick one-time verification.
+  - Securely maps verified `phone_number` ↔ `user_id` in Supabase.
+- [ ] **Server-Side AI Assistant (Zero App Bloat)**:
+  - **No In-App Chat UI**: The Android app remains 100% clean, offline-first, and lightweight—zero LLM libraries, zero chat screens, and zero RAM overhead on 3GB devices.
+  - **Conversational Expense Logging via WhatsApp**:
+    - User texts the bot: *"Bought milk for Rs 250"* or *"Paid 1,500 electricity bill"*.
+    - Server-side LLM parses structured parameters (`amount: 250.0`, `type: EXPENSE`, `note: "Milk"`, `category: "Groceries"`).
+    - Inserts the transaction directly into the user's cloud ledger and replies on WhatsApp:
+      > *"✅ Logged Rs 250 for Milk under Groceries. Current Balance: Rs 14,200"*
+  - **Conversational Data Queries via WhatsApp**:
+    - User asks the bot: *"How much did I spend on dining out this month?"* or *"What was my biggest expense last week?"*.
+    - Server-side function executes read-only aggregation on the user's records and answers directly in WhatsApp.
+- [ ] **Automatic Background Sync to Device**:
+  - Transactions recorded via WhatsApp automatically flow down to the user's local Room database during the next background sync or when the app is opened.
