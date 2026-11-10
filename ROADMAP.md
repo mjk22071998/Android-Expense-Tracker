@@ -11,8 +11,8 @@
 ## 1. Product Identity & Foundational Guardrails
 
 1. **100% Standalone & Offline-First**:
-   - Zero internet permissions in `AndroidManifest.xml`.
-   - Zero external cloud services, remote sync engines, or analytics tracking.
+   - Zero internet permissions in `AndroidManifest.xml` for core functionality.
+   - Zero external cloud services, remote sync engines, or analytics tracking required for day-to-day use.
    - All financial data, transactions, and categories reside exclusively on the device in a local Room SQLite database.
 2. **Single-Ledger Simplicity**:
    - Single personal ledger (`Personal`) seeded at first launch.
@@ -131,7 +131,24 @@
 
 ---
 
-### 📊 Milestone v0.4 — Visual Analytics & Trends (PLANNED)
+### ☁️ Milestone v0.4 — Cloud Sync & Authentication (Supabase) (PLANNED)
+**Goal:** Seamless, opt-in cloud synchronization and backup powered by Supabase while preserving 100% offline-first operation.
+- [ ] **Supabase GoTrue Authentication**:
+  - Secure Email/Password and Google OAuth sign-in.
+  - Hardware-backed token storage in Android `EncryptedSharedPreferences`.
+  - Zero-data-loss merge: automatically associate existing offline records to the user's new account on first login.
+- [ ] **Lightweight WorkManager Sync Engine**:
+  - Background REST sync queue tracking dirty rows (`SYNCED`, `PENDING_UPLOAD`, `PENDING_DELETE`).
+  - Strict sync ordering to prevent foreign key errors: Ledgers $\to$ Categories $\to$ Transactions.
+  - 100-item chunked pagination to protect memory (< 12 MB heap overhead on 3GB RAM devices).
+  - Server timestamp authority (`server_updated_at`) with UUID idempotency (`ON CONFLICT (id) DO UPDATE`).
+- [ ] **WhatsApp-Style Sync UX**:
+  - Non-blocking in-app sync indicator; transactions hydrate into Room reactively.
+  - Silent day-to-day syncs ($\le 25$ items); native progress notification strictly for large initial restores (> 100 items).
+
+---
+
+### 📊 Milestone v0.5 — Visual Analytics & Trends (PLANNED)
 **Goal:** Provide visual financial intelligence and spending distributions using native Compose Canvas without bulky third-party chart libraries.
 - [ ] **Category Donut / Pie Breakdown**:
   - Interactive, hardware-accelerated Compose Canvas category donut chart.
@@ -146,7 +163,28 @@
 
 ---
 
-### 🎯 Milestone v0.5 — Category Budgets & Spending Limits (PLANNED)
+### 🧠 Milestone v0.6 — AI Intelligence & External APIs ("Talk to Your Data") (PLANNED)
+**Goal:** Enable users to converse directly with their financial records using natural language and leverage external APIs for smart entry and currency data.
+- [ ] **"Talk to Your Financial Data" (Conversational AI Assistant)**:
+  - In-app chat interface allowing users to query their spending in plain English:
+    - *"How much did I spend on dining out this month?"*
+    - *"What was my single biggest expense in October?"*
+    - *"Compare my fuel spending between September and November."*
+    - *"Show me all expenses over $100 without notes."*
+  - **Function Calling & Safe Read-Only Queries**: The AI model uses structured tool calling to execute safe, parameterized read-only queries against local SQLite data.
+  - **Financial Health Summaries**: Natural language narrative summaries of monthly trends, recurring leaks, and anomaly spikes.
+- [ ] **External Financial APIs**:
+  - **Live Currency Exchange Rates API**: Fetch and cache daily global FX rates for foreign transactions and multi-currency conversion.
+  - **Smart Receipt Scanner & OCR API**: Snap a photo of a receipt or invoice; extract merchant, total amount, date, and suggested category with one-tap confirmation.
+  - **Bank Notification / Statement Parser API**: Smart parsing of bank transaction SMS or CSV statements.
+- [ ] **Privacy & Low-Spec Performance Architecture**:
+  - **Zero Raw Database Exposure**: Database records stay strictly local; only schema tool definitions and specific aggregated metrics are exchanged with the model.
+  - **Streaming Responses**: Token-by-token streaming in Compose with graceful typing animations for low perceived latency on 3GB RAM devices.
+  - **Offline Resilience**: Clear, graceful fallback explaining that AI conversational queries require an active connection, while core offline ledger features remain 100% accessible.
+
+---
+
+### 🎯 Milestone v0.7 — Category Budgets & Spending Limits (PLANNED)
 **Goal:** Help users control spending through customizable monthly thresholds per category.
 - [ ] **Monthly Budget Targets**:
   - Set optional monthly budget amounts per expense category (e.g., Dining: $250/month).
@@ -158,7 +196,7 @@
 
 ---
 
-### ⏰ Milestone v0.6 — Scheduled Reminders & Recurring Transactions (PLANNED)
+### ⏰ Milestone v0.8 — Scheduled Reminders & Recurring Transactions (PLANNED)
 **Goal:** Automate logging of fixed recurring expenses and bills completely on-device.
 - [ ] **Recurring Expense Templates**:
   - Create recurring templates (Daily, Weekly, Monthly, Yearly) for subscriptions, rent, loan payments.
