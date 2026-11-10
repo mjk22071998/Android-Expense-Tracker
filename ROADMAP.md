@@ -173,7 +173,12 @@
     - *"Show me all expenses over $100 without notes."*
   - **Function Calling & Safe Read-Only Queries**: The AI model uses structured tool calling to execute safe, parameterized read-only queries against local SQLite data.
   - **Financial Health Summaries**: Natural language narrative summaries of monthly trends, recurring leaks, and anomaly spikes.
-- [ ] **External Financial APIs**:
+- [ ] **External APIs & Messaging Integrations**:
+  - **Conversational Messaging Logging (WhatsApp / Telegram Integration)**:
+    - User sends a natural language message on WhatsApp (e.g. *"I bought milk for Rs 250"*, *"Paid Rs 1,500 electricity bill"*, or *"Received Rs 80,000 salary"*).
+    - **LLM Entity & Action Extraction**: The model parses unstructured text via function calling into structured parameters (`amount: 250.0`, `type: EXPENSE`, `note: "Milk"`, `category: "Groceries"`).
+    - **Cloud Webhook Pathway**: WhatsApp Cloud API webhook triggers a Supabase Edge Function running Gemini/LLM, inserts the transaction directly into the user's cloud ledger, syncs to the Android device, and sends a WhatsApp confirmation reply: *"✅ Logged Rs 250 for Milk under Groceries. Current balance: Rs 14,200"*.
+    - **On-Device Android Notification Alternative**: Optional Android `NotificationListenerService` to detect financial SMS or messaging notifications and offer one-tap expense logging without third-party webhooks.
   - **Live Currency Exchange Rates API**: Fetch and cache daily global FX rates for foreign transactions and multi-currency conversion.
   - **Smart Receipt Scanner & OCR API**: Snap a photo of a receipt or invoice; extract merchant, total amount, date, and suggested category with one-tap confirmation.
   - **Bank Notification / Statement Parser API**: Smart parsing of bank transaction SMS or CSV statements.
