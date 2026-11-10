@@ -208,13 +208,20 @@
   - Securely maps verified `phone_number` ↔ `user_id` in Supabase.
 - [ ] **Server-Side AI Assistant (Zero App Bloat)**:
   - **No In-App Chat UI**: The Android app remains 100% clean, offline-first, and lightweight—zero LLM libraries, zero chat screens, and zero RAM overhead on 3GB devices.
-  - **Conversational Expense Logging via WhatsApp**:
-    - User texts the bot: *"Bought milk for Rs 250"* or *"Paid 1,500 electricity bill"*.
-    - Server-side LLM parses structured parameters (`amount: 250.0`, `type: EXPENSE`, `note: "Milk"`, `category: "Groceries"`).
-    - Inserts the transaction directly into the user's cloud ledger and replies on WhatsApp:
-      > *"✅ Logged Rs 250 for Milk under Groceries. Current Balance: Rs 14,200"*
-  - **Conversational Data Queries via WhatsApp**:
-    - User asks the bot: *"How much did I spend on dining out this month?"* or *"What was my biggest expense last week?"*.
-    - Server-side function executes read-only aggregation on the user's records and answers directly in WhatsApp.
+  - **Multi-Item & Batch Expense Logging**:
+    - Handles single or multi-item messages in one go (e.g. *"I bought milk for Rs 250, I bought eggs for Rs 2,000"*).
+    - LLM extracts structured parameter arrays:
+      - Item 1: `amount: 250.0`, `note: "Milk"`, `category: "Groceries"`
+      - Item 2: `amount: 2000.0`, `note: "Eggs"`, `category: "Groceries"`
+    - Inserts all items into the user's cloud ledger and replies on WhatsApp:
+      > *"✅ Logged 2 expenses:
+• Milk: Rs 250 (Groceries)
+• Eggs: Rs 2,000 (Groceries)
+Total: Rs 2,250 | Current Balance: Rs 42,980"*
+  - **Conversational Queries with Slot-Filling (Missing Parameters Clarification)**:
+    - **Live Balance Checks**: User asks *"What's my current balance?"* → Agent queries ledger and replies with current running balance, total income, and total expenses.
+    - **Adaptive Clarification for Underspecified Queries**: If a user asks *"How much did I spend on travelling?"* without specifying a timeframe, the agent detects the missing parameter and clarifies:
+      > *"Are you looking for this month, last month, or all time?"*
+      Upon user's reply (*"Last month"*), it filters `category = 'travel'` across the exact date boundary and replies with the aggregated total.
 - [ ] **Automatic Background Sync to Device**:
   - Transactions recorded via WhatsApp automatically flow down to the user's local Room database during the next background sync or when the app is opened.
