@@ -534,6 +534,7 @@ The CI pipeline previously built release APKs on every branch push, consuming ru
 | Documentation Reorganization | Technical docs and roadmaps were scattered in the repository root | Consolidated all documentation into `docs/` keeping only README, CONTRIBUTING, and LICENSE in root |
 | settings.gradle.kts @Incubating inspection | IDE flagged Gradle's `dependencyResolutionManagement` as unstable `@Incubating` API | Added `@file:Suppress("UnstableApiUsage")` at top of `settings.gradle.kts` |
 | Hilt @Module unused inspection | Android Studio flagged `RepositoryModule` as "never used" because Dagger discovers modules via KSP rather than direct Kotlin calls | Added `@Suppress("unused")` to all DI modules (`RepositoryModule`, `DatabaseModule`, `PreferencesModule`) |
+| ContextCompat.getExternalFilesDirs deprecation | `ContextCompat.getExternalFilesDirs` was deprecated in AndroidX for minSdk >= 19 | Replaced with native `context.getExternalFilesDirs(null)` call on `Context` |
 
 ---
 

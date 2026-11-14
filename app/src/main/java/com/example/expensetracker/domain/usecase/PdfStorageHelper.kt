@@ -131,7 +131,7 @@ object PdfStorageHelper {
         } else {
             // Android 9/10 with external files dirs check
             try {
-                val externalDirs = ContextCompat.getExternalFilesDirs(context, null)
+                val externalDirs = context.getExternalFilesDirs(null)
                 if (externalDirs.size > 1 && externalDirs[1] != null) {
                     val sdCardRoot = externalDirs[1]!!.absolutePath.substringBefore("/Android/")
                     val targetDir = File(sdCardRoot, "Download/ExpenseTracker").apply { if (!exists()) mkdirs() }
