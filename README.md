@@ -6,9 +6,13 @@ A production-grade, offline-first personal finance Android application built wit
 
 ## Screenshots
 
-| Personal Expenses Dashboard | Add Entry (Calm Theme) | Financial Overview |
+| Personal Expenses Dashboard | Visual Analytics (Canvas Chart) | Financial Overview (Ledger) |
 | :---: | :---: | :---: |
-| <img src="docs/screenshots/dashboard.png" width="240" alt="Personal Expenses Dashboard" /> | <img src="docs/screenshots/transaction_form.png" width="240" alt="Calm Transaction Entry Form" /> | <img src="docs/screenshots/financial_overview.png" width="240" alt="Financial Overview Modal" /> |
+| <img src="docs/screenshots/dashboard.png" width="240" alt="Personal Expenses Dashboard" /> | <img src="docs/screenshots/analytics_chart.png" width="240" alt="Visual Analytics Canvas Chart" /> | <img src="docs/screenshots/financial_overview.png" width="240" alt="Financial Overview Ledger Tab" /> |
+
+| Category Management | In-App Settings | Add Entry Form |
+| :---: | :---: | :---: |
+| <img src="docs/screenshots/categories.png" width="240" alt="Category Management Tab" /> | <img src="docs/screenshots/settings.png" width="240" alt="In-App Settings Tab" /> | <img src="docs/screenshots/transaction_form.png" width="240" alt="Calm Transaction Entry Form" /> |
 
 | PDF Statement Export | Proactive Permission Verification | System Share Sheet |
 | :---: | :---: | :---: |
@@ -24,9 +28,11 @@ A production-grade, offline-first personal finance Android application built wit
 
 ### Core Capabilities
 - **Offline First** — fully functional without internet, always. Room SQLite database is the local single source of truth.
+- **Hardware-Accelerated Visual Analytics** — zero-dependency native Jetpack Compose `Canvas` time-series engine with 3-way toggle (Expenses, Income, Balance), Bézier curve interpolation, dashed horizontal benchmarks, interactive touch scrubbing with haptic ticks, automatic dismissal on drag finish, and strict capping at elapsed time (no future date placeholders). Inactive days carry forward closing balance flat steps.
+- **5-Tab Non-Slidable Navigation** — 5 dedicated top-level full-screen tabs (`Home`, `Analytics`, `Ledger`, `Categories`, `Settings`) docked via a floating pill bar with 1-tap switching and clean gesture isolation from list scrolling. System back returns cleanly to Home.
 - **Transaction Management** — add, edit, and soft-delete income and expense transactions, with atomic balance recalculation on every operation.
 - **Smart Balance Tracking** — real-time running balance with O(1) reads, maintained directly on the ledger entity rather than recalculated by scanning historical rows.
-- **Category System** — transactions organized by categories with Material Symbol icons, seeded automatically on first launch with fixed, idempotent IDs, plus user custom category creation.
+- **Category System with Relative Recency** — transactions organized by categories with Material Symbol icons, seeded automatically on first launch with fixed, idempotent IDs, user custom category creation, and all-time relative recency metadata (`Never used` or `X transactions • Last X ago • Rs X`).
 - **Search & Multi-Category Filtering** — live debounced search query flow and bottom sheet multi-category filters with active badge counters.
 - **Strategy-Driven Date Filtering** — period filtering (`AllTime`, `Today`, `ThisWeek`, `ThisMonth`, `ThisYear`, `Custom`) implemented via the Strategy Pattern for zero-coupling extensibility, allowing complete historical inspection across all time (`0L to Long.MAX_VALUE`).
 - **Currency Support** — default currency detected from the device's SIM country (falling back to locale), searchable currency picker supporting 150+ currencies with natural colloquial symbols (`Rs` for PKR, `$` for USD, `₹` for INR, `€` for EUR, `£` for GBP, etc.).
@@ -36,7 +42,7 @@ A production-grade, offline-first personal finance Android application built wit
 - **Export to PDF Statements** — generate professional, hardware-accelerated ISO A4 PDF statements with executive summary cards (inflow, outflow, net balance) and itemized ledger tables; automatically inherits dashboard filters and supports live in-modal customization with two dedicated export flows:
   - **Save in Phone / SD Storage**: Proactively verifies storage permissions (with `WRITE_EXTERNAL_STORAGE` on API $\le 28$ and Scoped Storage `MediaStore` on Android 10+), automatically detects preferred storage (Phone Storage or external SD Card), and writes directly to `Download/ExpenseTracker/` with an interactive "Open" snackbar and SAF fallback.
   - **Share PDF**: Seamlessly shares the generated statement via Android's secure `FileProvider` and system chooser.
-- **Contextual Material 3 Tooltips** — accessible, dark-forest-styled tooltips (`AppTooltip`) across interactive icon buttons and actions (PDF Export, Home, Ledger, Categories, Settings, Add Entry, Period Filter, Clear Search, Back Navigation, and Transaction Menus) triggerable via long-press on touch screens and hover on pointers.
+- **Contextual Material 3 Tooltips** — accessible, dark-forest-styled tooltips (`AppTooltip`) across interactive icon buttons and actions (PDF Export, Home, Analytics, Ledger, Categories, Settings, Add Entry, Period Filter, Clear Search, Back Navigation, and Transaction Menus) triggerable via long-press on touch screens and hover on pointers.
 - **Structured Error Handling** — sealed `UiError` hierarchy and `AppResult<T>` wrapper around all repository operations.
 
 ---
@@ -47,12 +53,12 @@ The app features a bespoke **Organic Forest Luxury** fintech aesthetic inspired 
 
 - **Base Canvas**: Radiant moss-to-obsidian vertical canopy gradient (`#2E633B` $\to$ `#122E1B` $\to$ `#06110A`) with an organic ambient top-right radial light source matching the mockup aesthetic.
 - **Hero Balance**: Large, uncluttered bold balance typography (`Rs 156,532.00`) floating directly on the radiant green canopy with unified optical scale, zero clutter, and direct visual hierarchy flowing straight into the action pills.
-- **High-Energy Action Pills**: Thumb-friendly quick actions row right below the hero balance: symmetrical 50/50 split with **Neon Lime** `+ Add Entry` pill and **Sky Blue** `This Month` period filter, providing balanced ergonomic reach without redundant actions.
+- **High-Energy Action Pills**: Thumb-friendly quick actions row right below the hero balance: symmetrical 50/50 split with **Neon Electric Lime** `+ Add Entry` pill and **Forest Card** `This Month` period filter with Electric Lime calendar badge.
 - **Embedded Search Pill**: Floating translucent search capsule (`🔍 Search Transactions`) directly embedded on the dashboard for instant, debounced real-time filtering.
-- **Floating Pill Bottom Navigation**: Floating dark glass navigation capsule (`#0B1A12` with 32dp corner radius) docked at the bottom with 4 circular glass icons (Home, Overview, Categories, Settings) that float gracefully above scrolling content, serving as the single source of truth for global navigation.
-- **Total Cards & Stitched Leathercraft Modal**: Tapping the Ledger icon (`🏛`) in the floating bottom bar opens the Screen 2 inspection sheet featuring the handcrafted stitched leathercraft card with dual yellow Savings and blue Spend account pills.
-- **Streamlined Non-Redundant Navigation**: Each action has exactly one clear, dedicated home — Settings is accessed exclusively via the floating bar's profile tab, Categories filter via the bottom bar tag, and Total Cards via the ledger icon, eliminating duplicate triggers and back-button ambiguity.
-- **Directional Cashflow**: Emerald Green (`#10B981`) with `+` sign for Inflow/Deposits; Crimson Rose (`#F43F5E`) with `−` sign for Outflow/Expenses.
+- **Floating Pill Bottom Navigation**: Floating dark glass navigation capsule (`#0B1A12` with 29dp corner radius) docked at the bottom with 5 circular icons (Home, Analytics, Ledger, Categories, Settings) that float gracefully above scrolling content, serving as the single source of truth for global navigation.
+- **Stitched Leathercraft Financial Overview**: Dedicated Ledger tab featuring the handcrafted stitched leathercraft overview card with dual Electric Lime Inflow and Crimson Outflow account summary pills.
+- **Streamlined Non-Redundant Navigation**: Each action has exactly one clear, dedicated home — Settings is accessed via the 5th floating tab, Categories management via the 4th tab, Financial Overview via the 3rd tab, Visual Analytics via the 2nd tab, and Home via the 1st tab.
+- **Directional Cashflow**: Emerald Green (`#10B981`) for Inflow/Deposits; Crimson Rose (`#F43F5E`) for Outflow/Expenses; Electric Lime (`#D4F63D`) for Primary CTAs and Balance trajectory.
 - **Humanized Micro-Copy**: Dynamic balance health indicators (*"✦ Healthy financial balance maintained"*), status badges (*"✦ Live Ledger"*), and conversational relative timestamps (*"Today, 2:30 PM • Food"*).
 - **Full Compose Preview Coverage**: 100% of standalone presentation components include light and dark `@Preview` annotations for instant design inspection in Android Studio.
 
