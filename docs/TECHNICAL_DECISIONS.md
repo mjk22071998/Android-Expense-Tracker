@@ -483,6 +483,18 @@ Physical testing on hardware surfaced three visual/UX inconsistencies:
 **Why:** Unifies visual brand identity, eliminates date ambiguity, and maximizes data point legibility on mobile screens.  
 **Cost / Trade-off:** Requires `BuildChartDataUseCase` to take a reference timestamp `now` and `DashboardViewModel` to aggregate all-time category usage.
 
+### D86. CI Release Gating Strictly to Master and Conventional Git Workflow Alignment
+**Context:**
+The CI pipeline previously built release APKs on every branch push, consuming runner minutes on unfinished branches and generating untracked release artifacts. Furthermore, development branches did not align with the standard conventions documented in `CONTRIBUTING.md`.  
+**Decided:**
+1. Branch naming and conventional commit standards from `CONTRIBUTING.md` (`feat/**`, `fix/**`, `chore/**`, `refactor/**`, `test/**`, `docs/**`) are formally integrated into CI triggers (`.github/workflows/android-ci.yml`).
+2. Release APK build (`./gradlew assembleRelease`) and release APK artifact publishing (`actions/upload-artifact@v4`) are strictly gated to direct pushes or merged PRs on `master` (and `main`):
+   `if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')`.
+3. Feature branches and pull requests run unit tests (`./gradlew testDebugUnitTest`) and compile the debug APK (`./gradlew assembleDebug`), conserving runner minutes and preventing premature release artifact generation.
+4. Repository documentation is reorganized: `README.md`, `CONTRIBUTING.md`, and `LICENSE` remain in the repository root as required by GitHub standards; all architecture, technical decision, roadmap, and screenshot documentation is consolidated under `docs/` (`docs/TECHNICAL_DECISIONS.md`, `docs/ROADMAP.md`, `docs/screenshots/`).  
+**Why:** Guarantees release artifacts are only generated from production-ready code on `master`, aligns CI pipeline triggers with documented developer contribution workflows, and maintains a clean repository root structure.  
+**Cost / Trade-off:** Release APK is not built for PR previews; developers must test release variants locally via `./gradlew assembleRelease` if verifying ProGuard/R8 optimizations prior to merge.
+
 ---
 
 ## 17. Decisions and claims that were corrected
@@ -518,6 +530,8 @@ Physical testing on hardware surfaced three visual/UX inconsistencies:
 | Categories tab empty text | "No transactions in this period" was displayed on a screen with no period filter | Replaced with all-time relative recency ("Never used" or "X transactions • Last X ago • Rs X") |
 | Theme color leaks | M3 secondary color and calendar icon badges used electric blue/cyan (`#0099FF`, `#00A3FF`, `#0284C7`) | Replaced with Organic Forest & Electric Lime brand tokens |
 | Chart drag dismissal | Inspection tooltip remained stuck on screen after drag finished | Added immediate reset on `onDragEnd` and `onDragCancel` to return chart to resting baseline |
+| CI Release Gating | Release APK was built on every branch push, consuming runner minutes | Gated `assembleRelease` strictly to `master`/`main` pushes; feature branches run unit tests & debug assemble |
+| Documentation Reorganization | Technical docs and roadmaps were scattered in the repository root | Consolidated all documentation into `docs/` keeping only README, CONTRIBUTING, and LICENSE in root |
 
 ---
 
@@ -537,6 +551,7 @@ Physical testing on hardware surfaced three visual/UX inconsistencies:
 | Visual Analytics (Charts) | Resolved | Native hardware-accelerated Compose Canvas charts implemented with zero third-party dependencies, daily/monthly granularity, 3-way toggle (Expenses, Income, Balance), zero-activity flat carryforward, no future dates in open periods, and interactive touch scrubbing with haptic feedback. |
 | Navigation Architecture | Resolved | Converted floating navigation bar from modal bottom sheet triggers into 5 first-class non-slidable tabs (Home, Analytics, Ledger, Categories, Settings) with dedicated Graph tab. |
 | CI test execution | Resolved | Unit test step (`testDebugUnitTest`) added to GitHub Actions workflow. |
+| CI Release Gating | Resolved | Release APK build strictly gated to pushes on master/main; branch triggers aligned with CONTRIBUTING.md conventions. |
 | Hacktoberfest cleanup | Resolved | Branch removed, documentation cleansed, PR validation retargeted to `master`. |
 | PDF Export | Resolved | Native ISO A4 generator with dual storage save and system share paths implemented. |
 | Test coverage gaps | Resolved | Added 59-test stress suite covering concurrency, pagination, boundaries, and repositories. |
