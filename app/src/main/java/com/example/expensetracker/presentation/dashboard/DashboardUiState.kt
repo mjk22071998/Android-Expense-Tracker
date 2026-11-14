@@ -4,6 +4,8 @@ import com.example.expensetracker.data.local.entity.Category
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.domain.model.UiError
+import com.example.expensetracker.domain.model.chart.ChartDataSet
+import com.example.expensetracker.domain.model.chart.ChartMode
 
 data class DashboardUiState(
     val balance: Double = 0.0,
@@ -22,5 +24,7 @@ data class DashboardUiState(
     val isCategoryFilterSheetVisible: Boolean = false,
     val monthlyTrendDelta: Double? = null,
     val hasLastMonthData: Boolean = false,
-    val thisMonthNet: Double = 0.0
+    val thisMonthNet: Double = 0.0,
+    val chartDataSet: ChartDataSet = ChartDataSet.empty(),
+    val selectedChartMode: ChartMode = ChartMode.EXPENSES
 )

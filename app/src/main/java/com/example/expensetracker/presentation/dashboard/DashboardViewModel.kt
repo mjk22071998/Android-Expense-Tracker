@@ -13,7 +13,9 @@ import com.example.expensetracker.domain.model.CurrencyHelper
 import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.domain.model.DateUtils
 import com.example.expensetracker.domain.model.UiError
+import com.example.expensetracker.domain.model.chart.ChartMode
 import com.example.expensetracker.domain.model.toUiError
+import com.example.expensetracker.domain.usecase.BuildChartDataUseCase
 import com.example.expensetracker.domain.usecase.PdfReportGenerator
 import com.example.expensetracker.presentation.common.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,7 +40,8 @@ class DashboardViewModel @Inject constructor(
     private val ledgerRepository: LedgerRepository,
     private val categoryRepository: CategoryRepository,
     private val userPreferences: UserPreferences,
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val buildChartDataUseCase: BuildChartDataUseCase = BuildChartDataUseCase()
 ) : BaseViewModel() {
 
     private val _uiState = MutableStateFlow(DashboardUiState())
@@ -98,6 +101,11 @@ class DashboardViewModel @Inject constructor(
                         if (ledgerChanged) {
                             loadTransactions()
                             loadMonthlyComparison()
+                        } else {
+                            val tx = _uiState.value.transactions
+                            if (tx.isNotEmpty()) {
+                                updateChartData(tx, ledger.balance)
+                            }
                         }
                     }
                 }
@@ -172,9 +180,51 @@ class DashboardViewModel @Inject constructor(
             )
                 .catch { e -> handleError(e.toUiError()) }
                 .collect { transactions ->
-                    _uiState.update { state -> state.copy(transactions = transactions) }
+                    val filter = _uiState.value.selectedFilter
+                    val currentLedgerBalance = _uiState.value.balance
+
+                    val activeTx = transactions.filter { !it.isDeleted }
+                    val periodIncome = activeTx.filter { it.type == Constants.TransactionType.INCOME }.sumOf { it.amount }
+                    val periodExpense = activeTx.filter { it.type == Constants.TransactionType.EXPENSE }.sumOf { it.amount }
+                    val periodNet = periodIncome - periodExpense
+                    val initialPeriodBalance = currentLedgerBalance - periodNet
+
+                    val chartData = buildChartDataUseCase.execute(
+                        transactions = transactions,
+                        filter = filter,
+                        initialBalance = initialPeriodBalance
+                    )
+
+                    _uiState.update { state ->
+                        state.copy(
+                            transactions = transactions,
+                            chartDataSet = chartData
+                        )
+                    }
                 }
         }
+    }
+
+    private fun updateChartData(transactions: List<TransactionWithCategory>, ledgerBalance: Double) {
+        val filter = _uiState.value.selectedFilter
+        val activeTx = transactions.filter { !it.isDeleted }
+        val periodIncome = activeTx.filter { it.type == Constants.TransactionType.INCOME }.sumOf { it.amount }
+        val periodExpense = activeTx.filter { it.type == Constants.TransactionType.EXPENSE }.sumOf { it.amount }
+        val periodNet = periodIncome - periodExpense
+        val initialPeriodBalance = ledgerBalance - periodNet
+
+        val chartData = buildChartDataUseCase.execute(
+            transactions = transactions,
+            filter = filter,
+            initialBalance = initialPeriodBalance
+        )
+        _uiState.update { it.copy(chartDataSet = chartData) }
+    }
+
+    // ---------- chart mode ----------
+
+    fun onChartModeSelected(mode: ChartMode) {
+        _uiState.update { it.copy(selectedChartMode = mode) }
     }
 
     // ---------- date and type filters ----------

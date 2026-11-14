@@ -507,8 +507,8 @@ User feedback favored natural language logging ("Bought milk for Rs 250", "Spent
 | Paging | Open | `androidx.room:room-paging` is declared in Gradle dependencies but unused. Direction: implement paging when list exceeds 1,000 items, or remove dependency. |
 | Non-English locale digits | Open | Amount formatting uses `Locale.getDefault()`; not verified with non-Latin numeral scripts (e.g., Arabic-Indic digits). |
 | Custom chip label polish | Open | Custom filter chip currently displays "Custom"; could show the active picked date range. |
-| Visual Analytics (Charts) | Planned (v0.3) | Implementation of native Compose Canvas charts with flat balance carryforward. |
 | WhatsApp Companion | Planned (v1.1) | External server-side companion bot with user phone binding and natural language slot-filling. |
+| Visual Analytics (Charts) | Resolved | Native hardware-accelerated Compose Canvas charts implemented with zero third-party dependencies, daily/monthly granularity, 3-way toggle (Expenses, Income, Balance), zero-activity flat carryforward, and interactive touch scrubbing with haptic feedback. |
 | CI test execution | Resolved | Unit test step (`testDebugUnitTest`) added to GitHub Actions workflow. |
 | Hacktoberfest cleanup | Resolved | Branch removed, documentation cleansed, PR validation retargeted to `master`. |
 | PDF Export | Resolved | Native ISO A4 generator with dual storage save and system share paths implemented. |

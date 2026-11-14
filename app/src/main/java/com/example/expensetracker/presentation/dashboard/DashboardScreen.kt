@@ -62,6 +62,7 @@ import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
 import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.domain.usecase.PdfStorageHelper
+import com.example.expensetracker.presentation.dashboard.chart.FinancialChartCard
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import kotlinx.coroutines.launch
@@ -303,48 +304,56 @@ fun DashboardScreen(
                     onQueryChange = viewModel::onSearchQueryChanged
                 )
 
-                Spacer(modifier = Modifier.height(22.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // ============================================================
-                // 4. Transaction History Header
-                // ============================================================
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Transaction History",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
-                        letterSpacing = (-0.2).sp
-                    )
-
-                    Text(
-                        text = "${uiState.transactions.size} records",
-                        style = MaterialTheme.typography.labelSmall,
-                        fontWeight = FontWeight.Medium,
-                        color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // ============================================================
-                // 5. Clean Seamless Transaction Rows
+                // 4. Analytics Chart & Transaction History
                 // ============================================================
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp),
-                    contentPadding = PaddingValues(top = 4.dp, bottom = 100.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                    contentPadding = PaddingValues(top = 2.dp, bottom = 100.dp)
                 ) {
+                    item {
+                        FinancialChartCard(
+                            chartDataSet = uiState.chartDataSet,
+                            selectedMode = uiState.selectedChartMode,
+                            currencySymbol = uiState.currencySymbol,
+                            periodLabel = periodLabel,
+                            onModeSelected = viewModel::onChartModeSelected
+                        )
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Transaction History",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold,
+                                color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
+                                letterSpacing = (-0.2).sp
+                            )
+
+                            Text(
+                                text = "${uiState.transactions.size} records",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Medium,
+                                color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary
+                            )
+                        }
+                    }
+
                     if (uiState.transactions.isEmpty()) {
                         item {
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 40.dp),
+                                    .padding(vertical = 32.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(

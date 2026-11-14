@@ -103,7 +103,7 @@
 | **Version Code** | `3` |
 | **Default Ledger** | Single Ledger (`Personal`, ID: `ledger_default`) |
 | **Network Footprint** | 0 bytes (No network permissions, 100% offline) |
-| **Automated Tests** | 59 unit & stress tests passing (`100%`) |
+| **Automated Tests** | 67 unit & stress tests passing (`100%`) |
 | **CI/CD Status** | Automated Build & Test on push/PR (`ubuntu-latest`) |
 | **Minimum SDK** | API 24 (Android 7.0 Nougat) |
 | **Target SDK** | API 37 (Android 15+) |
@@ -112,8 +112,14 @@
 
 ## 4. Forward Roadmap & Execution Steps
 
-### 🚀 Milestone v0.3 — Local Data Portability & Backup (IN PROGRESS)
-**Goal:** Empower users with full ownership and portability of their local financial data without relying on any external cloud server.
+### 🚀 Milestone v0.3 — Local Data Portability & Visual Analytics (IN PROGRESS)
+**Goal:** Empower users with full ownership, portability, and visual comprehension of their local financial data without relying on any external cloud server.
+- [x] **Visual Analytics & Cashflow Charts**:
+  - Native hardware-accelerated Jetpack Compose `Canvas` financial charts with zero third-party dependencies (0 KB library bloat).
+  - 3-Way Mode Toggle: Expenses (Crimson Rose gradient), Income (Emerald Green gradient), Balance (Electric Lime spline with radiant area glow).
+  - Granular grouping: Daily data points for Week and Month views, Monthly data points for Year view.
+  - Zero-activity days: `0.0` for Expenses and Income, flat balance carryforward for Balance.
+  - Interactive touch-scrubbing with haptic feedback tick, vertical tracking crosshair, and floating detail tooltip pill.
 - [ ] **JSON Data Export**:
   - Export all transactions, categories, and ledger state into an encrypted or plain human-readable `.json` backup file.
   - Export metadata (schema version, export timestamp, total transaction count, checksum).

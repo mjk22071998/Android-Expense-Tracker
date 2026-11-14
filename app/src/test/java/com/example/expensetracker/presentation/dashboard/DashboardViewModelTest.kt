@@ -11,6 +11,7 @@ import com.example.expensetracker.data.repository.FakeTransactionRepository
 import com.example.expensetracker.domain.model.AppResult
 import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.domain.model.UiError
+import com.example.expensetracker.domain.model.chart.ChartMode
 import com.example.expensetracker.util.MainDispatcherRule
 import io.mockk.every
 import io.mockk.mockk
@@ -176,4 +177,24 @@ class DashboardViewModelTest {
         assertEquals(null, viewModel.uiState.value.monthlyTrendDelta)
     }
 
+    @Test
+    fun `transactions update populates chartDataSet in ui state`() = runTest {
+        ledgerRepository.emitDefaultLedger(sampleLedger())
+        transactionRepository.emitTransactions(listOf(sampleTransaction()))
+
+        val chartData = viewModel.uiState.value.chartDataSet
+        assertNotNull(chartData)
+        assertTrue(chartData.points.isNotEmpty())
+    }
+
+    @Test
+    fun `onChartModeSelected updates selectedChartMode in ui state`() {
+        assertEquals(ChartMode.EXPENSES, viewModel.uiState.value.selectedChartMode)
+
+        viewModel.onChartModeSelected(ChartMode.INCOME)
+        assertEquals(ChartMode.INCOME, viewModel.uiState.value.selectedChartMode)
+
+        viewModel.onChartModeSelected(ChartMode.BALANCE)
+        assertEquals(ChartMode.BALANCE, viewModel.uiState.value.selectedChartMode)
+    }
 }
