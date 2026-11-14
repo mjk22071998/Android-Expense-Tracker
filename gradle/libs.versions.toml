@@ -21,6 +21,7 @@ splashscreen = "1.2.0"
 kotlinxCoroutinesTest = "1.11.0"
 turbine = "1.2.1"
 mockk = "1.14.11"
+jodaMoney = "2.0.3"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -56,6 +57,7 @@ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-t
 turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomVersion" }
+joda-money = { module = "org.joda:joda-money", version.ref = "jodaMoney" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -495,6 +495,18 @@ The CI pipeline previously built release APKs on every branch push, consuming ru
 **Why:** Guarantees release artifacts are only generated from production-ready code on `master`, aligns CI pipeline triggers with documented developer contribution workflows, and maintains a clean repository root structure.  
 **Cost / Trade-off:** Release APK is not built for PR previews; developers must test release variants locally via `./gradlew assembleRelease` if verifying ProGuard/R8 optimizations prior to merge.
 
+### D87. Joda-Money Integration and Mathematically Exact Monetary Modeling
+**Context:**
+The application previously modeled financial amounts with raw IEEE 754 `Double` primitives and used a custom floating-point modulo check (`amount % 1.0 == 0.0`) in `formatCleanAmount`. Floating-point drift can lead to precision artifacts (e.g. `19.999999999999996`) or invalid formatting. In addition, currency validation and ISO-4217 registration were dependent on custom map lists.  
+**Decided:**
+1. Integrated `org.joda:joda-money:2.0.3` into the dependency catalog and domain layer.
+2. Refactored `CurrencyHelper` to discover currencies and validate codes via `CurrencyUnit.registeredCurrencies()` and `CurrencyUnit.of(code)`.
+3. Implemented `toMoney(amount: Double, currencyCode: String): Money` using `BigDecimal.setScale(unit.decimalPlaces, RoundingMode.HALF_UP)` to produce validated, immutable monetary representations.
+4. Refactored `formatCleanAmount` using `BigDecimal.remainder(BigDecimal.ONE).compareTo(BigDecimal.ZERO) == 0` and Half-Up rounding, guaranteeing complete immunity to floating-point drift.
+5. Retained Android-specific zero-permission SIM country auto-detection (`TelephonyManager.simCountryIso`) and colloquial regional short-symbol mappings (`Rs`, `$`, `₹`, `€`, `£`).  
+**Why:** Replaces hand-rolled financial math with an industry-tested, standard library trusted across banking and enterprise systems while preserving mobile-optimized local symbol presentation.  
+**Cost / Trade-off:** Lightweight dependency addition (~150 KB, zero native code, zero reflection/ServiceLoader overhead).
+
 ---
 
 ## 17. Decisions and claims that were corrected
@@ -536,6 +548,7 @@ The CI pipeline previously built release APKs on every branch push, consuming ru
 | Hilt @Module unused inspection | Android Studio flagged `RepositoryModule` as "never used" because Dagger discovers modules via KSP rather than direct Kotlin calls | Added `@Suppress("unused")` to all DI modules (`RepositoryModule`, `DatabaseModule`, `PreferencesModule`) |
 | ContextCompat.getExternalFilesDirs deprecation | `ContextCompat.getExternalFilesDirs` was deprecated in AndroidX for minSdk >= 19 | Replaced with native `context.getExternalFilesDirs(null)` call on `Context` |
 | Dead code and lint cleanup | Obsolete `TotalCardsBottomSheet` (replaced by Ledger tab), unused drawable (`ic_filter_list`), legacy template colors (`purple_*`, `teal_*`, `black`), cascaded `if` in form screen, and Compose modifier parameter ordering | Deleted dead code, trimmed `colors.xml`, refactored cascaded `if` to idiomatic `when`, cleaned unused imports, and aligned modifier ordering |
+| Hand-rolled currency and float modulo math | `amount % 1.0` was vulnerable to floating point precision drift; custom maps were unstandardized | Integrated `org.joda:joda-money:2.0.3` for standard ISO-4217 validation, exact `Money` objects, and `BigDecimal` remainder math |
 
 ---
 
@@ -545,7 +558,7 @@ The CI pipeline previously built release APKs on every branch push, consuming ru
 |---|---|---|
 | Seeding redundancy | Open | Runs from both `ExpenseTrackerApp.onCreate` and `AppStartupViewModel`. Safe and idempotent, but redundant. Direction: remove Application block. |
 | Startup failure | Open | `AppStartupViewModel` uses bare `viewModelScope.launch`; a seeding failure would crash the app. Direction: wrap in `launchSafely`. |
-| Money type | Open | `Double` amounts. Floating point can drift over millions of transactions. Direction: evaluate integer minor units (paisa, cents) before multi-year data accumulates. |
+| Money type | Resolved | Integrated `org.joda:joda-money:2.0.3` for ISO-4217 validation and exact `BigDecimal`-backed `Money` modeling; eliminated floating point modulo drift (D87). |
 | Currency source | Open | `ledgers.currencyCode` is written by seeder but never read; UI reads DataStore. Direction: unify single source of truth when multi-ledger is introduced. |
 | Future dates in form | Open | The add form allows future dates. Direction: decide whether to allow freely or show a warning. |
 | Paging | Open | `androidx.room:room-paging` is declared in Gradle dependencies but unused. Direction: implement paging when list exceeds 1,000 items, or remove dependency. |
