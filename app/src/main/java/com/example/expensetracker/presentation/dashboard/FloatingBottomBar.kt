@@ -30,6 +30,7 @@ import com.example.expensetracker.ui.theme.ForestTextSecondaryDark
 
 enum class BottomNavDestination {
     HOME,
+    ANALYTICS,
     LEDGER,
     CATEGORIES,
     SETTINGS
@@ -39,6 +40,7 @@ enum class BottomNavDestination {
 fun FloatingBottomBar(
     currentDestination: BottomNavDestination = BottomNavDestination.HOME,
     onHomeClick: () -> Unit = {},
+    onAnalyticsClick: () -> Unit = {},
     onLedgerClick: () -> Unit = {},
     onCategoriesClick: () -> Unit = {},
     onSettingsClick: () -> Unit = {},
@@ -53,24 +55,24 @@ fun FloatingBottomBar(
 
     Surface(
         modifier = modifier
-            .height(64.dp)
-            .clip(RoundedCornerShape(32.dp)),
-        shape = RoundedCornerShape(32.dp),
+            .height(58.dp)
+            .clip(RoundedCornerShape(29.dp)),
+        shape = RoundedCornerShape(29.dp),
         color = barColor,
         border = BorderStroke(1.dp, barBorder),
         shadowElevation = if (extendedColors.isDark) 10.dp else 8.dp
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // 1. Home
+            // 1. Home / Dashboard
             val isHome = currentDestination == BottomNavDestination.HOME
             AppTooltip(text = "Dashboard") {
                 Box(
                     modifier = Modifier
-                        .size(46.dp)
+                        .size(42.dp)
                         .clip(CircleShape)
                         .background(if (isHome) selectedBg else Color.Transparent)
                         .clickable(onClick = onHomeClick),
@@ -80,17 +82,37 @@ fun FloatingBottomBar(
                         painter = painterResource(id = R.drawable.ic_home),
                         contentDescription = "Home",
                         tint = if (isHome) selectedTint else unselectedTint,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
 
-            // 2. Ledger / Accounts
+            // 2. Analytics / Graph
+            val isAnalytics = currentDestination == BottomNavDestination.ANALYTICS
+            AppTooltip(text = "Visual Analytics") {
+                Box(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clip(CircleShape)
+                        .background(if (isAnalytics) selectedBg else Color.Transparent)
+                        .clickable(onClick = onAnalyticsClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_trending_up),
+                        contentDescription = "Analytics",
+                        tint = if (isAnalytics) selectedTint else unselectedTint,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+
+            // 3. Ledger / Financial Overview
             val isLedger = currentDestination == BottomNavDestination.LEDGER
             AppTooltip(text = "Financial Overview") {
                 Box(
                     modifier = Modifier
-                        .size(46.dp)
+                        .size(42.dp)
                         .clip(CircleShape)
                         .background(if (isLedger) selectedBg else Color.Transparent)
                         .clickable(onClick = onLedgerClick),
@@ -100,17 +122,17 @@ fun FloatingBottomBar(
                         painter = painterResource(id = R.drawable.ic_savings),
                         contentDescription = "Ledger",
                         tint = if (isLedger) selectedTint else unselectedTint,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
 
-            // 3. Categories / Analytics
+            // 4. Categories
             val isCategories = currentDestination == BottomNavDestination.CATEGORIES
-            AppTooltip(text = "Filter by Category") {
+            AppTooltip(text = "Categories") {
                 Box(
                     modifier = Modifier
-                        .size(46.dp)
+                        .size(42.dp)
                         .clip(CircleShape)
                         .background(if (isCategories) selectedBg else Color.Transparent)
                         .clickable(onClick = onCategoriesClick),
@@ -120,17 +142,17 @@ fun FloatingBottomBar(
                         painter = painterResource(id = R.drawable.ic_category),
                         contentDescription = "Categories",
                         tint = if (isCategories) selectedTint else unselectedTint,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
 
-            // 4. Settings
+            // 5. Settings
             val isSettings = currentDestination == BottomNavDestination.SETTINGS
             AppTooltip(text = "Settings & Preferences") {
                 Box(
                     modifier = Modifier
-                        .size(46.dp)
+                        .size(42.dp)
                         .clip(CircleShape)
                         .background(if (isSettings) selectedBg else Color.Transparent)
                         .clickable(onClick = onSettingsClick),
@@ -140,7 +162,7 @@ fun FloatingBottomBar(
                         painter = painterResource(id = R.drawable.ic_settings),
                         contentDescription = "Settings",
                         tint = if (isSettings) selectedTint else unselectedTint,
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

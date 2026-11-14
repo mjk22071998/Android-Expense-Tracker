@@ -1,10 +1,4 @@
 package com.example.expensetracker.presentation.dashboard
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.material3.Icon
-import androidx.compose.ui.res.painterResource
-import com.example.expensetracker.R
-import com.example.expensetracker.presentation.common.AppTooltip
-import com.example.expensetracker.presentation.common.TooltipPosition
 
 import android.Manifest
 import android.content.ClipData
@@ -14,7 +8,6 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,14 +23,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +36,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -62,9 +54,8 @@ import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
 import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.domain.usecase.PdfStorageHelper
-import com.example.expensetracker.presentation.dashboard.chart.FinancialChartCard
-import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
+import com.example.expensetracker.ui.theme.ExtendedColors
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -81,8 +72,11 @@ fun DashboardScreen(
     val context = LocalContext.current
     val extendedColors = ExpenseTrackerTheme.extendedColors
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    // 5-Tab non-slidable navigation state
+    var currentTab by rememberSaveable { mutableStateOf(BottomNavDestination.HOME) }
+
     var selectedTransaction by remember { mutableStateOf<TransactionWithCategory?>(null) }
-    var showTotalCardsSheet by remember { mutableStateOf(false) }
     var showPeriodSheet by remember { mutableStateOf(false) }
     var showCustomDatePicker by remember { mutableStateOf(false) }
     var showExportSheet by remember { mutableStateOf(false) }
@@ -158,8 +152,12 @@ fun DashboardScreen(
         }
     }
 
-    // Back button closes active search query
-    BackHandler(enabled = uiState.searchQuery.isNotEmpty()) {
+    // Back handling: If on secondary tab, return to Home. If on Home with search open, clear search.
+    BackHandler(enabled = currentTab != BottomNavDestination.HOME) {
+        currentTab = BottomNavDestination.HOME
+    }
+
+    BackHandler(enabled = currentTab == BottomNavDestination.HOME && uiState.searchQuery.isNotEmpty()) {
         viewModel.onSearchQueryChanged("")
     }
 
@@ -193,12 +191,29 @@ fun DashboardScreen(
         )
     }
 
+    val periodLabel = when (uiState.selectedFilter) {
+        is DateRangeFilter.AllTime -> "All Time"
+        is DateRangeFilter.Today -> "Today"
+        is DateRangeFilter.ThisWeek -> "This Week"
+        is DateRangeFilter.ThisMonth -> "This Month"
+        is DateRangeFilter.ThisYear -> "This Year"
+        is DateRangeFilter.Custom -> "Custom"
+    }
+
+    val topBarTitle = when (currentTab) {
+        BottomNavDestination.HOME -> "Personal Expenses"
+        BottomNavDestination.ANALYTICS -> "Visual Analytics"
+        BottomNavDestination.LEDGER -> "Financial Overview"
+        BottomNavDestination.CATEGORIES -> "Categories"
+        BottomNavDestination.SETTINGS -> "Settings"
+    }
+
     Scaffold(
         containerColor = Color.Transparent,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             DashboardTopBar(
-                title = "Personal Expenses",
+                title = topBarTitle,
                 onExportClick = { showExportSheet = true }
             )
         }
@@ -235,177 +250,80 @@ fun DashboardScreen(
                     )
             )
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp)
-            ) {
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // ============================================================
-                // 1. Hero Balance (Open directly on canvas, NO BOX/CARD)
-                // ============================================================
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Text(
-                        text = "Total Balance",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary,
-                        letterSpacing = 0.4.sp
+            // Tab Content Switcher (Strictly tap-based, NOT slidable)
+            when (currentTab) {
+                BottomNavDestination.HOME -> {
+                    HomeTabContent(
+                        balance = uiState.balance,
+                        currencySymbol = uiState.currencySymbol,
+                        periodLabel = periodLabel,
+                        searchQuery = uiState.searchQuery,
+                        transactions = uiState.transactions,
+                        extendedColors = extendedColors,
+                        onAddTransaction = onAddTransaction,
+                        onPeriodClick = { showPeriodSheet = true },
+                        onSearchQueryChange = viewModel::onSearchQueryChanged,
+                        onTransactionClick = { selectedTransaction = it },
+                        onEditTransaction = onEditTransaction,
+                        onDeleteTransaction = { viewModel.softDeleteTransaction(it) }
                     )
-
-                    val formattedBalance = if (uiState.balance < 0) {
-                        "− ${uiState.currencySymbol} ${formatAmount(kotlin.math.abs(uiState.balance))}"
-                    } else {
-                        "${uiState.currencySymbol} ${formatAmount(uiState.balance)}"
-                    }
-
-                    Text(
-                        text = formattedBalance,
-                        fontSize = 38.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
-                        letterSpacing = (-1.0).sp,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                // ============================================================
-                // 2. High-energy Action Pills Row (Transfer / Target / Settings)
-                // ============================================================
-                val periodLabel = when (uiState.selectedFilter) {
-                    is DateRangeFilter.AllTime -> "All Time"
-                    is DateRangeFilter.Today -> "Today"
-                    is DateRangeFilter.ThisWeek -> "This Week"
-                    is DateRangeFilter.ThisMonth -> "This Month"
-                    is DateRangeFilter.ThisYear -> "This Year"
-                    is DateRangeFilter.Custom -> "Custom"
+                BottomNavDestination.ANALYTICS -> {
+                    AnalyticsTabContent(
+                        chartDataSet = uiState.chartDataSet,
+                        selectedChartMode = uiState.selectedChartMode,
+                        currencySymbol = uiState.currencySymbol,
+                        periodLabel = periodLabel,
+                        transactions = uiState.transactions,
+                        onChartModeSelected = viewModel::onChartModeSelected,
+                        onPeriodClick = { showPeriodSheet = true }
+                    )
                 }
 
-                QuickActionsRow(
-                    onAddTransaction = onAddTransaction,
-                    onFilterPeriodClick = { showPeriodSheet = true },
-                    periodLabel = periodLabel
-                )
+                BottomNavDestination.LEDGER -> {
+                    LedgerTabContent(
+                        selectedFilter = uiState.selectedFilter,
+                        transactions = uiState.transactions,
+                        allTimeBalance = uiState.balance,
+                        monthlyTrendDelta = uiState.monthlyTrendDelta,
+                        currencySymbol = uiState.currencySymbol,
+                        onPeriodClick = { showPeriodSheet = true }
+                    )
+                }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                BottomNavDestination.CATEGORIES -> {
+                    CategoriesTabContent(
+                        allCategories = uiState.allCategories,
+                        selectedCategoryIds = uiState.selectedCategoryIds,
+                        transactions = uiState.transactions,
+                        currencySymbol = uiState.currencySymbol,
+                        onCategoryToggled = viewModel::onCategoryFilterToggled,
+                        onClearFilters = viewModel::onClearCategoryFilters,
+                        onApplyFilters = viewModel::onApplyCategoryFilters
+                    )
+                }
 
-                // ============================================================
-                // 3. Integrated Search Pill Bar
-                // ============================================================
-                SearchPillBar(
-                    query = uiState.searchQuery,
-                    onQueryChange = viewModel::onSearchQueryChanged
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // ============================================================
-                // 4. Analytics Chart & Transaction History
-                // ============================================================
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    contentPadding = PaddingValues(top = 2.dp, bottom = 100.dp)
-                ) {
-                    item {
-                        FinancialChartCard(
-                            chartDataSet = uiState.chartDataSet,
-                            selectedMode = uiState.selectedChartMode,
-                            currencySymbol = uiState.currencySymbol,
-                            periodLabel = periodLabel,
-                            onModeSelected = viewModel::onChartModeSelected
-                        )
-                    }
-
-                    item {
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "Transaction History",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                                color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
-                                letterSpacing = (-0.2).sp
-                            )
-
-                            Text(
-                                text = "${uiState.transactions.size} records",
-                                style = MaterialTheme.typography.labelSmall,
-                                fontWeight = FontWeight.Medium,
-                                color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary
-                            )
-                        }
-                    }
-
-                    if (uiState.transactions.isEmpty()) {
-                        item {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 32.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "No transactions found for this period",
-                                    color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                            }
-                        }
-                    } else {
-                        items(
-                            items = uiState.transactions,
-                            key = { it.id }
-                        ) { transaction ->
-                            TransactionItem(
-                                transaction = transaction,
-                                currencySymbol = uiState.currencySymbol,
-                                onClick = { selectedTransaction = transaction },
-                                onEdit = { onEditTransaction(transaction.id) },
-                                onDelete = { viewModel.softDeleteTransaction(transaction) }
-                            )
-                        }
-                    }
+                BottomNavDestination.SETTINGS -> {
+                    SettingsTabContent(
+                        onExportClick = { showExportSheet = true }
+                    )
                 }
             }
 
-            // ============================================================
-            // 6. Floating Pill Bottom Navigation Bar (Across All Screens)
-            // ============================================================
+            // Floating Pill Bottom Navigation Bar (Across All Tabs, non-slidable)
             FloatingBottomBar(
-                currentDestination = BottomNavDestination.HOME,
-                onHomeClick = { /* Already on Home */ },
-                onLedgerClick = { showTotalCardsSheet = true },
-                onCategoriesClick = { viewModel.onCategoryFilterSheetVisibilityChanged(true) },
-                onSettingsClick = onNavigateToSettings,
+                currentDestination = currentTab,
+                onHomeClick = { currentTab = BottomNavDestination.HOME },
+                onAnalyticsClick = { currentTab = BottomNavDestination.ANALYTICS },
+                onLedgerClick = { currentTab = BottomNavDestination.LEDGER },
+                onCategoriesClick = { currentTab = BottomNavDestination.CATEGORIES },
+                onSettingsClick = { currentTab = BottomNavDestination.SETTINGS },
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 16.dp)
             )
         }
-    }
-
-    // Modal: Screen 2 Total Cards & Stitched Leathercraft Sheet
-    if (showTotalCardsSheet) {
-        TotalCardsBottomSheet(
-            selectedFilter = uiState.selectedFilter,
-            transactions = uiState.transactions,
-            allTimeBalance = uiState.balance,
-            currencySymbol = uiState.currencySymbol,
-            onFilterSelected = viewModel::onFilterSelected,
-            onDismiss = { showTotalCardsSheet = false }
-        )
     }
 
     // Modal: Period Filter Selection Bottom Sheet
@@ -445,18 +363,6 @@ fun DashboardScreen(
                 selectedTransaction = null
                 onEditTransaction(transaction.id)
             }
-        )
-    }
-
-    // BottomSheet: Category Filter
-    if (uiState.isCategoryFilterSheetVisible) {
-        CategoryFilterBottomSheet(
-            allCategories = uiState.allCategories,
-            selectedCategoryIds = uiState.selectedCategoryIds,
-            onCategoryToggled = viewModel::onCategoryFilterToggled,
-            onClear = viewModel::onClearCategoryFilters,
-            onApply = viewModel::onApplyCategoryFilters,
-            onDismiss = { viewModel.onCategoryFilterSheetVisibilityChanged(false) }
         )
     }
 
@@ -539,5 +445,137 @@ fun DashboardScreen(
             }
         )
     }
+}
 
+@Composable
+private fun HomeTabContent(
+    balance: Double,
+    currencySymbol: String,
+    periodLabel: String,
+    searchQuery: String,
+    transactions: List<TransactionWithCategory>,
+    extendedColors: ExtendedColors,
+    onAddTransaction: () -> Unit,
+    onPeriodClick: () -> Unit,
+    onSearchQueryChange: (String) -> Unit,
+    onTransactionClick: (TransactionWithCategory) -> Unit,
+    onEditTransaction: (String) -> Unit,
+    onDeleteTransaction: (TransactionWithCategory) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp)
+    ) {
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // Hero Balance (Open directly on canvas, NO BOX/CARD)
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = "Total Balance",
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary,
+                letterSpacing = 0.4.sp
+            )
+
+            val formattedBalance = if (balance < 0) {
+                "− $currencySymbol ${formatAmount(kotlin.math.abs(balance))}"
+            } else {
+                "$currencySymbol ${formatAmount(balance)}"
+            }
+
+            Text(
+                text = formattedBalance,
+                fontSize = 38.sp,
+                fontWeight = FontWeight.Bold,
+                color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
+                letterSpacing = (-1.0).sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // High-energy Action Pills Row
+        QuickActionsRow(
+            onAddTransaction = onAddTransaction,
+            onFilterPeriodClick = onPeriodClick,
+            periodLabel = periodLabel
+        )
+
+        Spacer(modifier = Modifier.height(18.dp))
+
+        // Integrated Search Pill Bar
+        SearchPillBar(
+            query = searchQuery,
+            onQueryChange = onSearchQueryChange
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Full Transaction History LazyColumn (uncluttered, dedicated view)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+            contentPadding = PaddingValues(top = 2.dp, bottom = 100.dp)
+        ) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Transaction History",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = if (extendedColors.isDark) Color.White else extendedColors.textPrimary,
+                        letterSpacing = (-0.2).sp
+                    )
+
+                    Text(
+                        text = "${transactions.size} records",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontWeight = FontWeight.Medium,
+                        color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary
+                    )
+                }
+            }
+
+            if (transactions.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No transactions found for this period",
+                            color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            } else {
+                items(
+                    items = transactions,
+                    key = { it.id }
+                ) { transaction ->
+                    TransactionItem(
+                        transaction = transaction,
+                        currencySymbol = currencySymbol,
+                        onClick = { onTransactionClick(transaction) },
+                        onEdit = { onEditTransaction(transaction.id) },
+                        onDelete = { onDeleteTransaction(transaction) }
+                    )
+                }
+            }
+        }
+    }
 }

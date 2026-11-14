@@ -462,6 +462,19 @@ User feedback favored natural language logging ("Bought milk for Rs 250", "Spent
 **Rejected:** Embedding chat UI or LLM runtimes directly into the Android application.  
 **Cost / Trade-off:** Requires a lightweight server backend and phone-binding authentication for users who opt into WhatsApp companion services in v1.1.
 
+### D84. Five-Tab Non-Slidable Navigation Architecture over Modal Bottom Sheets
+User testing revealed that using modal bottom sheets (`TotalCardsBottomSheet`, `CategoryFilterBottomSheet`) for primary navigation buttons violated user expectations of a bottom navigation bar. Furthermore, rendering the interactive financial chart card on the home dashboard overcrowded the vertical viewport on compact devices (e.g., 720x1520 budget phones), restricting visible transaction history.  
+**Decided:**
+1. Converted primary navigation into 5 first-class top-level full-screen tabs: `HOME`, `ANALYTICS`, `LEDGER`, `CATEGORIES`, `SETTINGS`.
+2. Tab switching is **strictly tap-based and non-slidable** (no `HorizontalPager` or horizontal swipe gestures). This eliminates gesture conflicts with the Canvas touch scrubber and vertical list scrolling.
+3. Created a dedicated **Analytics Tab** (`AnalyticsTabContent.kt`) hosting the hardware-accelerated Compose Canvas chart, 3-way toggle (`[ Expenses | Income | Balance ]`), summary metric strip, and category spending distribution progress bars.
+4. Restored the **Home Tab** to a spacious, focused dashboard (Hero Total Balance, Quick Action pills, Search, and uncrowded full Transaction History).
+5. Converted Financial Overview and Category management into full-screen tabs (`LedgerTabContent.kt`, `CategoriesTabContent.kt`).
+6. Embedded Settings directly into the 5th tab (`SettingsTabContent.kt`), ensuring the persistent floating bar remains accessible for instant 1-tap switching across destinations.
+7. System back button behavior: pressing Back while on any secondary tab returns cleanly to the `HOME` tab.  
+**Rejected:** Horizontal swipeable tab pager (conflicted with chart dragging and list scrolling); modal bottom sheets for primary app navigation.  
+**Cost / Trade-off:** Tab state is retained via `rememberSaveable`; each destination requires full-screen layout and content padding for the floating bar.
+
 ---
 
 ## 17. Decisions and claims that were corrected
@@ -509,6 +522,7 @@ User feedback favored natural language logging ("Bought milk for Rs 250", "Spent
 | Custom chip label polish | Open | Custom filter chip currently displays "Custom"; could show the active picked date range. |
 | WhatsApp Companion | Planned (v1.1) | External server-side companion bot with user phone binding and natural language slot-filling. |
 | Visual Analytics (Charts) | Resolved | Native hardware-accelerated Compose Canvas charts implemented with zero third-party dependencies, daily/monthly granularity, 3-way toggle (Expenses, Income, Balance), zero-activity flat carryforward, and interactive touch scrubbing with haptic feedback. |
+| Navigation Architecture | Resolved | Converted floating navigation bar from modal bottom sheet triggers into 5 first-class non-slidable tabs (Home, Analytics, Ledger, Categories, Settings) with dedicated Graph tab. |
 | CI test execution | Resolved | Unit test step (`testDebugUnitTest`) added to GitHub Actions workflow. |
 | Hacktoberfest cleanup | Resolved | Branch removed, documentation cleansed, PR validation retargeted to `master`. |
 | PDF Export | Resolved | Native ISO A4 generator with dual storage save and system share paths implemented. |
