@@ -549,6 +549,7 @@ The application previously modeled financial amounts with raw IEEE 754 `Double` 
 | ContextCompat.getExternalFilesDirs deprecation | `ContextCompat.getExternalFilesDirs` was deprecated in AndroidX for minSdk >= 19 | Replaced with native `context.getExternalFilesDirs(null)` call on `Context` |
 | Dead code and lint cleanup | Obsolete `TotalCardsBottomSheet` (replaced by Ledger tab), unused drawable (`ic_filter_list`), legacy template colors (`purple_*`, `teal_*`, `black`), cascaded `if` in form screen, and Compose modifier parameter ordering | Deleted dead code, trimmed `colors.xml`, refactored cascaded `if` to idiomatic `when`, cleaned unused imports, and aligned modifier ordering |
 | Hand-rolled currency and float modulo math | `amount % 1.0` was vulnerable to floating point precision drift; custom maps were unstandardized | Integrated `org.joda:joda-money:2.0.3` for standard ISO-4217 validation, exact `Money` objects, and `BigDecimal` remainder math |
+| Toolchain upgrade (AGP & Gradle) | AGP 9.4.1 and Gradle 9.8.0 toolchain | Upgraded to AGP 9.5.1 and Gradle 9.9.1 wrapper; verified 100% test compatibility |
 
 ---
 
