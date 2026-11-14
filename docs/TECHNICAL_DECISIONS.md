@@ -533,6 +533,7 @@ The CI pipeline previously built release APKs on every branch push, consuming ru
 | CI Release Gating | Release APK was built on every branch push, consuming runner minutes | Gated `assembleRelease` strictly to `master`/`main` pushes; feature branches run unit tests & debug assemble |
 | Documentation Reorganization | Technical docs and roadmaps were scattered in the repository root | Consolidated all documentation into `docs/` keeping only README, CONTRIBUTING, and LICENSE in root |
 | settings.gradle.kts @Incubating inspection | IDE flagged Gradle's `dependencyResolutionManagement` as unstable `@Incubating` API | Added `@file:Suppress("UnstableApiUsage")` at top of `settings.gradle.kts` |
+| Hilt @Module unused inspection | Android Studio flagged `RepositoryModule` as "never used" because Dagger discovers modules via KSP rather than direct Kotlin calls | Added `@Suppress("unused")` to all DI modules (`RepositoryModule`, `DatabaseModule`, `PreferencesModule`) |
 
 ---
 

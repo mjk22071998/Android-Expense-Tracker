@@ -11,6 +11,7 @@ import jakarta.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
+@Suppress("unused")
 object PreferencesModule {
     @Provides
     @Singleton

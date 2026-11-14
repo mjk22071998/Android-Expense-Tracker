@@ -16,6 +16,7 @@ import jakarta.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
+@Suppress("unused")
 object DatabaseModule {
     @Provides
     @Singleton
