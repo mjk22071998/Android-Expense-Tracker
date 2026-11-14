@@ -32,8 +32,8 @@ import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 fun QuickActionsRow(
     onAddTransaction: () -> Unit,
     onFilterPeriodClick: () -> Unit,
-    periodLabel: String = "This Month",
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    periodLabel: String = "This Month"
 ) {
     val extendedColors = ExpenseTrackerTheme.extendedColors
     val addContainerColor = if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34)

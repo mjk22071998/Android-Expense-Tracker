@@ -535,6 +535,7 @@ The CI pipeline previously built release APKs on every branch push, consuming ru
 | settings.gradle.kts @Incubating inspection | IDE flagged Gradle's `dependencyResolutionManagement` as unstable `@Incubating` API | Added `@file:Suppress("UnstableApiUsage")` at top of `settings.gradle.kts` |
 | Hilt @Module unused inspection | Android Studio flagged `RepositoryModule` as "never used" because Dagger discovers modules via KSP rather than direct Kotlin calls | Added `@Suppress("unused")` to all DI modules (`RepositoryModule`, `DatabaseModule`, `PreferencesModule`) |
 | ContextCompat.getExternalFilesDirs deprecation | `ContextCompat.getExternalFilesDirs` was deprecated in AndroidX for minSdk >= 19 | Replaced with native `context.getExternalFilesDirs(null)` call on `Context` |
+| Dead code and lint cleanup | Obsolete `TotalCardsBottomSheet` (replaced by Ledger tab), unused drawable (`ic_filter_list`), legacy template colors (`purple_*`, `teal_*`, `black`), cascaded `if` in form screen, and Compose modifier parameter ordering | Deleted dead code, trimmed `colors.xml`, refactored cascaded `if` to idiomatic `when`, cleaned unused imports, and aligned modifier ordering |
 
 ---
 

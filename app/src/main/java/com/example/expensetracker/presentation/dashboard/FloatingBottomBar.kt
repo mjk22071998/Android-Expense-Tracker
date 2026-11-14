@@ -38,13 +38,13 @@ enum class BottomNavDestination {
 
 @Composable
 fun FloatingBottomBar(
+    modifier: Modifier = Modifier,
     currentDestination: BottomNavDestination = BottomNavDestination.HOME,
     onHomeClick: () -> Unit = {},
     onAnalyticsClick: () -> Unit = {},
     onLedgerClick: () -> Unit = {},
     onCategoriesClick: () -> Unit = {},
-    onSettingsClick: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onSettingsClick: () -> Unit = {}
 ) {
     val extendedColors = ExpenseTrackerTheme.extendedColors
     val barColor = if (extendedColors.isDark) Color(0xF00B1A12) else Color(0xF8FFFFFF)

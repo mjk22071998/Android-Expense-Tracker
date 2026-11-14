@@ -3,7 +3,6 @@ package com.example.expensetracker.presentation.dashboard
 import android.content.Context
 import com.example.expensetracker.Constants
 import com.example.expensetracker.data.local.UserPreferences
-import com.example.expensetracker.data.local.entity.Transaction
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.data.repository.CategoryRepository
 import com.example.expensetracker.data.repository.LedgerRepository

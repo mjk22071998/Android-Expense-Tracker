@@ -39,11 +39,9 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.expensetracker.domain.model.chart.ChartDataPoint
 import com.example.expensetracker.domain.model.chart.ChartDataSet
 import com.example.expensetracker.domain.model.chart.ChartMode
 import com.example.expensetracker.ui.theme.LocalExtendedColors
-import kotlin.math.abs
 import kotlin.math.roundToInt
 
 @Composable

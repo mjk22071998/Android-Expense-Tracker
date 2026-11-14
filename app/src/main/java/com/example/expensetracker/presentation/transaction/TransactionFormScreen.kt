@@ -321,8 +321,11 @@ fun TransactionFormScreen(
                         modifier = Modifier.size(20.dp)
                     )
                     Text(
-                        text = if (uiState.isEditMode) "Update Transaction"
-                               else if (isIncome) "Save Income Deposit" else "Save Expense Outflow",
+                        text = when {
+                            uiState.isEditMode -> "Update Transaction"
+                            isIncome -> "Save Income Deposit"
+                            else -> "Save Expense Outflow"
+                        },
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         modifier = Modifier.padding(start = 8.dp)

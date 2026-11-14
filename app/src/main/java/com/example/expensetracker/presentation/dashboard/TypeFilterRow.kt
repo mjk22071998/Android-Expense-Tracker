@@ -20,7 +20,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.expensetracker.Constants
 import com.example.expensetracker.R
-import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
