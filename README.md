@@ -213,3 +213,14 @@ All test suites execute cleanly via:
 The repository uses GitHub Actions for automated continuous integration and static application security testing (SAST):
 
 - **Android CI (`.github/workflows/android-ci.yml`)**: Automated pipeline checking out code, setting up JDK 17 with Gradle caching, executing the entire 59-test unit and stress test suite (`./gradlew testDebugUnitTest`), compiling the debug APK (`./gradlew assembleDebug`), and archiving the build artifact.
+
+---
+
+## Documentation
+
+Comprehensive project documentation lives in the [`docs/`](docs/) directory:
+
+- **[Technical Decisions Record](docs/TECHNICAL_DECISIONS.md)** — Exhaustive record of all 85 architecture and engineering decisions (D1–D85), design rationale, rejected alternatives, trade-offs, corrected claims, and open items.
+- **[Living Roadmap](docs/ROADMAP.md)** — Version milestones, completed features, test coverage stats, and roadmap projections (v0.3 active, v1.0 production, v1.1 companion bot).
+- **[Contributing Guidelines](CONTRIBUTING.md)** — Contribution norms, local lint and build instructions, and branch rules.
+- **[License](LICENSE)** — BSD 3-Clause open source license.
