@@ -218,7 +218,7 @@ fun FinancialChartCard(
 
                 // Drag scrubbing hint footnote
                 Text(
-                    text = "Tip: drag finger across chart to scrub daily values",
+                    text = "Tip: tap or drag horizontally across chart to inspect values",
                     style = MaterialTheme.typography.labelSmall,
                     fontSize = 10.sp,
                     color = extendedColors.textMuted,

@@ -451,7 +451,7 @@ In Weekly and Monthly charts showing daily data points:
 
 ### D82. Touch-scrubbing interactive crosshair with haptic feedback
 Designed an interactive touch scrubber on the Compose Canvas: dragging across the graph renders a vertical indicator guideline, highlights the active data point, opens a floating badge with date and amount, and triggers a subtle haptic tick (`HapticFeedbackType.TextHandleMove`) on data point transitions.  
-**Cost / Trade-off:** Requires custom pointer input handling via `detectDragGestures`.
+**Cost / Trade-off:** Requires pointer input handling via `detectHorizontalDragGestures` and `detectTapGestures` to prevent intercepting vertical scroll gestures of parent containers.
 
 ### D83. Decoupled server-side WhatsApp companion bot (Zero in-app chat bloat)
 User feedback favored natural language logging ("Bought milk for Rs 250", "Spent Rs 2,000 on groceries") and conversational queries ("How much did I spend on travelling last month?", "What is my current balance?") via WhatsApp Business.  
@@ -505,6 +505,7 @@ User testing revealed that using modal bottom sheets (`TotalCardsBottomSheet`, `
 | Branch validation in CI | `validate-branch.yml` rejected all PRs targeting `master` after Hacktoberfest | Removed obsolete workflow in `ffcc793` |
 | CI test execution | CI previously ran only `lint` and `assembleDebug` without running unit tests | Added `./gradlew testDebugUnitTest` in `60fdb67` |
 | Speculative sync code | `SyncableEntity` and `SyncContracts` added dead scaffolding to offline app | Removed in commit `29ff3e3` |
+| Chart drag gestures | `detectDragGestures` intercepted all pointer motion including vertical drags, locking parent vertical scrolling | Switched to `detectHorizontalDragGestures` and `detectTapGestures` so vertical scrolls pass through cleanly |
 
 ---
 

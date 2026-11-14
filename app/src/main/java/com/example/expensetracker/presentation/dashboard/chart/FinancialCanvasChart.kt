@@ -1,7 +1,7 @@
 package com.example.expensetracker.presentation.dashboard.chart
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -91,7 +91,7 @@ fun FinancialCanvasChart(
                 )
             }
             .pointerInput(points, mode) {
-                detectDragGestures(
+                detectHorizontalDragGestures(
                     onDragStart = { offset ->
                         val drawWidth = size.width - leftPaddingPx - rightPaddingPx
                         if (drawWidth > 0 && points.isNotEmpty()) {
@@ -102,7 +102,8 @@ fun FinancialCanvasChart(
                             scrubbedIndex = idx
                         }
                     },
-                    onDrag = { change, _ ->
+                    onHorizontalDrag = { change, _ ->
+                        change.consume()
                         val drawWidth = size.width - leftPaddingPx - rightPaddingPx
                         if (drawWidth > 0 && points.isNotEmpty()) {
                             val stepX = drawWidth / points.size
@@ -118,7 +119,7 @@ fun FinancialCanvasChart(
                         // Keep the point selected for convenient reading
                     },
                     onDragCancel = {
-                        scrubbedIndex = null
+                        // Cancelled
                     }
                 )
             }
