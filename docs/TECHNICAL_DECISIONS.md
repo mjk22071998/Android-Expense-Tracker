@@ -544,12 +544,7 @@ The application previously modeled financial amounts with raw IEEE 754 `Double` 
 | Chart drag dismissal | Inspection tooltip remained stuck on screen after drag finished | Added immediate reset on `onDragEnd` and `onDragCancel` to return chart to resting baseline |
 | CI Release Gating | Release APK was built on every branch push, consuming runner minutes | Gated `assembleRelease` strictly to `master`/`main` pushes; feature branches run unit tests & debug assemble |
 | Documentation Reorganization | Technical docs and roadmaps were scattered in the repository root | Consolidated all documentation into `docs/` keeping only README, CONTRIBUTING, and LICENSE in root |
-| settings.gradle.kts @Incubating inspection | IDE flagged Gradle's `dependencyResolutionManagement` as unstable `@Incubating` API | Added `@file:Suppress("UnstableApiUsage")` at top of `settings.gradle.kts` |
-| Hilt @Module unused inspection | Android Studio flagged `RepositoryModule` as "never used" because Dagger discovers modules via KSP rather than direct Kotlin calls | Added `@Suppress("unused")` to all DI modules (`RepositoryModule`, `DatabaseModule`, `PreferencesModule`) |
-| ContextCompat.getExternalFilesDirs deprecation | `ContextCompat.getExternalFilesDirs` was deprecated in AndroidX for minSdk >= 19 | Replaced with native `context.getExternalFilesDirs(null)` call on `Context` |
-| Dead code and lint cleanup | Obsolete `TotalCardsBottomSheet` (replaced by Ledger tab), unused drawable (`ic_filter_list`), legacy template colors (`purple_*`, `teal_*`, `black`), cascaded `if` in form screen, and Compose modifier parameter ordering | Deleted dead code, trimmed `colors.xml`, refactored cascaded `if` to idiomatic `when`, cleaned unused imports, and aligned modifier ordering |
-| Hand-rolled currency and float modulo math | `amount % 1.0` was vulnerable to floating point precision drift; custom maps were unstandardized | Integrated `org.joda:joda-money:2.0.3` for standard ISO-4217 validation, exact `Money` objects, and `BigDecimal` remainder math |
-| Toolchain upgrade (AGP & Gradle) | AGP 9.4.1 and Gradle 9.8.0 toolchain | Upgraded to AGP 9.5.1 and Gradle 9.9.1 wrapper; verified 100% test compatibility |
+| Monetary type & float math | `Double` amounts and `amount % 1.0` were vulnerable to floating point precision drift | Integrated `org.joda:joda-money` and `BigDecimal` for exact ISO-4217 monetary representation (D87) |
 
 ---
 
