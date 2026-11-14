@@ -148,7 +148,7 @@ fun TransactionFormScreen(
             val isIncome = uiState.type == Constants.TransactionType.INCOME
             val heroGradient = Brush.linearGradient(
                 colors = if (isIncome) listOf(Color(0xFF163826), Color(0xFF0F261B), Color(0xFF08140E))
-                         else listOf(Color(0xFF102838), Color(0xFF0B1B26), Color(0xFF08140E)),
+                         else listOf(Color(0xFF281016), Color(0xFF1A0A0F), Color(0xFF08140E)),
                 start = Offset(0f, 0f),
                 end = Offset(800f, 800f)
             )
@@ -156,7 +156,7 @@ fun TransactionFormScreen(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(26.dp),
-                border = BorderStroke(1.dp, if (isIncome) Color(0x33D6F248) else Color(0x330099FF)),
+                border = BorderStroke(1.dp, if (isIncome) Color(0x33D6F248) else Color(0x33F43F5E)),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.Transparent)
             ) {
@@ -173,7 +173,7 @@ fun TransactionFormScreen(
                             .align(Alignment.TopEnd)
                             .offset(x = 30.dp, y = (-30).dp)
                             .background(
-                                color = if (isIncome) Color(0x18D6F248) else Color(0x180099FF),
+                                color = if (isIncome) Color(0x18D6F248) else Color(0x18F43F5E),
                                 shape = CircleShape
                             )
                     )

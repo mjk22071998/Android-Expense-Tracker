@@ -102,21 +102,23 @@ class BuildChartDataUseCase @Inject constructor() {
             is DateRangeFilter.ThisMonth -> generateMonthBins(now)
             is DateRangeFilter.ThisYear -> generateYearBins(now)
             is DateRangeFilter.Today -> generateTodayBins(now)
-            is DateRangeFilter.Custom -> generateCustomBins(filter.startDate, filter.endDate)
+            is DateRangeFilter.Custom -> generateCustomBins(filter.startDate, filter.endDate, now)
             is DateRangeFilter.AllTime -> generateAllTimeBins(now, transactions)
         }
     }
 
     private fun generateWeekBins(now: Long): List<BinTemplate> {
-        val cal = Calendar.getInstance().apply { timeInMillis = now }
-        val daysSinceMonday = (cal.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY + 7) % 7
-        cal.add(Calendar.DAY_OF_YEAR, -daysSinceMonday)
+        val nowCal = Calendar.getInstance().apply { timeInMillis = now }
+        val daysSinceMonday = (nowCal.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY + 7) % 7
+        val cal = (nowCal.clone() as Calendar).apply {
+            add(Calendar.DAY_OF_YEAR, -daysSinceMonday)
+        }
 
         val dayNames = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
         val fullFormatter = SimpleDateFormat("EEEE, MMM d", Locale.getDefault())
-        val bins = ArrayList<BinTemplate>(7)
+        val bins = ArrayList<BinTemplate>(daysSinceMonday + 1)
 
-        for (i in 0..6) {
+        for (i in 0..daysSinceMonday) {
             val startMillis = cal.toStartOfDay().timeInMillis
             val endMillis = cal.toEndOfDay().timeInMillis
             val fullLabel = fullFormatter.format(cal.time)
@@ -134,15 +136,20 @@ class BuildChartDataUseCase @Inject constructor() {
     }
 
     private fun generateMonthBins(now: Long): List<BinTemplate> {
-        val cal = Calendar.getInstance().apply {
-            timeInMillis = now
-            set(Calendar.DAY_OF_MONTH, 1)
-        }
-        val daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
-        val fullFormatter = SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault())
-        val bins = ArrayList<BinTemplate>(daysInMonth)
+        val nowCal = Calendar.getInstance().apply { timeInMillis = now }
+        val currentDay = nowCal.get(Calendar.DAY_OF_MONTH)
+        val year = nowCal.get(Calendar.YEAR)
+        val month = nowCal.get(Calendar.MONTH)
 
-        for (day in 1..daysInMonth) {
+        val cal = Calendar.getInstance().apply {
+            clear()
+            set(Calendar.YEAR, year)
+            set(Calendar.MONTH, month)
+        }
+        val fullFormatter = SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault())
+        val bins = ArrayList<BinTemplate>(currentDay)
+
+        for (day in 1..currentDay) {
             cal.set(Calendar.DAY_OF_MONTH, day)
             val startMillis = cal.toStartOfDay().timeInMillis
             val endMillis = cal.toEndOfDay().timeInMillis
@@ -160,13 +167,15 @@ class BuildChartDataUseCase @Inject constructor() {
     }
 
     private fun generateYearBins(now: Long): List<BinTemplate> {
-        val cal = Calendar.getInstance().apply { timeInMillis = now }
-        val year = cal.get(Calendar.YEAR)
+        val nowCal = Calendar.getInstance().apply { timeInMillis = now }
+        val year = nowCal.get(Calendar.YEAR)
+        val currentMonth = nowCal.get(Calendar.MONTH)
         val monthNames = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
         val fullFormatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
-        val bins = ArrayList<BinTemplate>(12)
+        val bins = ArrayList<BinTemplate>(currentMonth + 1)
 
-        for (month in 0..11) {
+        val cal = Calendar.getInstance()
+        for (month in 0..currentMonth) {
             cal.clear()
             cal.set(Calendar.YEAR, year)
             cal.set(Calendar.MONTH, month)
@@ -190,14 +199,17 @@ class BuildChartDataUseCase @Inject constructor() {
     }
 
     private fun generateTodayBins(now: Long): List<BinTemplate> {
-        val cal = Calendar.getInstance().apply { timeInMillis = now }
+        val nowCal = Calendar.getInstance().apply { timeInMillis = now }
+        val currentHour = nowCal.get(Calendar.HOUR_OF_DAY)
         val segments = listOf(
             Triple("Night", "Night (12 AM - 6 AM)", 0 to 5),
             Triple("Morn", "Morning (6 AM - 12 PM)", 6 to 11),
             Triple("After", "Afternoon (12 PM - 6 PM)", 12 to 17),
             Triple("Eve", "Evening (6 PM - 12 AM)", 18 to 23)
         )
-        return segments.map { (shortLbl, fullLbl, hourRange) ->
+        val activeSegments = segments.filter { it.third.first <= currentHour }
+        val cal = (nowCal.clone() as Calendar)
+        return (if (activeSegments.isEmpty()) listOf(segments.first()) else activeSegments).map { (shortLbl, fullLbl, hourRange) ->
             cal.set(Calendar.HOUR_OF_DAY, hourRange.first)
             cal.set(Calendar.MINUTE, 0)
             cal.set(Calendar.SECOND, 0)
@@ -214,9 +226,10 @@ class BuildChartDataUseCase @Inject constructor() {
         }
     }
 
-    private fun generateCustomBins(startDate: Long, endDate: Long): List<BinTemplate> {
+    private fun generateCustomBins(startDate: Long, endDate: Long, now: Long): List<BinTemplate> {
         val cal = Calendar.getInstance()
-        val durationDays = ((endDate - startDate) / (24 * 60 * 60 * 1000L)).toInt().coerceAtLeast(1)
+        val effectiveEnd = minOf(endDate, now).coerceAtLeast(startDate)
+        val durationDays = ((effectiveEnd - startDate) / (24 * 60 * 60 * 1000L)).toInt().coerceAtLeast(1)
 
         return if (durationDays <= 31) {
             // Daily bins
@@ -225,7 +238,7 @@ class BuildChartDataUseCase @Inject constructor() {
             val dayFormatter = SimpleDateFormat("d MMM", Locale.getDefault())
             val fullFormatter = SimpleDateFormat("EEE, MMM d, yyyy", Locale.getDefault())
 
-            while (cal.timeInMillis <= endDate) {
+            while (cal.toStartOfDay().timeInMillis <= effectiveEnd) {
                 val start = cal.toStartOfDay().timeInMillis
                 val end = cal.toEndOfDay().timeInMillis
                 bins.add(
@@ -243,13 +256,15 @@ class BuildChartDataUseCase @Inject constructor() {
             // Monthly bins
             val bins = ArrayList<BinTemplate>()
             cal.timeInMillis = startDate
-            cal.set(Calendar.DAY_OF_MONTH, 1)
-            val monthFormatter = SimpleDateFormat("MMM", Locale.getDefault())
+            val monthFormatter = SimpleDateFormat("MMM yy", Locale.getDefault())
             val fullFormatter = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
 
-            while (cal.timeInMillis <= endDate) {
+            while (cal.toStartOfDay().timeInMillis <= effectiveEnd) {
+                cal.set(Calendar.DAY_OF_MONTH, 1)
                 val start = cal.toStartOfDay().timeInMillis
-                cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH))
+
+                val lastDay = cal.getActualMaximum(Calendar.DAY_OF_MONTH)
+                cal.set(Calendar.DAY_OF_MONTH, lastDay)
                 val end = cal.toEndOfDay().timeInMillis
 
                 bins.add(
@@ -261,7 +276,6 @@ class BuildChartDataUseCase @Inject constructor() {
                     )
                 )
                 cal.add(Calendar.MONTH, 1)
-                cal.set(Calendar.DAY_OF_MONTH, 1)
             }
             bins
         }
@@ -273,7 +287,7 @@ class BuildChartDataUseCase @Inject constructor() {
         }
         val minDate = transactions.minOf { it.date }
         val maxDate = transactions.maxOf { it.date }.coerceAtLeast(now)
-        return generateCustomBins(minDate, maxDate)
+        return generateCustomBins(minDate, maxDate, now)
     }
 
     private fun Calendar.toStartOfDay(): Calendar = apply {

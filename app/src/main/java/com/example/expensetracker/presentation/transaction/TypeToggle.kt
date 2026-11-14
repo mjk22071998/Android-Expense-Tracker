@@ -61,9 +61,9 @@ fun TypeToggle(
             horizontalArrangement = Arrangement.spacedBy(6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Expense Tab Pill (Calm Vivid Blue instead of danger-red)
+            // Expense Tab Pill
             val expenseBg by animateColorAsState(
-                targetValue = if (isExpense) Color(0xFF0099FF) else Color.Transparent,
+                targetValue = if (isExpense) extendedColors.crimsonExpense else Color.Transparent,
                 animationSpec = tween(200),
                 label = "expenseBg"
             )

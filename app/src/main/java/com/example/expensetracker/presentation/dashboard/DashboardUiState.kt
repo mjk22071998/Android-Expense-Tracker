@@ -7,6 +7,12 @@ import com.example.expensetracker.domain.model.UiError
 import com.example.expensetracker.domain.model.chart.ChartDataSet
 import com.example.expensetracker.domain.model.chart.ChartMode
 
+data class CategoryUsage(
+    val transactionCount: Int = 0,
+    val totalAmount: Double = 0.0,
+    val lastTransactionDate: Long? = null
+)
+
 data class DashboardUiState(
     val balance: Double = 0.0,
     val totalIncome: Double = 0.0,
@@ -26,5 +32,6 @@ data class DashboardUiState(
     val hasLastMonthData: Boolean = false,
     val thisMonthNet: Double = 0.0,
     val chartDataSet: ChartDataSet = ChartDataSet.empty(),
-    val selectedChartMode: ChartMode = ChartMode.EXPENSES
+    val selectedChartMode: ChartMode = ChartMode.EXPENSES,
+    val categoryUsageMap: Map<String, CategoryUsage> = emptyMap()
 )

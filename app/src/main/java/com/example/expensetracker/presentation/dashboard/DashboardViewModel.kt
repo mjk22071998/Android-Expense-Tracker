@@ -50,6 +50,7 @@ class DashboardViewModel @Inject constructor(
     private var currentLedgerId: String = ""
     private var transactionsJob: Job? = null
     private var monthlyComparisonJob: Job? = null
+    private var categoryUsagesJob: Job? = null
     private val searchQueryFlow = MutableStateFlow("")
 
     init {
@@ -101,6 +102,7 @@ class DashboardViewModel @Inject constructor(
                         if (ledgerChanged) {
                             loadTransactions()
                             loadMonthlyComparison()
+                            loadCategoryUsages()
                         } else {
                             val tx = _uiState.value.transactions
                             if (tx.isNotEmpty()) {
@@ -109,6 +111,35 @@ class DashboardViewModel @Inject constructor(
                         }
                     }
                 }
+        }
+    }
+
+    private fun loadCategoryUsages() {
+        categoryUsagesJob?.cancel()
+        if (currentLedgerId.isEmpty()) return
+
+        categoryUsagesJob = launchSafely(onError = ::handleError) {
+            transactionRepository.getTransactions(
+                ledgerId = currentLedgerId,
+                startDate = 0L,
+                endDate = Long.MAX_VALUE,
+                searchQuery = "",
+                typeFilter = null,
+                categoryIds = emptySet()
+            )
+            .catch { e -> handleError(e.toUiError()) }
+            .collectLatest { allTx ->
+                val active = allTx.filter { !it.isDeleted }
+                val usageMap = active.groupBy { it.categoryId ?: "" }
+                    .mapValues { (_, txList) ->
+                        CategoryUsage(
+                            transactionCount = txList.size,
+                            totalAmount = txList.sumOf { it.amount },
+                            lastTransactionDate = txList.maxOfOrNull { it.date }
+                        )
+                    }
+                _uiState.update { it.copy(categoryUsageMap = usageMap) }
+            }
         }
     }
 

@@ -475,6 +475,14 @@ User testing revealed that using modal bottom sheets (`TotalCardsBottomSheet`, `
 **Rejected:** Horizontal swipeable tab pager (conflicted with chart dragging and list scrolling); modal bottom sheets for primary app navigation.  
 **Cost / Trade-off:** Tab state is retained via `rememberSaveable`; each destination requires full-screen layout and content padding for the floating bar.
 
+### D85. No-Future-Dates Chart Bins, All-Time Relative Category Recency, and Color System Discipline
+Physical testing on hardware surfaced three visual/UX inconsistencies:
+1. **No future dates in time-series charts:** In open-ended periods (`ThisMonth`, `ThisWeek`, `ThisYear`, or custom ranges spanning into today), the chart generator previously populated placeholder bins through the end of the calendar interval (e.g., showing days 15 through 30 in mid-November). This wasted horizontal pixel density and misled users into expecting future predictions. Bins are now strictly bounded to elapsed time: `1..currentDay` for `ThisMonth`, Monday through today for `ThisWeek`, January through current month for `ThisYear`, and `minOf(endDate, now)` for custom ranges. Completed historical periods (e.g. `LastMonth`) still show their full historical span.
+2. **Relative recency for category management:** The Categories tab is a standalone management screen without a period filter. Displaying "No transactions in this period" was ambiguous and unhelpful. Replaced with all-time relative recency metadata: `"Never used"` when transaction count is 0, or `"$count transactions • Last $relativeTime • $currencySymbol $totalAmount"` (e.g., `"4 transactions • Last 2 days ago • Rs 1,215.00"`).
+3. **Total elimination of blue/cyan palette leaks:** The design contract is strictly **Organic Forest & Electric Lime** with semantic **Crimson** for deductions/expenses and **Emerald** for income. Legacy prototype blue/cyan (`#0099FF`, `#00A3FF`, `#0284C7`) had persisted in calendar icon badges, period filter pills, M3 theme `secondary` tokens, and the transaction form hero card. All blue instances were audited and replaced with Forest Green, Electric Lime, or Crimson Expense tokens.  
+**Why:** Unifies visual brand identity, eliminates date ambiguity, and maximizes data point legibility on mobile screens.  
+**Cost / Trade-off:** Requires `BuildChartDataUseCase` to take a reference timestamp `now` and `DashboardViewModel` to aggregate all-time category usage.
+
 ---
 
 ## 17. Decisions and claims that were corrected
@@ -506,6 +514,9 @@ User testing revealed that using modal bottom sheets (`TotalCardsBottomSheet`, `
 | CI test execution | CI previously ran only `lint` and `assembleDebug` without running unit tests | Added `./gradlew testDebugUnitTest` in `60fdb67` |
 | Speculative sync code | `SyncableEntity` and `SyncContracts` added dead scaffolding to offline app | Removed in commit `29ff3e3` |
 | Chart drag gestures | `detectDragGestures` intercepted all pointer motion including vertical drags, locking parent vertical scrolling | Switched to `detectHorizontalDragGestures` and `detectTapGestures` so vertical scrolls pass through cleanly |
+| Chart future dates | `BuildChartDataUseCase` generated bins through the entire calendar month/year even when mid-period | Bounded current period bins strictly to elapsed time (`1..currentDay`, `0..daysSinceMonday`, `0..currentMonth`) |
+| Categories tab empty text | "No transactions in this period" was displayed on a screen with no period filter | Replaced with all-time relative recency ("Never used" or "X transactions • Last X ago • Rs X") |
+| Theme color leaks | M3 secondary color and calendar icon badges used electric blue/cyan (`#0099FF`, `#00A3FF`, `#0284C7`) | Replaced with Organic Forest & Electric Lime brand tokens |
 
 ---
 
@@ -517,12 +528,12 @@ User testing revealed that using modal bottom sheets (`TotalCardsBottomSheet`, `
 | Startup failure | Open | `AppStartupViewModel` uses bare `viewModelScope.launch`; a seeding failure would crash the app. Direction: wrap in `launchSafely`. |
 | Money type | Open | `Double` amounts. Floating point can drift over millions of transactions. Direction: evaluate integer minor units (paisa, cents) before multi-year data accumulates. |
 | Currency source | Open | `ledgers.currencyCode` is written by seeder but never read; UI reads DataStore. Direction: unify single source of truth when multi-ledger is introduced. |
-| Future dates | Open | The add form allows future dates; periods include them. Direction: decide whether to allow freely or show a warning. |
+| Future dates in form | Open | The add form allows future dates. Direction: decide whether to allow freely or show a warning. |
 | Paging | Open | `androidx.room:room-paging` is declared in Gradle dependencies but unused. Direction: implement paging when list exceeds 1,000 items, or remove dependency. |
 | Non-English locale digits | Open | Amount formatting uses `Locale.getDefault()`; not verified with non-Latin numeral scripts (e.g., Arabic-Indic digits). |
 | Custom chip label polish | Open | Custom filter chip currently displays "Custom"; could show the active picked date range. |
 | WhatsApp Companion | Planned (v1.1) | External server-side companion bot with user phone binding and natural language slot-filling. |
-| Visual Analytics (Charts) | Resolved | Native hardware-accelerated Compose Canvas charts implemented with zero third-party dependencies, daily/monthly granularity, 3-way toggle (Expenses, Income, Balance), zero-activity flat carryforward, and interactive touch scrubbing with haptic feedback. |
+| Visual Analytics (Charts) | Resolved | Native hardware-accelerated Compose Canvas charts implemented with zero third-party dependencies, daily/monthly granularity, 3-way toggle (Expenses, Income, Balance), zero-activity flat carryforward, no future dates in open periods, and interactive touch scrubbing with haptic feedback. |
 | Navigation Architecture | Resolved | Converted floating navigation bar from modal bottom sheet triggers into 5 first-class non-slidable tabs (Home, Analytics, Ledger, Categories, Settings) with dedicated Graph tab. |
 | CI test execution | Resolved | Unit test step (`testDebugUnitTest`) added to GitHub Actions workflow. |
 | Hacktoberfest cleanup | Resolved | Branch removed, documentation cleansed, PR validation retargeted to `master`. |

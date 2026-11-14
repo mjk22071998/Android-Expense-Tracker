@@ -42,8 +42,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.expensetracker.Constants
 import com.example.expensetracker.R
-import com.example.expensetracker.ui.theme.ElectricCyan
-import com.example.expensetracker.ui.theme.ElectricCyanOn
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
@@ -52,6 +50,7 @@ import com.example.expensetracker.ui.theme.ForestCardDark
 import com.example.expensetracker.ui.theme.ForestSurfaceDark
 import com.example.expensetracker.ui.theme.ForestTextPrimaryDark
 import com.example.expensetracker.ui.theme.ForestTextSecondaryDark
+import com.example.expensetracker.ui.theme.LocalExtendedColors
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -65,6 +64,7 @@ fun BalanceCard(
     selectedTypeFilter: String? = null,
     onTypeFilterSelected: ((String) -> Unit)? = null
 ) {
+    val extendedColors = LocalExtendedColors.current
     // Subtle luxury organic forest gradient
     val gradientBrush = Brush.linearGradient(
         colors = listOf(
@@ -175,7 +175,7 @@ fun BalanceCard(
                         }
                     }
 
-                    // Cyan Expense Pill
+                    // Crimson Expense Pill
                     val isExpenseActive = selectedTypeFilter == Constants.TransactionType.EXPENSE
                     Surface(
                         modifier = Modifier
@@ -184,7 +184,7 @@ fun BalanceCard(
                             .clickable {
                                 onTypeFilterSelected?.invoke(Constants.TransactionType.EXPENSE)
                             },
-                        color = if (isExpenseActive) ElectricCyan else ElectricCyan.copy(alpha = 0.92f),
+                        color = if (isExpenseActive) extendedColors.crimsonExpense else extendedColors.crimsonExpense.copy(alpha = 0.92f),
                         shape = RoundedCornerShape(16.dp),
                         shadowElevation = 2.dp
                     ) {
@@ -201,14 +201,14 @@ fun BalanceCard(
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_trending_down),
                                     contentDescription = "Expense",
-                                    tint = ElectricCyanOn,
+                                    tint = Color.White,
                                     modifier = Modifier.size(13.dp)
                                 )
                                 Text(
                                     text = "Outflow",
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = FontWeight.Bold,
-                                    color = ElectricCyanOn.copy(alpha = 0.85f),
+                                    color = Color.White.copy(alpha = 0.85f),
                                     fontSize = 11.sp
                                 )
                             }
@@ -216,7 +216,7 @@ fun BalanceCard(
                                 text = "$currencySymbol ${formatAmount(totalExpense)}",
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.ExtraBold,
-                                color = ElectricCyanOn,
+                                color = Color.White,
                                 fontSize = 14.sp,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis

@@ -44,7 +44,6 @@ import androidx.compose.ui.unit.sp
 import com.example.expensetracker.Constants
 import com.example.expensetracker.R
 import com.example.expensetracker.data.local.entity.Category
-import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
 import com.example.expensetracker.domain.model.getCategoryIcon
 import com.example.expensetracker.ui.theme.ElectricLime
@@ -59,11 +58,27 @@ private enum class CategoryFilterTab {
     INCOME
 }
 
+private fun formatRelativeTime(dateMillis: Long, now: Long = System.currentTimeMillis()): String {
+    if (dateMillis <= 0L) return "never"
+    val diff = (now - dateMillis).coerceAtLeast(0L)
+    val days = (diff / (24L * 60 * 60 * 1000)).toInt()
+    return when {
+        days == 0 -> "today"
+        days == 1 -> "yesterday"
+        days < 7 -> "$days days ago"
+        days < 14 -> "1 week ago"
+        days < 30 -> "${days / 7} weeks ago"
+        days < 60 -> "1 month ago"
+        days < 365 -> "${days / 30} months ago"
+        else -> "over a year ago"
+    }
+}
+
 @Composable
 fun CategoriesTabContent(
     allCategories: List<Category>,
     selectedCategoryIds: Set<String>,
-    transactions: List<TransactionWithCategory>,
+    categoryUsageMap: Map<String, CategoryUsage>,
     currencySymbol: String,
     onCategoryToggled: (String) -> Unit,
     onClearFilters: () -> Unit,
@@ -72,15 +87,6 @@ fun CategoriesTabContent(
 ) {
     val extendedColors = ExpenseTrackerTheme.extendedColors
     var selectedTab by remember { mutableStateOf(CategoryFilterTab.ALL) }
-
-    // Aggregate category totals and transaction counts
-    val categoryStats = remember(transactions) {
-        val activeTx = transactions.filter { !it.isDeleted }
-        activeTx.groupBy { it.categoryId ?: "" }
-            .mapValues { (_, txList) ->
-                Pair(txList.size, txList.sumOf { it.amount })
-            }
-    }
 
     val filteredCategories = remember(allCategories, selectedTab) {
         when (selectedTab) {
@@ -201,10 +207,19 @@ fun CategoriesTabContent(
         ) {
             items(filteredCategories, key = { it.id }) { category ->
                 val isChecked = category.id in selectedCategoryIds
-                val stats = categoryStats[category.id] ?: Pair(0, 0.0)
-                val count = stats.first
-                val totalAmount = stats.second
+                val usage = categoryUsageMap[category.id] ?: CategoryUsage()
+                val count = usage.transactionCount
+                val totalAmount = usage.totalAmount
+                val lastDate = usage.lastTransactionDate
                 val isExpense = category.transactionType == Constants.TransactionType.EXPENSE
+
+                val subtitleText = if (count == 0 || lastDate == null) {
+                    "Never used"
+                } else {
+                    val relativeTime = formatRelativeTime(lastDate)
+                    val txPlural = if (count == 1) "1 transaction" else "$count transactions"
+                    "$txPlural • Last $relativeTime • $currencySymbol ${formatAmount(totalAmount)}"
+                }
 
                 Card(
                     modifier = Modifier
@@ -286,8 +301,7 @@ fun CategoriesTabContent(
                             Spacer(modifier = Modifier.height(2.dp))
 
                             Text(
-                                text = if (count > 0) "$count transactions • $currencySymbol ${formatAmount(totalAmount)}"
-                                       else "No transactions in this period",
+                                text = subtitleText,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = if (extendedColors.isDark) Color(0xFFA5C4B2) else extendedColors.textSecondary
                             )

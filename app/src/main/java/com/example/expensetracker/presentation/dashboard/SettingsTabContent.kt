@@ -159,13 +159,13 @@ fun SettingsTabContent(
                         modifier = Modifier
                             .size(38.dp)
                             .clip(CircleShape)
-                            .background(Color(0x220099FF)),
+                            .background(if (extendedColors.isDark) Color(0x22D4F63D) else Color(0x1F1B4D34)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_picture_as_pdf),
                             contentDescription = "Export PDF",
-                            tint = Color(0xFF0099FF),
+                            tint = if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34),
                             modifier = Modifier.size(18.dp)
                         )
                     }

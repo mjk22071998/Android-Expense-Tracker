@@ -296,7 +296,7 @@ fun DashboardScreen(
                     CategoriesTabContent(
                         allCategories = uiState.allCategories,
                         selectedCategoryIds = uiState.selectedCategoryIds,
-                        transactions = uiState.transactions,
+                        categoryUsageMap = uiState.categoryUsageMap,
                         currencySymbol = uiState.currencySymbol,
                         onCategoryToggled = viewModel::onCategoryFilterToggled,
                         onClearFilters = viewModel::onClearCategoryFilters,

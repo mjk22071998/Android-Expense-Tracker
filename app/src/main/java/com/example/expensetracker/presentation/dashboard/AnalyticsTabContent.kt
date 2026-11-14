@@ -126,14 +126,14 @@ fun AnalyticsTabContent(
                     ) {
                         Surface(
                             shape = CircleShape,
-                            color = Color(0x220099FF),
+                            color = if (extendedColors.isDark) Color(0x22D4F63D) else Color(0x1F1B4D34),
                             modifier = Modifier.size(34.dp)
                         ) {
                             Box(contentAlignment = Alignment.Center) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.ic_date_range),
                                     contentDescription = "Period",
-                                    tint = Color(0xFF0099FF),
+                                    tint = if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34),
                                     modifier = Modifier.size(18.dp)
                                 )
                             }

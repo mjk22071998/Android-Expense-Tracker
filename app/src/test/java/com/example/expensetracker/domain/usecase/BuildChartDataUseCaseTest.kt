@@ -43,10 +43,33 @@ class BuildChartDataUseCaseTest {
     }
 
     @Test
-    fun `ThisWeek produces exactly 7 daily bins Monday through Sunday`() {
-        // Fixed reference Wednesday: 2026-10-14 12:00:00
+    fun `ThisWeek produces daily bins from Monday up to current day without future dates`() {
+        // Fixed reference Wednesday: 2026-10-14 12:00:00 (Wednesday is day 3 of week starting Monday)
         val cal = Calendar.getInstance().apply {
             set(2026, Calendar.OCTOBER, 14, 12, 0, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        val refNow = cal.timeInMillis
+
+        val result = useCase.execute(
+            transactions = emptyList(),
+            filter = DateRangeFilter.ThisWeek,
+            initialBalance = 1000.0,
+            now = refNow
+        )
+
+        assertEquals(3, result.points.size)
+        assertEquals(ChartPeriodType.DAILY, result.periodType)
+        assertEquals("Mon", result.points[0].label)
+        assertEquals("Tue", result.points[1].label)
+        assertEquals("Wed", result.points[2].label)
+    }
+
+    @Test
+    fun `ThisWeek on Sunday produces all 7 daily bins Monday through Sunday`() {
+        // Sunday: 2026-10-18 12:00:00
+        val cal = Calendar.getInstance().apply {
+            set(2026, Calendar.OCTOBER, 18, 12, 0, 0)
             set(Calendar.MILLISECOND, 0)
         }
         val refNow = cal.timeInMillis
@@ -66,9 +89,9 @@ class BuildChartDataUseCaseTest {
 
     @Test
     fun `Zero-activity days show 0 for expense and income, but carry forward running balance`() {
-        // Wednesday Oct 14, 2026
+        // Friday Oct 16, 2026 (Mon-Fri = 5 days elapsed)
         val cal = Calendar.getInstance().apply {
-            set(2026, Calendar.OCTOBER, 14, 12, 0, 0)
+            set(2026, Calendar.OCTOBER, 16, 12, 0, 0)
             set(Calendar.MILLISECOND, 0)
         }
         val refNow = cal.timeInMillis
@@ -92,10 +115,12 @@ class BuildChartDataUseCaseTest {
             now = refNow
         )
 
+        assertEquals(5, result.points.size) // Mon, Tue, Wed, Thu, Fri
         val mon = result.points[0] // Monday
         val tue = result.points[1] // Tuesday (Zero activity!)
         val wed = result.points[2] // Wednesday
         val thu = result.points[3] // Thursday (Zero activity!)
+        val fri = result.points[4] // Friday (Zero activity!)
 
         // Monday
         assertEquals(200.0, mon.expense, 0.001)
@@ -118,11 +143,17 @@ class BuildChartDataUseCaseTest {
         assertEquals(0.0, thu.income, 0.001)
         assertEquals(1300.0, thu.runningBalance, 0.001) // carried forward from Wednesday!
         assertEquals(0, thu.transactionCount)
+
+        // Friday (No transactions: flat carryforward from Thursday!)
+        assertEquals(0.0, fri.expense, 0.001)
+        assertEquals(0.0, fri.income, 0.001)
+        assertEquals(1300.0, fri.runningBalance, 0.001)
+        assertEquals(0, fri.transactionCount)
     }
 
     @Test
-    fun `ThisMonth produces daily bins matching the total days in the active month`() {
-        // October has 31 days
+    fun `ThisMonth produces daily bins strictly from day 1 up to today without future dates`() {
+        // October 5 (only days 1..5 should be generated, no future days 6..31)
         val cal = Calendar.getInstance().apply {
             set(2026, Calendar.OCTOBER, 5, 12, 0, 0)
         }
@@ -135,10 +166,10 @@ class BuildChartDataUseCaseTest {
             now = refNow
         )
 
-        assertEquals(31, result.points.size)
+        assertEquals(5, result.points.size)
         assertEquals(ChartPeriodType.DAILY, result.periodType)
         assertEquals("1", result.points[0].label)
-        assertEquals("31", result.points[30].label)
+        assertEquals("5", result.points[4].label)
         // All points carry forward initial balance
         result.points.forEach { point ->
             assertEquals(500.0, point.runningBalance, 0.001)
@@ -148,7 +179,8 @@ class BuildChartDataUseCaseTest {
     }
 
     @Test
-    fun `ThisYear produces 12 monthly bins from Jan to Dec`() {
+    fun `ThisYear produces monthly bins from Jan up to current month without future months`() {
+        // May 15: only Jan, Feb, Mar, Apr, May (5 months)
         val cal = Calendar.getInstance().apply {
             set(2026, Calendar.MAY, 15, 12, 0, 0)
         }
@@ -167,10 +199,10 @@ class BuildChartDataUseCaseTest {
             now = refNow
         )
 
-        assertEquals(12, result.points.size)
+        assertEquals(5, result.points.size)
         assertEquals(ChartPeriodType.MONTHLY, result.periodType)
         assertEquals("Jan", result.points[0].label)
-        assertEquals("Dec", result.points[11].label)
+        assertEquals("May", result.points[4].label)
 
         // Jan and Feb: balance 2000
         assertEquals(2000.0, result.points[0].runningBalance, 0.001)
@@ -180,8 +212,8 @@ class BuildChartDataUseCaseTest {
         assertEquals(1500.0, result.points[2].expense, 0.001)
         assertEquals(500.0, result.points[2].runningBalance, 0.001)
 
-        // Apr through Dec: carry forward 500
-        for (i in 3..11) {
+        // Apr and May: carry forward 500
+        for (i in 3..4) {
             assertEquals(500.0, result.points[i].runningBalance, 0.001)
             assertEquals(0.0, result.points[i].expense, 0.001)
         }

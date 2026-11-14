@@ -1,5 +1,6 @@
 package com.example.expensetracker.presentation.dashboard
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -37,7 +38,10 @@ fun QuickActionsRow(
     val extendedColors = ExpenseTrackerTheme.extendedColors
     val addContainerColor = if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34)
     val addContentColor = if (extendedColors.isDark) ElectricLimeOn else Color.White
-    val periodContainerColor = if (extendedColors.isDark) Color(0xFF0099FF) else Color(0xFF0284C7)
+    val periodContainerColor = if (extendedColors.isDark) Color(0xFF142B1F) else Color(0xFFE2EBE5)
+    val periodBorderColor = if (extendedColors.isDark) Color(0xFF214431) else extendedColors.cardBorder
+    val periodContentColor = if (extendedColors.isDark) Color.White else extendedColors.textPrimary
+    val periodIconColor = if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34)
 
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -98,7 +102,8 @@ fun QuickActionsRow(
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(24.dp),
-                    color = periodContainerColor
+                    color = periodContainerColor,
+                    border = BorderStroke(1.dp, periodBorderColor)
                 ) {
                     Row(
                         modifier = Modifier
@@ -110,14 +115,14 @@ fun QuickActionsRow(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_date_range),
                             contentDescription = "Period",
-                            tint = Color.White,
+                            tint = periodIconColor,
                             modifier = Modifier.size(16.dp)
                         )
                         Text(
                             text = periodLabel,
                             style = MaterialTheme.typography.labelLarge,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White,
+                            color = periodContentColor,
                             fontSize = 14.sp,
                             modifier = Modifier.padding(start = 6.dp)
                         )

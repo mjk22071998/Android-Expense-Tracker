@@ -29,9 +29,9 @@ val ElectricLime = Color(0xFFD4F63D)        // Primary CTA, highlight stars, tra
 val ElectricLimePressed = Color(0xFFBEDF30)
 val ElectricLimeOn = Color(0xFF08140E)
 
-val ElectricCyan = Color(0xFF00A3FF)        // Secondary action, targets, spend pills
-val ElectricCyanPressed = Color(0xFF008EDF)
-val ElectricCyanOn = Color(0xFFFFFFFF)
+val ElectricCyan = Color(0xFFD4F63D)        // Redirected to ElectricLime for absolute color consistency
+val ElectricCyanPressed = Color(0xFFBEDF30)
+val ElectricCyanOn = Color(0xFF08140E)
 
 // Financial Semantic Indicators
 val EmeraldIncome = Color(0xFF10B981)       // Deposits, income, positive deltas
