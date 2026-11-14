@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlin.math.ceil
-import kotlin.math.max
 
 object PdfReportGenerator {
 
@@ -24,7 +23,6 @@ object PdfReportGenerator {
     private const val PAGE_HEIGHT = 842 // A4 height in points (72 dpi)
     private const val MARGIN_LEFT = 36f
     private const val MARGIN_RIGHT = 559f
-    private const val MARGIN_TOP = 36f
     private const val MARGIN_BOTTOM = 806f
     private const val CONTENT_WIDTH = MARGIN_RIGHT - MARGIN_LEFT // 523f
 

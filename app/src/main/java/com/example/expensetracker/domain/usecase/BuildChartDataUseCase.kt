@@ -3,7 +3,6 @@ package com.example.expensetracker.domain.usecase
 import com.example.expensetracker.Constants
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.DateRangeFilter
-import com.example.expensetracker.domain.model.DateUtils
 import com.example.expensetracker.domain.model.chart.ChartDataPoint
 import com.example.expensetracker.domain.model.chart.ChartDataSet
 import com.example.expensetracker.domain.model.chart.ChartPeriodType
@@ -29,9 +28,9 @@ class BuildChartDataUseCase @Inject constructor() {
         var currentBalance = initialBalance
         val points = ArrayList<ChartDataPoint>(bins.size)
 
-        for (bin in bins) {
+        for ((label, fullLabel, startMillis, endMillis) in bins) {
             val matching = activeTransactions.filter { tx ->
-                tx.date in bin.startMillis..bin.endMillis
+                tx.date in startMillis..endMillis
             }
 
             val expense = matching.filter { it.type == Constants.TransactionType.EXPENSE }
@@ -46,14 +45,14 @@ class BuildChartDataUseCase @Inject constructor() {
 
             points.add(
                 ChartDataPoint(
-                    label = bin.label,
-                    fullLabel = bin.fullLabel,
+                    label = label,
+                    fullLabel = fullLabel,
                     expense = expense,
                     income = income,
                     runningBalance = currentBalance,
                     transactionCount = matching.size,
-                    startMillis = bin.startMillis,
-                    endMillis = bin.endMillis
+                    startMillis = startMillis,
+                    endMillis = endMillis
                 )
             )
         }
@@ -65,12 +64,18 @@ class BuildChartDataUseCase @Inject constructor() {
         val maxBalance = points.maxOfOrNull { it.runningBalance } ?: initialBalance
         val minBalance = points.minOfOrNull { it.runningBalance } ?: initialBalance
 
-        val periodType = if (filter is DateRangeFilter.ThisYear || (filter is DateRangeFilter.AllTime)) {
-            ChartPeriodType.MONTHLY
-        } else if (filter is DateRangeFilter.Custom && (filter.endDate - filter.startDate > 31L * 24 * 60 * 60 * 1000)) {
-            ChartPeriodType.MONTHLY
-        } else {
-            ChartPeriodType.DAILY
+        val periodType = when (filter) {
+            is DateRangeFilter.ThisYear, is DateRangeFilter.AllTime -> {
+                ChartPeriodType.MONTHLY
+            }
+
+            is DateRangeFilter.Custom if (filter.endDate - filter.startDate > 31L * 24 * 60 * 60 * 1000) -> {
+                ChartPeriodType.MONTHLY
+            }
+
+            else -> {
+                ChartPeriodType.DAILY
+            }
         }
 
         return ChartDataSet(
@@ -209,7 +214,7 @@ class BuildChartDataUseCase @Inject constructor() {
         )
         val activeSegments = segments.filter { it.third.first <= currentHour }
         val cal = (nowCal.clone() as Calendar)
-        return (if (activeSegments.isEmpty()) listOf(segments.first()) else activeSegments).map { (shortLbl, fullLbl, hourRange) ->
+        return (activeSegments.ifEmpty { listOf(segments.first()) }).map { (shortLbl, fullLbl, hourRange) ->
             cal.set(Calendar.HOUR_OF_DAY, hourRange.first)
             cal.set(Calendar.MINUTE, 0)
             cal.set(Calendar.SECOND, 0)

@@ -450,7 +450,7 @@ In Weekly and Monthly charts showing daily data points:
 **Cost / Trade-off:** Time-series pre-processing must fill missing date buckets before plotting.
 
 ### D82. Touch-scrubbing interactive crosshair with haptic feedback
-Designed an interactive touch scrubber on the Compose Canvas: dragging across the graph renders a vertical indicator guideline, highlights the active data point, opens a floating badge with date and amount, and triggers a subtle haptic tick (`HapticFeedbackType.TextHandleMove`) on data point transitions.  
+Designed an interactive touch scrubber on the Compose Canvas: dragging across the graph renders a vertical indicator guideline, highlights the active data point, opens a floating badge with date and amount, and triggers a subtle haptic tick (`HapticFeedbackType.TextHandleMove`) on data point transitions. When the drag finishes (`onDragEnd` / `onDragCancel`), the scrubber immediately resets to `null`, returning the canvas to its clean baseline resting state. Discrete tap gestures retain inspection selection until tapped again.  
 **Cost / Trade-off:** Requires pointer input handling via `detectHorizontalDragGestures` and `detectTapGestures` to prevent intercepting vertical scroll gestures of parent containers.
 
 ### D83. Decoupled server-side WhatsApp companion bot (Zero in-app chat bloat)
@@ -517,6 +517,7 @@ Physical testing on hardware surfaced three visual/UX inconsistencies:
 | Chart future dates | `BuildChartDataUseCase` generated bins through the entire calendar month/year even when mid-period | Bounded current period bins strictly to elapsed time (`1..currentDay`, `0..daysSinceMonday`, `0..currentMonth`) |
 | Categories tab empty text | "No transactions in this period" was displayed on a screen with no period filter | Replaced with all-time relative recency ("Never used" or "X transactions • Last X ago • Rs X") |
 | Theme color leaks | M3 secondary color and calendar icon badges used electric blue/cyan (`#0099FF`, `#00A3FF`, `#0284C7`) | Replaced with Organic Forest & Electric Lime brand tokens |
+| Chart drag dismissal | Inspection tooltip remained stuck on screen after drag finished | Added immediate reset on `onDragEnd` and `onDragCancel` to return chart to resting baseline |
 
 ---
 

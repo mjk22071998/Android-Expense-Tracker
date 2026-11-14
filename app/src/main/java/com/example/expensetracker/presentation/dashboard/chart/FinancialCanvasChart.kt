@@ -58,7 +58,7 @@ fun FinancialCanvasChart(
     val density = LocalDensity.current
     val textMeasurer = rememberTextMeasurer()
 
-    var scrubbedIndex by remember { mutableStateOf<Int?>(null) }
+    var scrubbedIndex by remember(dataSet, mode) { mutableStateOf<Int?>(null) }
 
     val points = dataSet.points
     if (points.isEmpty()) {
@@ -116,10 +116,10 @@ fun FinancialCanvasChart(
                         }
                     },
                     onDragEnd = {
-                        // Keep the point selected for convenient reading
+                        scrubbedIndex = null
                     },
                     onDragCancel = {
-                        // Cancelled
+                        scrubbedIndex = null
                     }
                 )
             }
