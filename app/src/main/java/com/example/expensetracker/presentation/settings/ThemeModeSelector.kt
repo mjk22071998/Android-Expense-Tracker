@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -55,7 +56,9 @@ fun ThemeModeSelector(
         border = BorderStroke(1.dp, extendedColors.cardBorder)
     ) {
         Row(
-            modifier = Modifier.padding(3.dp),
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(3.dp),
             horizontalArrangement = Arrangement.spacedBy(3.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -75,10 +78,11 @@ fun ThemeModeSelector(
 
                 Box(
                     modifier = Modifier
+                        .fillMaxHeight()
                         .clip(CircleShape)
                         .background(itemBg)
                         .clickable { onModeSelected(mode) }
-                        .padding(horizontal = 14.dp, vertical = 6.dp),
+                        .padding(horizontal = 14.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(
