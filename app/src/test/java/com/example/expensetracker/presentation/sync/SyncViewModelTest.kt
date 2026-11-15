@@ -95,4 +95,87 @@ class SyncViewModelTest {
         viewModel.signOut()
         coVerify { authRepository.signOut() }
     }
+
+    @Test
+    fun sendPasswordResetEmail_whenSuccess_setsState() = runTest {
+        coEvery { authRepository.sendPasswordResetEmail("user@example.com") } returns Result.success(Unit)
+
+        viewModel.sendPasswordResetEmail("user@example.com")
+
+        val state = viewModel.uiState.value
+        assertTrue(state.passwordResetSent)
+        assertEquals("Verification code sent to user@example.com", state.authSuccessMessage)
+        assertEquals(null, state.authErrorMessage)
+    }
+
+    @Test
+    fun sendPasswordResetEmail_whenFailure_setsErrorMessage() = runTest {
+        coEvery { authRepository.sendPasswordResetEmail("bad@example.com") } returns Result.failure(
+            RuntimeException("Rate limit exceeded")
+        )
+
+        viewModel.sendPasswordResetEmail("bad@example.com")
+
+        val state = viewModel.uiState.value
+        assertFalse(state.passwordResetSent)
+        assertEquals("Rate limit exceeded", state.authErrorMessage)
+    }
+
+    @Test
+    fun resetPasswordWithOtp_whenSuccess_setsSuccessMessageAndEnqueuesSync() = runTest {
+        coEvery {
+            authRepository.resetPasswordWithOtp("user@example.com", "12345678", "NewPass1!")
+        } returns Result.success(Unit)
+
+        viewModel.resetPasswordWithOtp("user@example.com", "12345678", "NewPass1!")
+
+        val state = viewModel.uiState.value
+        assertEquals("Password reset successfully. Signed in!", state.authSuccessMessage)
+        verify { syncScheduler.enqueueOneTimeSync() }
+    }
+
+    @Test
+    fun resetPasswordWithOtp_whenFailure_surfacesErrorMessage() = runTest {
+        coEvery {
+            authRepository.resetPasswordWithOtp("user@example.com", "00000000", "NewPass1!")
+        } returns Result.failure(RuntimeException("Invalid OTP code"))
+
+        viewModel.resetPasswordWithOtp("user@example.com", "00000000", "NewPass1!")
+
+        val state = viewModel.uiState.value
+        assertFalse(state.passwordUpdateSuccess)
+        assertEquals("Invalid OTP code", state.authErrorMessage)
+    }
+
+    @Test
+    fun updatePassword_whenSuccess_setsSuccessMessage() = runTest {
+        coEvery {
+            authRepository.updatePassword("OldPass1!", "NewPass1!")
+        } returns Result.success(Unit)
+
+        viewModel.updatePassword("OldPass1!", "NewPass1!")
+
+        val state = viewModel.uiState.value
+        assertEquals("Password updated successfully!", state.authSuccessMessage)
+    }
+
+    @Test
+    fun updatePassword_whenFailure_setsErrorMessage() = runTest {
+        coEvery {
+            authRepository.updatePassword("WrongOld!", "NewPass1!")
+        } returns Result.failure(RuntimeException("Current password incorrect"))
+
+        viewModel.updatePassword("WrongOld!", "NewPass1!")
+
+        val state = viewModel.uiState.value
+        assertEquals("Current password incorrect", state.authErrorMessage)
+    }
+
+    @Test
+    fun clearAuthMessages_resetsMessages() {
+        viewModel.clearAuthMessages()
+        val state = viewModel.uiState.value
+        assertEquals(null, state.authErrorMessage)
+        assertEquals(null, state.authSuccessMessage)
+    }
 }

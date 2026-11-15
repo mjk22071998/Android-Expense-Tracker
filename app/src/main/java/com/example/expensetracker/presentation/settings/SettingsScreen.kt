@@ -52,6 +52,7 @@ import com.example.expensetracker.R
 import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.presentation.common.TooltipPosition
 import com.example.expensetracker.presentation.sync.AuthBottomSheet
+import com.example.expensetracker.presentation.sync.ChangePasswordBottomSheet
 import com.example.expensetracker.presentation.sync.SyncAccountCard
 import com.example.expensetracker.presentation.sync.SyncViewModel
 import com.example.expensetracker.ui.theme.ElectricLime
@@ -81,6 +82,7 @@ fun SettingsScreen(
     }
     var showClearRecordsDialog by remember { mutableStateOf(false) }
     var showAuthBottomSheet by remember { mutableStateOf(false) }
+    var showChangePasswordSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(syncUiState.isAuthenticated) {
         if (syncUiState.isAuthenticated) {
@@ -146,7 +148,8 @@ fun SettingsScreen(
                 uiState = syncUiState,
                 onOpenAuth = { showAuthBottomSheet = true },
                 onSyncNow = syncViewModel::syncNow,
-                onSignOut = syncViewModel::signOut
+                onSignOut = syncViewModel::signOut,
+                onOpenChangePassword = { showChangePasswordSheet = true }
             )
 
             // Currency Section
@@ -263,12 +266,30 @@ fun SettingsScreen(
         AuthBottomSheet(
             isLoading = syncUiState.isAuthLoading,
             errorMessage = syncUiState.authErrorMessage,
+            successMessage = syncUiState.authSuccessMessage,
+            isResetCodeSent = syncUiState.passwordResetSent,
             onSignIn = syncViewModel::signIn,
             onSignUp = syncViewModel::signUp,
-            onClearError = syncViewModel::clearAuthError,
+            onSendResetCode = syncViewModel::sendPasswordResetEmail,
+            onResetPassword = syncViewModel::resetPasswordWithOtp,
+            onClearError = syncViewModel::clearAuthMessages,
             onDismiss = {
                 showAuthBottomSheet = false
-                syncViewModel.clearAuthError()
+                syncViewModel.resetPasswordFlowState()
+            }
+        )
+    }
+
+    if (showChangePasswordSheet) {
+        ChangePasswordBottomSheet(
+            isLoading = syncUiState.isAuthLoading,
+            errorMessage = syncUiState.authErrorMessage,
+            successMessage = syncUiState.authSuccessMessage,
+            onUpdatePassword = syncViewModel::updatePassword,
+            onClearMessages = syncViewModel::clearAuthMessages,
+            onDismiss = {
+                showChangePasswordSheet = false
+                syncViewModel.resetPasswordFlowState()
             }
         )
     }

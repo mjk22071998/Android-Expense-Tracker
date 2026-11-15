@@ -6,6 +6,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -57,6 +59,7 @@ fun SyncAccountCard(
     onOpenAuth: () -> Unit,
     onSyncNow: () -> Unit,
     onSignOut: () -> Unit,
+    onOpenChangePassword: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val extendedColors = ExpenseTrackerTheme.extendedColors
@@ -78,7 +81,8 @@ fun SyncAccountCard(
             SignedInCardContent(
                 uiState = uiState,
                 onSyncNow = onSyncNow,
-                onRequestSignOut = { showSignOutConfirmation = true }
+                onRequestSignOut = { showSignOutConfirmation = true },
+                onOpenChangePassword = onOpenChangePassword
             )
         }
     }
@@ -230,7 +234,8 @@ private fun SignedOutCardContent(
 private fun SignedInCardContent(
     uiState: SyncUiState,
     onSyncNow: () -> Unit,
-    onRequestSignOut: () -> Unit
+    onRequestSignOut: () -> Unit,
+    onOpenChangePassword: () -> Unit
 ) {
     val extendedColors = ExpenseTrackerTheme.extendedColors
     val userEmail = uiState.userEmail ?: "Account Active"
@@ -387,6 +392,42 @@ private fun SignedInCardContent(
                     style = MaterialTheme.typography.labelLarge
                 )
             }
+        }
+
+        // Account Security: Change Password
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(onClick = onOpenChangePassword)
+                .padding(vertical = 4.dp, horizontal = 2.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_lock),
+                    contentDescription = null,
+                    tint = extendedColors.textSecondary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Text(
+                    text = "Change Account Password",
+                    style = MaterialTheme.typography.bodySmall,
+                    fontWeight = FontWeight.Medium,
+                    color = extendedColors.textSecondary
+                )
+            }
+
+            Icon(
+                painter = painterResource(id = R.drawable.ic_chevron_right),
+                contentDescription = "Change Password",
+                tint = extendedColors.textMuted,
+                modifier = Modifier.size(16.dp)
+            )
         }
     }
 }

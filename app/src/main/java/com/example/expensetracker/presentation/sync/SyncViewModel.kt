@@ -16,7 +16,10 @@ import kotlinx.coroutines.launch
 
 private data class AuthPromptState(
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val success: String? = null,
+    val passwordResetSent: Boolean = false,
+    val passwordUpdateSuccess: Boolean = false
 )
 
 @HiltViewModel
@@ -55,7 +58,10 @@ class SyncViewModel @Inject constructor(
                     lastSyncedTimeMillis = lastSyncTime,
                     pendingUploadCount = pendingCount,
                     isAuthLoading = promptState.isLoading,
-                    authErrorMessage = promptState.error
+                    authErrorMessage = promptState.error,
+                    authSuccessMessage = promptState.success,
+                    passwordResetSent = promptState.passwordResetSent,
+                    passwordUpdateSuccess = promptState.passwordUpdateSuccess
                 )
             }.collect { newState ->
                 _uiState.value = newState
@@ -65,7 +71,7 @@ class SyncViewModel @Inject constructor(
 
     fun signIn(email: String, password: String) {
         viewModelScope.launch {
-            authPromptState.value = AuthPromptState(isLoading = true, error = null)
+            authPromptState.value = AuthPromptState(isLoading = true, error = null, success = null)
             val result = authRepository.signInWithEmail(email, password)
             result.onSuccess {
                 authPromptState.value = AuthPromptState(isLoading = false, error = null)
@@ -78,13 +84,76 @@ class SyncViewModel @Inject constructor(
 
     fun signUp(email: String, password: String) {
         viewModelScope.launch {
-            authPromptState.value = AuthPromptState(isLoading = true, error = null)
+            authPromptState.value = AuthPromptState(isLoading = true, error = null, success = null)
             val result = authRepository.signUpWithEmail(email, password)
             result.onSuccess {
                 authPromptState.value = AuthPromptState(isLoading = false, error = null)
                 syncScheduler.enqueueOneTimeSync()
             }.onFailure { error ->
                 authPromptState.value = AuthPromptState(isLoading = false, error = error.message ?: "Registration failed")
+            }
+        }
+    }
+
+    fun sendPasswordResetEmail(email: String) {
+        viewModelScope.launch {
+            authPromptState.value = authPromptState.value.copy(isLoading = true, error = null, success = null)
+            val result = authRepository.sendPasswordResetEmail(email)
+            result.onSuccess {
+                authPromptState.value = authPromptState.value.copy(
+                    isLoading = false,
+                    passwordResetSent = true,
+                    success = "Verification code sent to $email"
+                )
+            }.onFailure { error ->
+                authPromptState.value = authPromptState.value.copy(
+                    isLoading = false,
+                    error = error.message ?: "Failed to send reset code"
+                )
+            }
+        }
+    }
+
+    fun resetPasswordWithOtp(email: String, otp: String, newPassword: String) {
+        viewModelScope.launch {
+            authPromptState.value = authPromptState.value.copy(isLoading = true, error = null, success = null)
+            val result = authRepository.resetPasswordWithOtp(email, otp, newPassword)
+            result.onSuccess {
+                authPromptState.value = AuthPromptState(
+                    isLoading = false,
+                    error = null,
+                    success = "Password reset successfully. Signed in!"
+                )
+                syncScheduler.enqueueOneTimeSync()
+            }.onFailure { error ->
+                authPromptState.value = authPromptState.value.copy(
+                    isLoading = false,
+                    error = error.message ?: "Failed to reset password. Please check the code."
+                )
+            }
+        }
+    }
+
+    fun updatePassword(currentPassword: String, newPassword: String) {
+        viewModelScope.launch {
+            authPromptState.value = authPromptState.value.copy(
+                isLoading = true,
+                error = null,
+                success = null,
+                passwordUpdateSuccess = false
+            )
+            val result = authRepository.updatePassword(currentPassword, newPassword)
+            result.onSuccess {
+                authPromptState.value = authPromptState.value.copy(
+                    isLoading = false,
+                    passwordUpdateSuccess = true,
+                    success = "Password updated successfully!"
+                )
+            }.onFailure { error ->
+                authPromptState.value = authPromptState.value.copy(
+                    isLoading = false,
+                    error = error.message ?: "Failed to update password. Verify your current password."
+                )
             }
         }
     }
@@ -99,7 +168,16 @@ class SyncViewModel @Inject constructor(
         syncScheduler.enqueueOneTimeSync()
     }
 
-    fun clearAuthError() {
-        authPromptState.value = authPromptState.value.copy(error = null)
+    fun clearAuthMessages() {
+        authPromptState.value = authPromptState.value.copy(error = null, success = null)
+    }
+
+    fun resetPasswordFlowState() {
+        authPromptState.value = authPromptState.value.copy(
+            passwordResetSent = false,
+            passwordUpdateSuccess = false,
+            error = null,
+            success = null
+        )
     }
 }

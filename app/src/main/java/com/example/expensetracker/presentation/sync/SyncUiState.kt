@@ -7,5 +7,8 @@ data class SyncUiState(
     val lastSyncedTimeMillis: Long? = null,
     val pendingUploadCount: Int = 0,
     val isAuthLoading: Boolean = false,
-    val authErrorMessage: String? = null
+    val authErrorMessage: String? = null,
+    val authSuccessMessage: String? = null,
+    val passwordResetSent: Boolean = false,
+    val passwordUpdateSuccess: Boolean = false
 )
