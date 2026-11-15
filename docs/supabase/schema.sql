@@ -19,7 +19,11 @@ alter table public.ledgers enable row level security;
 do $$
 begin
     if not exists (select 1 from pg_policies where tablename = 'ledgers' and policyname = 'Users manage own ledgers') then
-        create policy "Users manage own ledgers" on public.ledgers for all using (auth.uid() = user_id);
+        create policy "Users manage own ledgers" on public.ledgers
+            for all
+            to authenticated
+            using (user_id = (select auth.uid()))
+            with check (user_id = (select auth.uid()));
     end if;
 end $$;
 
@@ -40,7 +44,11 @@ alter table public.categories enable row level security;
 do $$
 begin
     if not exists (select 1 from pg_policies where tablename = 'categories' and policyname = 'Users manage own categories') then
-        create policy "Users manage own categories" on public.categories for all using (auth.uid() = user_id);
+        create policy "Users manage own categories" on public.categories
+            for all
+            to authenticated
+            using (user_id = (select auth.uid()))
+            with check (user_id = (select auth.uid()));
     end if;
 end $$;
 
@@ -63,7 +71,11 @@ alter table public.transactions enable row level security;
 do $$
 begin
     if not exists (select 1 from pg_policies where tablename = 'transactions' and policyname = 'Users manage own transactions') then
-        create policy "Users manage own transactions" on public.transactions for all using (auth.uid() = user_id);
+        create policy "Users manage own transactions" on public.transactions
+            for all
+            to authenticated
+            using (user_id = (select auth.uid()))
+            with check (user_id = (select auth.uid()));
     end if;
 end $$;
 
