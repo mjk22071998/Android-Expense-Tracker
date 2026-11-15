@@ -58,7 +58,7 @@ fun SyncAccountCard(
     uiState: SyncUiState,
     onOpenAuth: () -> Unit,
     onSyncNow: () -> Unit,
-    onSignOut: () -> Unit,
+    onSignOut: (syncFirst: Boolean) -> Unit,
     onOpenChangePassword: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -88,11 +88,13 @@ fun SyncAccountCard(
     }
 
     if (showSignOutConfirmation) {
+        val hasPendingChanges = uiState.pendingUploadCount > 0
+
         AlertDialog(
             onDismissRequest = { showSignOutConfirmation = false },
             title = {
                 Text(
-                    text = "Sign Out",
+                    text = if (hasPendingChanges) "Unsynced Changes" else "Sign Out",
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     color = extendedColors.textPrimary
@@ -100,31 +102,73 @@ fun SyncAccountCard(
             },
             text = {
                 Text(
-                    text = "Your transactions and records will remain safely saved on this device. You can continue using Expense Tracker as an offline guest without any data loss.",
+                    text = if (hasPendingChanges) {
+                        "You have ${uiState.pendingUploadCount} unsynced change(s). Signing out will remove all local records from this device.\n\nWould you like to sync now to save them to your cloud backup, or sign out anyway?"
+                    } else {
+                        "All your records are safely backed up in the cloud. Signing out will clear local data from this device and return to a clean offline guest mode.\n\nYou can sign back in anytime to restore your records."
+                    },
                     style = MaterialTheme.typography.bodyMedium,
                     color = extendedColors.textSecondary
                 )
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        showSignOutConfirmation = false
-                        onSignOut()
+                if (hasPendingChanges) {
+                    Button(
+                        onClick = {
+                            showSignOutConfirmation = false
+                            onSignOut(true)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34),
+                            contentColor = if (extendedColors.isDark) ElectricLimeOn else Color.White
+                        ),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Text(
+                            text = "Sync & Sign Out",
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-                ) {
-                    Text(
-                        text = "Sign Out",
-                        color = extendedColors.crimsonExpense,
-                        fontWeight = FontWeight.Bold
-                    )
+                } else {
+                    TextButton(
+                        onClick = {
+                            showSignOutConfirmation = false
+                            onSignOut(false)
+                        }
+                    ) {
+                        Text(
+                            text = "Sign Out",
+                            color = extendedColors.crimsonExpense,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showSignOutConfirmation = false }) {
-                    Text(
-                        text = "Cancel",
-                        color = extendedColors.textSecondary
-                    )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    if (hasPendingChanges) {
+                        TextButton(
+                            onClick = {
+                                showSignOutConfirmation = false
+                                onSignOut(false)
+                            }
+                        ) {
+                            Text(
+                                text = "Sign Out Anyway",
+                                color = extendedColors.crimsonExpense,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+                    TextButton(onClick = { showSignOutConfirmation = false }) {
+                        Text(
+                            text = "Cancel",
+                            color = extendedColors.textSecondary
+                        )
+                    }
                 }
             },
             containerColor = extendedColors.cardBackground,

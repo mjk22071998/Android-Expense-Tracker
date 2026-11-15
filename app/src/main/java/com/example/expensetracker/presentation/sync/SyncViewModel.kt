@@ -2,9 +2,11 @@ package com.example.expensetracker.presentation.sync
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.expensetracker.data.local.LocalDataCleaner
 import com.example.expensetracker.data.local.dao.TransactionDao
 import com.example.expensetracker.domain.repository.AuthRepository
 import com.example.expensetracker.domain.sync.SyncManager
+import com.example.expensetracker.domain.sync.SyncResult
 import com.example.expensetracker.worker.SyncScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jakarta.inject.Inject
@@ -27,7 +29,8 @@ class SyncViewModel @Inject constructor(
     private val authRepository: AuthRepository,
     private val syncManager: SyncManager,
     private val syncScheduler: SyncScheduler,
-    private val transactionDao: TransactionDao
+    private val transactionDao: TransactionDao,
+    private val localDataCleaner: LocalDataCleaner
 ) : ViewModel() {
 
     private val authPromptState = MutableStateFlow(AuthPromptState())
@@ -158,9 +161,30 @@ class SyncViewModel @Inject constructor(
         }
     }
 
-    fun signOut() {
+    fun signOut(syncFirst: Boolean = false) {
         viewModelScope.launch {
-            authRepository.signOut()
+            authPromptState.value = authPromptState.value.copy(isLoading = true, error = null)
+            try {
+                if (syncFirst) {
+                    val syncResult = syncManager.sync()
+                    if (syncResult is SyncResult.Error) {
+                        authPromptState.value = authPromptState.value.copy(
+                            isLoading = false,
+                            error = "Could not sync before signing out: ${syncResult.throwable.message ?: "Network error"}"
+                        )
+                        return@launch
+                    }
+                }
+                syncScheduler.cancelAllSync()
+                authRepository.signOut()
+                localDataCleaner.resetToFreshGuest()
+                authPromptState.value = AuthPromptState()
+            } catch (e: Exception) {
+                authPromptState.value = authPromptState.value.copy(
+                    isLoading = false,
+                    error = e.message ?: "Failed to sign out cleanly"
+                )
+            }
         }
     }
 

@@ -1,9 +1,11 @@
 package com.example.expensetracker.presentation.sync
 
+import com.example.expensetracker.data.local.LocalDataCleaner
 import com.example.expensetracker.data.local.dao.TransactionDao
 import com.example.expensetracker.domain.repository.AuthRepository
 import com.example.expensetracker.domain.repository.AuthUser
 import com.example.expensetracker.domain.sync.SyncManager
+import com.example.expensetracker.domain.sync.SyncResult
 import com.example.expensetracker.util.MainDispatcherRule
 import com.example.expensetracker.worker.SyncScheduler
 import io.mockk.coEvery
@@ -29,6 +31,7 @@ class SyncViewModelTest {
     private val syncManager = mockk<SyncManager>(relaxed = true)
     private val syncScheduler = mockk<SyncScheduler>(relaxed = true)
     private val transactionDao = mockk<TransactionDao>(relaxed = true)
+    private val localDataCleaner = mockk<LocalDataCleaner>(relaxed = true)
 
     private val currentUserFlow = MutableStateFlow<AuthUser?>(null)
     private val isSyncingFlow = MutableStateFlow(false)
@@ -48,7 +51,8 @@ class SyncViewModelTest {
             authRepository = authRepository,
             syncManager = syncManager,
             syncScheduler = syncScheduler,
-            transactionDao = transactionDao
+            transactionDao = transactionDao,
+            localDataCleaner = localDataCleaner
         )
     }
 
@@ -91,9 +95,37 @@ class SyncViewModelTest {
     }
 
     @Test
-    fun signOut_delegatesToRepository() = runTest {
-        viewModel.signOut()
+    fun signOut_withoutSync_cleansLocalDataAndCancelsWorkers() = runTest {
+        viewModel.signOut(syncFirst = false)
+
         coVerify { authRepository.signOut() }
+        coVerify { localDataCleaner.resetToFreshGuest() }
+        verify { syncScheduler.cancelAllSync() }
+    }
+
+    @Test
+    fun signOut_withSync_whenSyncSucceeds_cleansLocalData() = runTest {
+        coEvery { syncManager.sync() } returns SyncResult.Success
+
+        viewModel.signOut(syncFirst = true)
+
+        coVerify { syncManager.sync() }
+        coVerify { authRepository.signOut() }
+        coVerify { localDataCleaner.resetToFreshGuest() }
+        verify { syncScheduler.cancelAllSync() }
+    }
+
+    @Test
+    fun signOut_withSync_whenSyncFails_surfacesErrorWithoutWipingData() = runTest {
+        coEvery { syncManager.sync() } returns SyncResult.Error(RuntimeException("No network"))
+
+        viewModel.signOut(syncFirst = true)
+
+        coVerify { syncManager.sync() }
+        coVerify(exactly = 0) { authRepository.signOut() }
+        coVerify(exactly = 0) { localDataCleaner.resetToFreshGuest() }
+        verify(exactly = 0) { syncScheduler.cancelAllSync() }
+        assertTrue(viewModel.uiState.value.authErrorMessage?.contains("No network") == true)
     }
 
     @Test

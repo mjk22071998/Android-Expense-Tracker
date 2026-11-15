@@ -148,7 +148,7 @@ fun SettingsScreen(
                 uiState = syncUiState,
                 onOpenAuth = { showAuthBottomSheet = true },
                 onSyncNow = syncViewModel::syncNow,
-                onSignOut = syncViewModel::signOut,
+                onSignOut = { syncFirst -> syncViewModel.signOut(syncFirst) },
                 onOpenChangePassword = { showChangePasswordSheet = true }
             )
 

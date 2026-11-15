@@ -57,4 +57,9 @@ class SyncScheduler @Inject constructor(
             request
         )
     }
+
+    fun cancelAllSync() {
+        workManager.cancelUniqueWork(SyncWorker.WORK_NAME_ONE_TIME)
+        workManager.cancelUniqueWork(SyncWorker.WORK_NAME_PERIODIC)
+    }
 }

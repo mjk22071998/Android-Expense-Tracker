@@ -42,6 +42,12 @@ class UserPreferences @Inject constructor(
         }
     }
 
+    suspend fun clearLastSyncTime() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(LAST_SYNC_TIME)
+        }
+    }
+
     val currencyCode: Flow<String> = context.dataStore.data
         .catch { exception ->
             if (exception is IOException) emit(emptyPreferences()) else throw exception
