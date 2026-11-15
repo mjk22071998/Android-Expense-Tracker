@@ -19,11 +19,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,19 +46,25 @@ import com.example.expensetracker.presentation.settings.ClearAllRecordsDialog
 import com.example.expensetracker.presentation.settings.CurrencyPickerDialog
 import com.example.expensetracker.presentation.settings.SettingsViewModel
 import com.example.expensetracker.presentation.settings.ThemeModeSelector
+import com.example.expensetracker.presentation.sync.AuthBottomSheet
+import com.example.expensetracker.presentation.sync.SyncAccountCard
+import com.example.expensetracker.presentation.sync.SyncViewModel
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import com.example.expensetracker.ui.theme.ForestBorderDark
 import com.example.expensetracker.ui.theme.ForestCardDark
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsTabContent(
     onExportClick: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: SettingsViewModel = hiltViewModel()
+    viewModel: SettingsViewModel = hiltViewModel(),
+    syncViewModel: SyncViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val syncUiState by syncViewModel.uiState.collectAsStateWithLifecycle()
     val extendedColors = ExpenseTrackerTheme.extendedColors
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -69,6 +77,13 @@ fun SettingsTabContent(
         }
     }
     var showClearRecordsDialog by remember { mutableStateOf(false) }
+    var showAuthBottomSheet by remember { mutableStateOf(false) }
+
+    LaunchedEffect(syncUiState.isAuthenticated) {
+        if (syncUiState.isAuthenticated) {
+            showAuthBottomSheet = false
+        }
+    }
 
     Column(
         modifier = modifier
@@ -77,6 +92,14 @@ fun SettingsTabContent(
             .padding(horizontal = 20.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        // 0. Cloud Backup & Sync Section Card
+        SyncAccountCard(
+            uiState = syncUiState,
+            onOpenAuth = { showAuthBottomSheet = true },
+            onSyncNow = syncViewModel::syncNow,
+            onSignOut = syncViewModel::signOut
+        )
+
         // 1. Currency Section Card
         SettingsTabSectionCard(title = "Currency") {
             Row(
@@ -294,6 +317,20 @@ fun SettingsTabContent(
             onSearchQueryChanged = viewModel::onCurrencySearchQueryChanged,
             onCurrencySelected = viewModel::onCurrencySelected,
             onDismiss = { viewModel.onCurrencyPickerVisibilityChanged(false) }
+        )
+    }
+
+    if (showAuthBottomSheet) {
+        AuthBottomSheet(
+            isLoading = syncUiState.isAuthLoading,
+            errorMessage = syncUiState.authErrorMessage,
+            onSignIn = syncViewModel::signIn,
+            onSignUp = syncViewModel::signUp,
+            onClearError = syncViewModel::clearAuthError,
+            onDismiss = {
+                showAuthBottomSheet = false
+                syncViewModel.clearAuthError()
+            }
         )
     }
 }

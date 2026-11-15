@@ -507,6 +507,42 @@ The application previously modeled financial amounts with raw IEEE 754 `Double` 
 **Why:** Replaces hand-rolled financial math with an industry-tested, standard library trusted across banking and enterprise systems while preserving mobile-optimized local symbol presentation.  
 **Cost / Trade-off:** Lightweight dependency addition (~150 KB, zero native code, zero reflection/ServiceLoader overhead).
 
+### D88. Supabase Cloud Sync, WorkManager Snapshot Isolation, and Zero-Interruption Offline Guarantee
+**Context:**
+Users requested cloud backup and multi-device synchronization without compromising the application's foundational principles: 100% offline functionality, zero compulsory login screens, instant zero-latency local writes, and total privacy.
+
+**Decided:**
+1. **Backend Infrastructure (Supabase PostgREST & RLS):**
+   - Configured remote tables `public.ledgers`, `public.categories`, and `public.transactions` with `TEXT` primary keys defaulting to `gen_random_uuid()::text`, matching Room's UUID string primary keys and seeded records (`ledger_default`, `cat_food`) with zero ID translation overhead.
+   - Row-Level Security (RLS) enabled on all tables restricting access strictly via `auth.uid() = user_id`.
+   - Foreign key constraint on `transactions.category_id` configured as `ON DELETE SET NULL` and nullable.
+   - B-tree indexes created for `user_id`, `ledger_id`, and `updated_at`.
+2. **Strictly Optional Authentication & Sign-Out Data Retention:**
+   - Unauthenticated guest mode has zero popups, zero mandatory account gates, zero network requirements, and 100% feature parity.
+   - Sign-in/Sign-up is tucked away inside a dedicated "Cloud Backup & Sync" card in the Settings hub.
+   - When a user signs out, local Room database data is strictly **retained** on the device so the user continues uninterrupted as an offline guest without any data loss.
+3. **Database Migration (Migration 2 -> 3):**
+   - Added sync tracking columns to `categories`, `ledgers`, and `transactions`: `sync_status` (0=SYNCED, 1=PENDING_UPLOAD, 2=PENDING_DELETE), `updated_at` (INTEGER/Long epoch millis), `is_deleted` (INTEGER/Boolean soft delete), and `server_id` (TEXT).
+4. **Concurrency & Snapshot Isolation Mechanics:**
+   - Sequential dependency-ordered push: Ledgers -> Categories -> Transactions.
+   - Atomic conditional sync update: `markAsSynced(id, serverId, verifiedUpdatedAt)` executes SQL update `WHERE id = :id AND updated_at = :verifiedUpdatedAt`.
+   - If a user adds or edits a transaction while an upload HTTP call is in flight, Room immediately updates `updated_at` locally. The in-flight worker's conditional update affects 0 rows, leaving the row in `PENDING_UPLOAD` so the subsequent sync pass uploads the newer version. No database locks or UI stalls occur.
+5. **Delta Pull with Last-Write-Wins (LWW) & Client-Side Derived State Recalculation:**
+   - Queries remote records where `updated_at > lastSyncTimeMillis`. If a cloud row has an `updated_at` greater than the local row, upsert into Room. If local row has `PENDING_UPLOAD`, local changes take precedence.
+   - Cloud Supabase stores raw source-of-truth records (`transactions`, `categories`, `ledgers`).
+   - After applying downloaded transaction deltas, `SyncManager` invokes a local aggregation pass (`recalculateDerivedState`) to recompute `Ledger.balance`, `totalIncome`, `totalExpenses`, and regenerates `MonthlySnapshot` entries for affected calendar months, preventing balance drift.
+6. **WorkManager Background Orchestration:**
+   - `@HiltWorker` `SyncWorker` with exponential backoff (initial 15s backoff, max 3 retries) and `NetworkType.CONNECTED` constraint.
+   - `SyncScheduler` orchestrates expedited one-time sync (`ExistingWorkPolicy.REPLACE`) on manual triggers and periodic sync every 6 hours.
+7. **Organic Ambient UI:**
+   - `SyncAmbientPill`: Animated compact pill (`🔄 Syncing...`) in Dashboard and Transaction top bars, visible strictly when `isSyncing == true`.
+   - `AuthBottomSheet`: Modal bottom sheet with segmented toggle ("Sign In" vs "Create Account"), outlined credentials fields, error banner, and privacy footnote.
+   - Add/Edit transaction confirmation: `⚡ Saved to device` badge confirms instant zero-latency local write.
+
+**Why:** Delivers cloud backup and multi-device continuity while keeping the app completely local-first, zero-latency, private, and 100% resilient to offline and network dropouts.  
+**Rejected:** Mandatory onboarding sign-in gates; web sockets / live polling (excessive battery consumption); clearing local data upon logout.  
+**Cost / Trade-off:** Supabase BOM, Ktor Android client, and WorkManager add ~2.5 MB to APK size.
+
 ---
 
 ## 17. Decisions and claims that were corrected
@@ -569,6 +605,7 @@ The application previously modeled financial amounts with raw IEEE 754 `Double` 
 | PDF Export | Resolved | Native ISO A4 generator with dual storage save and system share paths implemented. |
 | Test coverage gaps | Resolved | Added 59-test stress suite covering concurrency, pagination, boundaries, and repositories. |
 | Unverified device behavior | Resolved | Period totals and category sheets physically verified on Android 9 (OPPO A12) hardware. |
+| Cloud Backup & Sync | Resolved | Supabase GoTrue auth, PostgREST delta sync, WorkManager background scheduling, Room snapshot isolation, and ambient UI indicators implemented (D88). |
 
 ---
 
