@@ -1,7 +1,7 @@
 # Expense Tracker — Project Roadmap & Progress Report
 
 > **Current Version:** `v0.4` (Build 4)  
-> **Status:** Active Development — Phase: Supabase Cloud Sync & Backup  
+> **Status:** Milestone Complete — Phase: Supabase Cloud Sync & Backup  
 > **Architecture:** Offline-First, Bidirectional Cloud Sync with Supabase (Room Local SOT + WorkManager)  
 > **Quality Gate:** 102 Unit & Stress Tests Passing (100% success rate) | CI/CD Automated Build & Test Passing  
 > **Hardware Target:** Android 7.0 (API 24) through Android 15 (API 35+); physically tested & verified on Android 9 (API 28).
@@ -10,10 +10,10 @@
 
 ## 1. Product Identity & Foundational Guardrails
 
-1. **100% Standalone & Offline-First**:
-   - Zero internet permissions in `AndroidManifest.xml` for core functionality.
-   - Zero external cloud services, remote sync engines, or analytics tracking required for day-to-day use.
-   - All financial data, transactions, and categories reside exclusively on the device in a local Room SQLite database.
+1. **Offline-First Single Source of Truth**:
+   - The local Room SQLite database is the sole, authoritative source of truth for all on-device application operations.
+   - 100% offline guest mode operates with zero required network connectivity or account creation.
+   - Cloud backup and multi-device synchronization via Supabase is completely optional and non-intrusive.
 2. **Single-Ledger Simplicity**:
    - Single personal ledger (`Personal`) seeded at first launch.
    - Zero multi-ledger switching confusion or account synchronization overhead.
@@ -21,10 +21,15 @@
 3. **Organic Forest Luxury Aesthetic**:
    - Bespoke fintech UI inspired by modern wealth interfaces (canopy gradients, stitched leathercraft overview card, floating pill navigation).
    - High-contrast typography and WCAG 2.2 AA compliant touch targets.
-   - Seamless dynamic theming (Dark, Light, and System follow modes).
+   - Symmetrically centered theme mode selector (`System` | `Light` | `Dark`).
 4. **Low-Memory & Legacy Device Optimization**:
    - Guaranteed smooth execution on legacy and entry-level hardware (e.g. Android 9 / 3GB RAM devices).
-   - Zero background network drain and minimal battery footprint.
+   - Strict pagination and memory-conscious sync buffers (< 12 MB heap overhead).
+   - Zero background network drain when offline or idle.
+5. **Security & Privacy Guardrails**:
+   - Supabase Row-Level Security (RLS) enforcing `(select auth.uid()) = user_id` with subquery caching.
+   - Hardware-backed token storage via Android `EncryptedSharedPreferences`.
+   - Safe sign-out that retains user records locally without data loss.
 
 ---
 
@@ -71,27 +76,13 @@
   - Accessible Material 3 tooltips (`AppTooltip`) on all dashboard, form, and navigation icon buttons.
   - AndroidX `SplashScreen` API with seamless handoff to first-run database initialization.
 
-### Hardening, Stress Testing & Standalone Verification ✅
-- **Stability & Concurrency Fixes**:
-  - Guaranteed `MonthlySnapshot` row preservation and generation on historical transaction date edits.
-  - Fixed system theme synchronization using `isSystemInDarkTheme()`.
-  - DataStore `IOException` graceful error handling and recovery.
-  - High-contrast date picker field styling in light mode.
-- **Input Sanitization**:
-  - Mathematical hardening: blocks `NaN`, `Infinity`, and invalid negative sign stripping in amount fields.
-  - Currency helper resilience with automatic fallback on blank codes.
-- **Comprehensive 59-Test Suite**:
-  - Added full stress test suites: `ConcurrencyAndLoadStressTest`, `DateBoundaryStressTest`, `PaginationAndReportStressTest`, `RepositoryAndDomainStressTest`, and `ViewModelStressTest`.
-  - 59 out of 59 tests passing in ~6 seconds with 100% success rate.
-- **CI/CD Streamlining**:
-  - Hardened GitHub Actions workflow (`android-ci.yml`) to run `./gradlew testDebugUnitTest` and `./gradlew assembleDebug`.
-  - Fixed Gradle wrapper download timeouts (`networkTimeout=120000`, `retries=5`).
-- **Physical Device Validation**:
-  - Deployed and tested on real physical device: OPPO A12 (`CPH2083`, Android 9 / API 28).
-  - Executed 500-event automated Android Monkey stress test with 0 dropped events and 0 crashes (`VM exit code 0`).
-- **Architecture Lockdown**:
-  - Scrubbed legacy cloud sync scaffolding and interfaces (`SyncableEntity`, `SyncContracts`).
-  - Confirmed 0 network permissions in manifest.
+### Milestone v0.3 — Visual Analytics & Cashflow Charts ✅
+- **Native Hardware-Accelerated Charts**:
+  - Built using Jetpack Compose `Canvas` with zero third-party dependencies (0 KB library bloat).
+  - 3-Way Mode Toggle: Expenses (Crimson Rose gradient), Income (Emerald Green gradient), Balance (Electric Lime spline with radiant area glow).
+  - Granular date grouping: Daily data points for Week and Month views, Monthly data points for Year view.
+  - Smooth Bézier curve interpolation with intelligent zero-fill for inactive days and carryforward for running balance.
+  - Interactive touch-scrubbing with haptic feedback tick, vertical tracking crosshair, and floating detail tooltip pill.
 
 ### Milestone v0.4 — Supabase Cloud Sync & Backup, Offline-First Architecture & Auth Workflows ✅
 - **Offline-First Bidirectional Synchronization**:
@@ -105,9 +96,9 @@
   - Account password change workflow in Settings requiring current password validation.
   - Guest mode with zero sign-in barrier and safe sign-out preserving local device transactions.
 - **UI & UX Refinement**:
-  - Cloud Backup card in Settings with ambient sync pill badge and circular status indicator.
+  - Cloud Backup card in Settings with ambient sync pill badge and circular status indicator (`ic_cloud_done`, `ic_cloud_upload`, `ic_sync`).
   - Symmetrically centered theme mode selector (`System` | `Light` | `Dark`).
-  - Optimized database RLS policies with subquery caching (`(select auth.uid())`) and performance indexing.
+  - Optimized database RLS policies with subquery caching (`(select auth.uid())`), duplicate permissive policy removal, and performance foreign key indexing.
 - **Automated Verification**:
   - 102 unit & stress tests passing (100% success rate).
 
@@ -128,16 +119,10 @@
 
 ---
 
-## 4. Forward Roadmap & Execution Steps
+## 4. Forward Roadmap & Next Phases
 
-### 🚀 Milestone v0.3 — Local Data Portability & Visual Analytics (IN PROGRESS)
-**Goal:** Empower users with full ownership, portability, and visual comprehension of their local financial data without relying on any external cloud server.
-- [x] **Visual Analytics & Cashflow Charts**:
-  - Native hardware-accelerated Jetpack Compose `Canvas` financial charts with zero third-party dependencies (0 KB library bloat).
-  - 3-Way Mode Toggle: Expenses (Crimson Rose gradient), Income (Emerald Green gradient), Balance (Electric Lime spline with radiant area glow).
-  - Granular grouping: Daily data points for Week and Month views, Monthly data points for Year view.
-  - Zero-activity days: `0.0` for Expenses and Income, flat balance carryforward for Balance.
-  - Interactive touch-scrubbing with haptic feedback tick, vertical tracking crosshair, and floating detail tooltip pill.
+### 📦 Milestone v0.5 — Local Data Portability & Data Management (PLANNED)
+**Goal:** Provide offline-first backup and restore capabilities independent of cloud services, and allow safe data resets.
 - [ ] **JSON Data Export**:
   - Export all transactions, categories, and ledger state into an encrypted or plain human-readable `.json` backup file.
   - Export metadata (schema version, export timestamp, total transaction count, checksum).
@@ -145,9 +130,8 @@
 - [ ] **JSON Data Restore / Import**:
   - File picker to select a previously exported `.json` backup.
   - Strict validation phase: schema verification, foreign key integrity, and checksum validation before touching the database.
-  - Option to merge or overwrite existing records.
-  - Post-restore atomic balance and monthly snapshot recalculation.
-- [ ] **Database Reset / Clear Data**:
+  - Option to merge or overwrite existing records with atomic balance recalculation.
+- [ ] **Database Reset / Clear Data Safeguard**:
   - Functional wire-up for the "Clear All Records" dialog in `SettingsScreen`.
   - Resets transactions while preserving default categories and re-initializing the default `Personal` ledger with 0 balance.
 - [ ] **Category Icon Catalog Expansion**:
@@ -155,25 +139,8 @@
 
 ---
 
-### ☁️ Milestone v0.4 — Cloud Sync & Authentication (Supabase) (PLANNED)
-**Goal:** Seamless, opt-in cloud synchronization and backup powered by Supabase while preserving 100% offline-first operation.
-- [ ] **Supabase GoTrue Authentication**:
-  - Secure Email/Password and Google OAuth sign-in.
-  - Hardware-backed token storage in Android `EncryptedSharedPreferences`.
-  - Zero-data-loss merge: automatically associate existing offline records to the user's new account on first login.
-- [ ] **Lightweight WorkManager Sync Engine**:
-  - Background REST sync queue tracking dirty rows (`SYNCED`, `PENDING_UPLOAD`, `PENDING_DELETE`).
-  - Strict sync ordering to prevent foreign key errors: Ledgers → Categories → Transactions.
-  - 100-item chunked pagination to protect memory (< 12 MB heap overhead on 3GB RAM devices).
-  - Server timestamp authority (`server_updated_at`) with UUID idempotency (`ON CONFLICT (id) DO UPDATE`).
-- [ ] **WhatsApp-Style Sync UX**:
-  - Non-blocking in-app sync indicator; transactions hydrate into Room reactively.
-  - Silent day-to-day syncs (≤ 25 items); native progress notification strictly for large initial restores (> 100 items).
-
----
-
-### 📊 Milestone v0.5 — Visual Analytics & Trends (PLANNED)
-**Goal:** Provide visual financial intelligence and spending distributions using native Compose Canvas without bulky third-party chart libraries.
+### 📊 Milestone v0.6 — Advanced Visual Analytics & Trends (PLANNED)
+**Goal:** Deepen spending insight and financial distribution using native Compose Canvas without third-party chart libraries.
 - [ ] **Category Donut / Pie Breakdown**:
   - Interactive, hardware-accelerated Compose Canvas category donut chart.
   - Center label displaying total period outflow.
@@ -187,10 +154,10 @@
 
 ---
 
-### 🎯 Milestone v0.6 — Category Budgets & Spending Limits (PLANNED)
+### 🎯 Milestone v0.7 — Category Budgets & Spending Limits (PLANNED)
 **Goal:** Help users control spending through customizable monthly thresholds per category.
 - [ ] **Monthly Budget Targets**:
-  - Set optional monthly budget amounts per expense category (e.g., Dining: $250/month).
+  - Set optional monthly budget amounts per expense category (e.g., Dining: Rs 15,000/month).
 - [ ] **Visual Budget Progress Indicators**:
   - Linear progress indicators on Category items displaying current spend vs. budget.
   - Three-tier status colors: Emerald (<80%), Amber (80–99%), Crimson (≥100% / Over budget).
@@ -199,10 +166,10 @@
 
 ---
 
-### ⏰ Milestone v0.7 — Scheduled Reminders & Recurring Transactions (PLANNED)
+### ⏰ Milestone v0.8 — Scheduled Reminders & Recurring Transactions (PLANNED)
 **Goal:** Automate logging of fixed recurring expenses and bills completely on-device.
 - [ ] **Recurring Expense Templates**:
-  - Create recurring templates (Daily, Weekly, Monthly, Yearly) for subscriptions, rent, loan payments.
+  - Create recurring templates (Daily, Weekly, Monthly, Yearly) for subscriptions, rent, utility bills.
 - [ ] **Local Android Bill Reminders**:
   - Purely local Android `AlarmManager` / local notifications scheduled when a bill is due.
   - Completely offline; zero push notification services (no FCM, no background network).
@@ -214,7 +181,7 @@
 ### 🏆 Milestone v1.0 — Production Release & Distribution Polish (PLANNED)
 **Goal:** Prepare the application for release distribution on F-Droid, GitHub Releases, and Google Play Store.
 - [ ] **ProGuard & R8 Optimization**:
-  - Comprehensive shrinking, obfuscation, and optimization rules verified for Room, Hilt, and Kotlinx Serialization.
+  - Comprehensive shrinking, obfuscation, and optimization rules verified for Room, Hilt, Supabase, and Kotlinx Serialization.
 - [ ] **Release Signing & Build Automation**:
   - Configure release keystore signing via environment variables.
   - Output optimized Android App Bundle (`.aab`) and standalone release APK (`.apk`).
@@ -239,9 +206,9 @@
       - Item 2: `amount: 2000.0`, `note: "Eggs"`, `category: "Groceries"`
     - Inserts all items into the user's cloud ledger and replies on WhatsApp:
       > *"✅ Logged 2 expenses:
-• Milk: Rs 250 (Groceries)
-• Eggs: Rs 2,000 (Groceries)
-Total: Rs 2,250 | Current Balance: Rs 42,980"*
+      > • Milk: Rs 250 (Groceries)
+      > • Eggs: Rs 2,000 (Groceries)
+      > Total: Rs 2,250 | Current Balance: Rs 42,980"*
   - **Conversational Queries with Slot-Filling (Missing Parameters Clarification)**:
     - **Live Balance Checks**: User asks *"What's my current balance?"* → Agent queries ledger and replies with current running balance, total income, and total expenses.
     - **Adaptive Clarification for Underspecified Queries**: If a user asks *"How much did I spend on travelling?"* without specifying a timeframe, the agent detects the missing parameter and clarifies:
