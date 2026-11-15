@@ -24,4 +24,16 @@ interface CategoryDao {
 
     @Query("DELETE FROM categories WHERE id = :id AND isDefault = 0")
     suspend fun delete(id: String)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(category: Category)
+
+    @Query("SELECT * FROM categories WHERE syncStatus != 0")
+    suspend fun getPendingSyncCategories(): List<Category>
+
+    @Query("UPDATE categories SET syncStatus = 0, serverId = :serverId, updatedAt = :verifiedUpdatedAt WHERE id = :id AND updatedAt = :verifiedUpdatedAt")
+    suspend fun markAsSynced(id: String, serverId: String, verifiedUpdatedAt: Long): Int
+
+    @Query("UPDATE categories SET syncStatus = 1")
+    suspend fun markAllAsPendingUpload(): Int
 }

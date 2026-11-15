@@ -21,7 +21,7 @@ import com.example.expensetracker.data.local.entity.Transaction
         Ledger::class,
         MonthlySnapshot::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -54,6 +54,22 @@ abstract class AppDatabase : RoomDatabase() {
                 CREATE UNIQUE INDEX IF NOT EXISTS index_monthly_snapshots_ledgerId_month_year
                 ON monthly_snapshots(ledgerId, month, year)
             """)
+            }
+        }
+
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE ledgers ADD COLUMN syncStatus INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE ledgers ADD COLUMN serverId TEXT")
+
+                db.execSQL("ALTER TABLE categories ADD COLUMN syncStatus INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE categories ADD COLUMN updatedAt INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE categories ADD COLUMN isDeleted INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE categories ADD COLUMN serverId TEXT")
+
+                db.execSQL("ALTER TABLE transactions ADD COLUMN syncStatus INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE transactions ADD COLUMN serverId TEXT")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_transactions_syncStatus ON transactions(syncStatus)")
             }
         }
     }

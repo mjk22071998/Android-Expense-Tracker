@@ -2,6 +2,7 @@ package com.example.expensetracker.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.example.expensetracker.data.local.SyncStatus
 import java.util.UUID
 
 @Entity(tableName = "ledgers")
@@ -15,7 +16,9 @@ data class Ledger(
     val totalExpenses: Double = 0.0,
     val createdAt: Long,
     val updatedAt: Long,
-    val isDefault: Boolean = false
+    val isDefault: Boolean = false,
+    val syncStatus: Int = SyncStatus.SYNCED,
+    val serverId: String? = null
 ) {
 
     companion object {
@@ -27,6 +30,7 @@ data class Ledger(
             currencyCode: String,
             id: String = UUID.randomUUID().toString(),
             isDefault: Boolean = false,
+            syncStatus: Int = SyncStatus.PENDING_UPLOAD,
             timestamp: Long = System.currentTimeMillis()
         ): Ledger = Ledger(
             id = id,
@@ -37,7 +41,9 @@ data class Ledger(
             totalExpenses = 0.0,
             createdAt = timestamp,
             updatedAt = timestamp,
-            isDefault = isDefault
+            isDefault = isDefault,
+            syncStatus = syncStatus,
+            serverId = null
         )
     }
 }

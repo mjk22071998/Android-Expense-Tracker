@@ -242,4 +242,19 @@ interface TransactionDao {
         ledgerDao.resetBalances(ledgerId, now)
         snapshotDao.deleteAllForLedger(ledgerId)
     }
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(transaction: Transaction)
+
+    @Query("SELECT * FROM transactions WHERE syncStatus != 0")
+    suspend fun getPendingSyncTransactions(): List<Transaction>
+
+    @Query("UPDATE transactions SET syncStatus = 0, serverId = :serverId, updatedAt = :verifiedUpdatedAt WHERE id = :id AND updatedAt = :verifiedUpdatedAt")
+    suspend fun markAsSynced(id: String, serverId: String, verifiedUpdatedAt: Long): Int
+
+    @Query("UPDATE transactions SET syncStatus = 1")
+    suspend fun markAllAsPendingUpload(): Int
+
+    @Query("SELECT COUNT(*) FROM transactions WHERE syncStatus != 0")
+    fun getPendingSyncCountFlow(): Flow<Int>
 }

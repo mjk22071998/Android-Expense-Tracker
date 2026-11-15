@@ -86,4 +86,16 @@ interface LedgerDao {
         """
     )
     suspend fun resetBalances(ledgerId: String, updatedAt: Long)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(ledger: Ledger)
+
+    @Query("SELECT * FROM ledgers WHERE syncStatus != 0")
+    suspend fun getPendingSyncLedgers(): List<Ledger>
+
+    @Query("UPDATE ledgers SET syncStatus = 0, serverId = :serverId, updatedAt = :verifiedUpdatedAt WHERE id = :id AND updatedAt = :verifiedUpdatedAt")
+    suspend fun markAsSynced(id: String, serverId: String, verifiedUpdatedAt: Long): Int
+
+    @Query("UPDATE ledgers SET syncStatus = 1")
+    suspend fun markAllAsPendingUpload(): Int
 }
