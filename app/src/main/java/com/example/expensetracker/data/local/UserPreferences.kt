@@ -3,6 +3,7 @@ package com.example.expensetracker.data.local
 import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.expensetracker.Constants
@@ -24,6 +25,21 @@ class UserPreferences @Inject constructor(
     companion object {
         private val CURRENCY_CODE = stringPreferencesKey(Constants.Preferences.CURRENCY_CODE)
         private val THEME_MODE = stringPreferencesKey("theme_mode")
+        private val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
+    }
+
+    val lastSyncTime: Flow<Long?> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { preferences ->
+            preferences[LAST_SYNC_TIME]
+        }
+
+    suspend fun setLastSyncTime(timeMillis: Long) {
+        context.dataStore.edit { preferences ->
+            preferences[LAST_SYNC_TIME] = timeMillis
+        }
     }
 
     val currencyCode: Flow<String> = context.dataStore.data
