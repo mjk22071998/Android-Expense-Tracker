@@ -285,44 +285,56 @@ private fun SignedInCardContent(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
+                    val syncSubtitle = when {
+                        uiState.isSyncing -> "Syncing changes..."
+                        uiState.pendingUploadCount > 0 -> "${uiState.pendingUploadCount} pending • ${formatRelativeSyncTime(uiState.lastSyncedTimeMillis)}"
+                        else -> formatRelativeSyncTime(uiState.lastSyncedTimeMillis)
+                    }
                     Text(
-                        text = formatRelativeSyncTime(uiState.lastSyncedTimeMillis),
+                        text = syncSubtitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = extendedColors.textSecondary
                     )
                 }
             }
 
-            // Status Badge
-            val (badgeBg, badgeFg, badgeText) = when {
-                uiState.isSyncing -> Triple(
-                    if (extendedColors.isDark) Color(0x2A1B4D34) else Color(0x181B4D34),
-                    if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34),
-                    "Syncing"
-                )
-                uiState.pendingUploadCount > 0 -> Triple(
-                    Color(0x22FFC107),
-                    Color(0xFFFFA000),
-                    "${uiState.pendingUploadCount} pending"
-                )
-                else -> Triple(
-                    if (extendedColors.isDark) Color(0x22D4F63D) else Color(0x181B4D34),
-                    if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34),
-                    "Backed Up"
-                )
+            // Status Badge Icon
+            val badgeBg = when {
+                uiState.isSyncing -> if (extendedColors.isDark) Color(0x2A1B4D34) else Color(0x181B4D34)
+                uiState.pendingUploadCount > 0 -> Color(0x22FFC107)
+                else -> if (extendedColors.isDark) Color(0x22D4F63D) else Color(0x181B4D34)
+            }
+            val badgeFg = when {
+                uiState.isSyncing -> if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34)
+                uiState.pendingUploadCount > 0 -> Color(0xFFFFA000)
+                else -> if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34)
+            }
+            val iconRes = when {
+                uiState.isSyncing -> R.drawable.ic_sync
+                uiState.pendingUploadCount > 0 -> R.drawable.ic_cloud_upload
+                else -> R.drawable.ic_cloud_done
+            }
+            val badgeDesc = when {
+                uiState.isSyncing -> "Syncing"
+                uiState.pendingUploadCount > 0 -> "${uiState.pendingUploadCount} pending"
+                else -> "Backed Up"
             }
 
             Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = badgeBg
+                shape = CircleShape,
+                color = badgeBg,
+                modifier = Modifier.size(34.dp)
             ) {
-                Text(
-                    text = badgeText,
-                    style = MaterialTheme.typography.labelSmall,
-                    fontWeight = FontWeight.SemiBold,
-                    color = badgeFg,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        painter = painterResource(id = iconRes),
+                        contentDescription = badgeDesc,
+                        tint = badgeFg,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .then(if (uiState.isSyncing) Modifier.rotate(rotation) else Modifier)
+                    )
+                }
             }
         }
 
