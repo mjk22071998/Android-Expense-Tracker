@@ -1,7 +1,7 @@
 # Design Document: Supabase Cloud Sync & Authentication
 
 **Date:** 2026-11-15  
-**Status:** In Review  
+**Status:** Approved  
 **Milestone:** v0.4 (Cloud Sync & Optional Authentication)  
 **Authors:** DeepMind Antigravity & User  
 
@@ -165,7 +165,7 @@ To guarantee that user additions/edits during sync never break:
    - Supabase stores raw source-of-truth records (`transactions`, `categories`, `ledgers`).
    - After applying downloaded transaction deltas to Room, `SyncManager` invokes a local Room aggregation pass to recompute `Ledger.balance`, `totalIncome`, `totalExpenses`, and regenerates `MonthlySnapshot` entries for affected calendar months. This guarantees 100% mathematical precision and prevents balance drift.
 
-### 5.4 First-Time Login Merge & Multi-Device Scenarios
+### 5.4 First-Time Login Merge, Sign-Out & Multi-Device Scenarios
 - **Scenario A: Fresh Device / Reinstall (Cloud Account Already Has Data)**:
   - If the user signs in on a device with 0 user-created transactions (only the initial empty default ledger), Room simply purges the local default seed and hydrates completely from the cloud snapshot.
 - **Scenario B: First Sign-In with Pre-Existing Offline Transactions**:
@@ -173,6 +173,18 @@ To guarantee that user additions/edits during sync never break:
   - If the cloud already has a default ledger, local pre-login transactions are re-parented to the cloud default ledger. Categories are matched by `(name, type)` to prevent duplicates.
   - Room transaction marks all local records with `user_id` and `sync_status = PENDING_UPLOAD`.
   - Enqueue immediate initial sync to upload offline history to Supabase without data loss.
+- **Scenario C: Sign-Out Data Retention**:
+  - When the user signs out, local Room data is **retained** so the user can continue using the app as an offline guest without losing access to their records.
+  - Session tokens are cleared from secure storage.
+  - If a *different* Supabase account signs in on this device in the future, the app detects account mismatch (`last_authenticated_user_id != new_user_id`) and displays a confirmation dialog asking the user whether to merge local records into the new account or clear local records before loading the new account's data.
+
+### 5.5 Authentication Scope (Phase 1 vs Future)
+- **Phase 1 (This Milestone)**:
+  - Email & Password authentication using Supabase GoTrue (`gotrue-kt`).
+  - Seamless Sign In, Sign Up, and Password Reset.
+  - Instant out-of-the-box reliability without third-party console dependencies.
+- **Phase 2 (Fast-Follow)**:
+  - Google and Facebook OAuth integration once core sync functionality is verified in production.
 
 ### 5.5 UI Components & State Representation
 - **`SyncUiState`**:
