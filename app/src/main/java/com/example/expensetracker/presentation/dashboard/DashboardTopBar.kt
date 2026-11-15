@@ -25,12 +25,14 @@ import androidx.compose.ui.unit.sp
 import com.example.expensetracker.R
 import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.presentation.common.TooltipPosition
+import com.example.expensetracker.presentation.sync.SyncAmbientPill
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardTopBar(
     title: String = "Personal Account",
+    isSyncing: Boolean = false,
     onExportClick: (() -> Unit)? = null
 ) {
     val extendedColors = ExpenseTrackerTheme.extendedColors
@@ -46,6 +48,11 @@ fun DashboardTopBar(
             )
         },
         actions = {
+            SyncAmbientPill(
+                isSyncing = isSyncing,
+                modifier = Modifier.padding(end = 8.dp)
+            )
+
             if (onExportClick != null) {
                 AppTooltip(
                     text = "Export PDF Statement",

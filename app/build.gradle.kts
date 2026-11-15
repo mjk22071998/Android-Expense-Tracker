@@ -57,6 +57,12 @@ android {
         buildConfig = true
     }
     buildToolsVersion = "37.0.0"
+
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 ksp {

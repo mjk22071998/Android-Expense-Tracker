@@ -54,6 +54,7 @@ import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.CurrencyHelper.formatAmount
 import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.domain.usecase.PdfStorageHelper
+import com.example.expensetracker.presentation.sync.SyncViewModel
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import com.example.expensetracker.ui.theme.ExtendedColors
 import kotlinx.coroutines.launch
@@ -67,11 +68,13 @@ fun DashboardScreen(
     onAddTransaction: () -> Unit,
     onEditTransaction: (String) -> Unit,
     onNavigateToSettings: () -> Unit,
-    viewModel: DashboardViewModel = hiltViewModel()
+    viewModel: DashboardViewModel = hiltViewModel(),
+    syncViewModel: SyncViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val extendedColors = ExpenseTrackerTheme.extendedColors
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val syncUiState by syncViewModel.uiState.collectAsStateWithLifecycle()
 
     // 5-Tab non-slidable navigation state
     var currentTab by rememberSaveable { mutableStateOf(BottomNavDestination.HOME) }
@@ -214,6 +217,7 @@ fun DashboardScreen(
         topBar = {
             DashboardTopBar(
                 title = topBarTitle,
+                isSyncing = syncUiState.isSyncing,
                 onExportClick = { showExportSheet = true }
             )
         }

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -59,6 +60,8 @@ import com.example.expensetracker.R
 import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.presentation.common.TooltipPosition
 import com.example.expensetracker.data.local.entity.Category
+import com.example.expensetracker.presentation.sync.SyncAmbientPill
+import com.example.expensetracker.presentation.sync.SyncViewModel
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ElectricLimeOn
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
@@ -69,9 +72,11 @@ import com.example.expensetracker.ui.theme.ForestTextSecondaryDark
 @Composable
 fun TransactionFormScreen(
     onNavigateBack: () -> Unit,
-    viewModel: AddEditTransactionViewModel = hiltViewModel()
+    viewModel: AddEditTransactionViewModel = hiltViewModel(),
+    syncViewModel: SyncViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val syncUiState by syncViewModel.uiState.collectAsStateWithLifecycle()
     var showAddCategoryDialog by remember { mutableStateOf(false) }
     var categoryBeingEdited by remember { mutableStateOf<Category?>(null) }
     var categoryBeingDeleted by remember { mutableStateOf<Category?>(null) }
@@ -103,6 +108,12 @@ fun TransactionFormScreen(
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         color = extendedColors.textPrimary
+                    )
+                },
+                actions = {
+                    SyncAmbientPill(
+                        isSyncing = syncUiState.isSyncing,
+                        modifier = Modifier.padding(end = 12.dp)
                     )
                 },
                 navigationIcon = {
@@ -331,6 +342,28 @@ fun TransactionFormScreen(
                         modifier = Modifier.padding(start = 8.dp)
                     )
                 }
+            }
+
+            // Instant local save guarantee & sync status badge
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_electric_bolt),
+                    contentDescription = null,
+                    tint = if (extendedColors.isDark) ElectricLime else Color(0xFF1B4D34),
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = if (syncUiState.isSyncing) "Instant local save • Cloud sync in progress" else "Saved locally to device • Backs up automatically",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = extendedColors.textMuted
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))

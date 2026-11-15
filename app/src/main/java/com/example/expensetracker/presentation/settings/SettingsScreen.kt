@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -49,6 +51,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.expensetracker.R
 import com.example.expensetracker.presentation.common.AppTooltip
 import com.example.expensetracker.presentation.common.TooltipPosition
+import com.example.expensetracker.presentation.sync.AuthBottomSheet
+import com.example.expensetracker.presentation.sync.SyncAccountCard
+import com.example.expensetracker.presentation.sync.SyncViewModel
 import com.example.expensetracker.ui.theme.ElectricLime
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import kotlinx.coroutines.launch
@@ -57,9 +62,11 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsScreen(
     onNavigateBack: () -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel()
+    viewModel: SettingsViewModel = hiltViewModel(),
+    syncViewModel: SyncViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val syncUiState by syncViewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val extendedColors = ExpenseTrackerTheme.extendedColors
     val coroutineScope = rememberCoroutineScope()
@@ -73,6 +80,13 @@ fun SettingsScreen(
         }
     }
     var showClearRecordsDialog by remember { mutableStateOf(false) }
+    var showAuthBottomSheet by remember { mutableStateOf(false) }
+
+    LaunchedEffect(syncUiState.isAuthenticated) {
+        if (syncUiState.isAuthenticated) {
+            showAuthBottomSheet = false
+        }
+    }
 
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
@@ -123,9 +137,18 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            // Cloud Sync & Account Section
+            SyncAccountCard(
+                uiState = syncUiState,
+                onOpenAuth = { showAuthBottomSheet = true },
+                onSyncNow = syncViewModel::syncNow,
+                onSignOut = syncViewModel::signOut
+            )
+
             // Currency Section
             SettingsSectionCard(title = "Currency") {
                 Row(
@@ -213,7 +236,7 @@ fun SettingsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Footer Information
             Box(
@@ -229,6 +252,20 @@ fun SettingsScreen(
                 )
             }
         }
+    }
+
+    if (showAuthBottomSheet) {
+        AuthBottomSheet(
+            isLoading = syncUiState.isAuthLoading,
+            errorMessage = syncUiState.authErrorMessage,
+            onSignIn = syncViewModel::signIn,
+            onSignUp = syncViewModel::signUp,
+            onClearError = syncViewModel::clearAuthError,
+            onDismiss = {
+                showAuthBottomSheet = false
+                syncViewModel.clearAuthError()
+            }
+        )
     }
 
     if (showClearRecordsDialog) {
