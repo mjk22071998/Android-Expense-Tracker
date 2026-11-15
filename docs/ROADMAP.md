@@ -1,9 +1,9 @@
 # Expense Tracker — Project Roadmap & Progress Report
 
-> **Current Version:** `v0.3` (Build 3)  
-> **Status:** Active Development — Phase: Local Data Portability & Backup  
-> **Architecture:** 100% Standalone, Single-Ledger Offline Expense Tracker for Android (API 24+)  
-> **Quality Gate:** 59 Unit & Stress Tests Passing (100% success rate) | CI/CD Automated Build & Test Passing  
+> **Current Version:** `v0.4` (Build 4)  
+> **Status:** Active Development — Phase: Supabase Cloud Sync & Backup  
+> **Architecture:** Offline-First, Bidirectional Cloud Sync with Supabase (Room Local SOT + WorkManager)  
+> **Quality Gate:** 102 Unit & Stress Tests Passing (100% success rate) | CI/CD Automated Build & Test Passing  
 > **Hardware Target:** Android 7.0 (API 24) through Android 15 (API 35+); physically tested & verified on Android 9 (API 28).
 
 ---
@@ -93,17 +93,35 @@
   - Scrubbed legacy cloud sync scaffolding and interfaces (`SyncableEntity`, `SyncContracts`).
   - Confirmed 0 network permissions in manifest.
 
+### Milestone v0.4 — Supabase Cloud Sync & Backup, Offline-First Architecture & Auth Workflows ✅
+- **Offline-First Bidirectional Synchronization**:
+  - Full local-first Room database single source of truth paired with Supabase remote backend.
+  - Multi-table sync (`ledgers`, `categories`, `transactions`) with Last-Write-Wins (LWW) conflict resolution by UTC `updated_at`.
+  - Non-destructive soft-delete cascading propagation (`isDeleted` flag).
+  - Background synchronization via AndroidX `WorkManager` (15m connected periodic job + debounced one-time sync).
+- **Runtime Authentication & Password Security**:
+  - Live 5-point password requirements checklist (8+ length, lowercase, uppercase, number, symbol) matching server security policies.
+  - Forgot password flow with 8-digit email OTP verification (`supabase.auth.resetPasswordForEmail` + `verifyEmailOtp`).
+  - Account password change workflow in Settings requiring current password validation.
+  - Guest mode with zero sign-in barrier and safe sign-out preserving local device transactions.
+- **UI & UX Refinement**:
+  - Cloud Backup card in Settings with ambient sync pill badge and circular status indicator.
+  - Symmetrically centered theme mode selector (`System` | `Light` | `Dark`).
+  - Optimized database RLS policies with subquery caching (`(select auth.uid())`) and performance indexing.
+- **Automated Verification**:
+  - 102 unit & stress tests passing (100% success rate).
+
 ---
 
 ## 3. Current Version & Living Status
 
 | Metric | Current State |
 |---|---|
-| **App Version** | `v0.3` |
-| **Version Code** | `3` |
+| **App Version** | `v0.4` |
+| **Version Code** | `4` |
 | **Default Ledger** | Single Ledger (`Personal`, ID: `ledger_default`) |
-| **Network Footprint** | 0 bytes (No network permissions, 100% offline) |
-| **Automated Tests** | 67 unit & stress tests passing (`100%`) |
+| **Network Footprint** | Offline-First (Optional Supabase Cloud Sync & Backup) |
+| **Automated Tests** | 102 unit & stress tests passing (`100%`) |
 | **CI/CD Status** | Automated Build & Test on push/PR (`ubuntu-latest`) |
 | **Minimum SDK** | API 24 (Android 7.0 Nougat) |
 | **Target SDK** | API 37 (Android 15+) |

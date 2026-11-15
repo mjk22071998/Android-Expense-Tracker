@@ -30,8 +30,8 @@ android {
         applicationId = "com.example.expensetracker"
         minSdk = 24
         targetSdk = 37
-        versionCode = 3
-        versionName = "0.3"
+        versionCode = 4
+        versionName = "0.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
