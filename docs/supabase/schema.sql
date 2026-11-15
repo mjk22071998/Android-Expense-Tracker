@@ -72,4 +72,8 @@ create index if not exists idx_ledgers_user_id on public.ledgers(user_id);
 create index if not exists idx_categories_user_id on public.categories(user_id);
 create index if not exists idx_transactions_user_id on public.transactions(user_id);
 create index if not exists idx_transactions_ledger_id on public.transactions(ledger_id);
+create index if not exists idx_transactions_category_id on public.transactions(category_id);
 create index if not exists idx_transactions_updated_at on public.transactions(updated_at);
+
+-- Security hardening: prevent anon/authenticated execution of security definer helper functions
+revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
