@@ -257,4 +257,30 @@ interface TransactionDao {
 
     @Query("SELECT COUNT(*) FROM transactions WHERE syncStatus != 0")
     fun getPendingSyncCountFlow(): Flow<Int>
+
+    @Query("SELECT COALESCE(SUM(amount), 0.0) FROM transactions WHERE ledgerId = :ledgerId AND type = 'INCOME' AND isDeleted = 0")
+    suspend fun getTotalIncome(ledgerId: String): Double
+
+    @Query("SELECT COALESCE(SUM(amount), 0.0) FROM transactions WHERE ledgerId = :ledgerId AND type = 'EXPENSE' AND isDeleted = 0")
+    suspend fun getTotalExpense(ledgerId: String): Double
+
+    @androidx.room.Transaction
+    suspend fun recalculateDerivedState(
+        ledgerId: String,
+        ledgerDao: LedgerDao,
+        snapshotDao: MonthlySnapshotDao
+    ) {
+        val totalIncome = getTotalIncome(ledgerId)
+        val totalExpense = getTotalExpense(ledgerId)
+        val balance = totalIncome - totalExpense
+        val now = System.currentTimeMillis()
+
+        ledgerDao.updateTotals(
+            ledgerId = ledgerId,
+            balance = balance,
+            totalIncome = totalIncome,
+            totalExpenses = totalExpense,
+            updatedAt = now
+        )
+    }
 }

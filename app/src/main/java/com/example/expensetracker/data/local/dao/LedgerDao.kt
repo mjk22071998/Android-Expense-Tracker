@@ -98,4 +98,7 @@ interface LedgerDao {
 
     @Query("UPDATE ledgers SET syncStatus = 1")
     suspend fun markAllAsPendingUpload(): Int
+
+    @Query("UPDATE ledgers SET balance = :balance, totalIncome = :totalIncome, totalExpenses = :totalExpenses, updatedAt = :updatedAt WHERE id = :ledgerId")
+    suspend fun updateTotals(ledgerId: String, balance: Double, totalIncome: Double, totalExpenses: Double, updatedAt: Long)
 }
