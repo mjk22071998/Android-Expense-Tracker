@@ -1,5 +1,6 @@
 package com.example.expensetracker.data.sync
 
+import android.util.Log
 import com.example.expensetracker.data.local.SyncStatus
 import com.example.expensetracker.data.local.UserPreferences
 import com.example.expensetracker.data.local.dao.CategoryDao
@@ -61,6 +62,7 @@ class SyncManagerImpl @Inject constructor(
         _isSyncing.value = true
 
         return try {
+            Log.d("SyncManager", "Starting sync pass for userId: $userId")
             // 1. PUSH PHASE: Sequential snapshot upload (Ledgers -> Categories -> Transactions)
             pushLedgers(userId)
             pushCategories(userId)
@@ -79,9 +81,11 @@ class SyncManagerImpl @Inject constructor(
 
             // 4. RECORD SUCCESSFUL SYNC TIME
             userPreferences.setLastSyncTime(System.currentTimeMillis())
+            Log.d("SyncManager", "Sync pass completed successfully")
 
             SyncResult.Success
         } catch (e: Exception) {
+            Log.e("SyncManager", "Sync pass failed: ${e.message}", e)
             SyncResult.Error(e)
         } finally {
             _isSyncing.value = false
@@ -90,6 +94,7 @@ class SyncManagerImpl @Inject constructor(
 
     private suspend fun pushLedgers(userId: String) {
         val dirty = ledgerDao.getPendingSyncLedgers()
+        Log.d("SyncManager", "pushLedgers: found ${dirty.size} dirty ledgers")
         for (ledger in dirty) {
             val dto = ledger.toDto(userId)
             supabase.postgrest["ledgers"].upsert(dto)
@@ -99,6 +104,7 @@ class SyncManagerImpl @Inject constructor(
 
     private suspend fun pushCategories(userId: String) {
         val dirty = categoryDao.getPendingSyncCategories()
+        Log.d("SyncManager", "pushCategories: found ${dirty.size} dirty categories")
         for (category in dirty) {
             val dto = category.toDto(userId)
             supabase.postgrest["categories"].upsert(dto)
@@ -108,6 +114,7 @@ class SyncManagerImpl @Inject constructor(
 
     private suspend fun pushTransactions(userId: String) {
         val dirty = transactionDao.getPendingSyncTransactions()
+        Log.d("SyncManager", "pushTransactions: found ${dirty.size} dirty transactions")
         for (tx in dirty) {
             val dto = tx.toDto(userId)
             supabase.postgrest["transactions"].upsert(dto)
