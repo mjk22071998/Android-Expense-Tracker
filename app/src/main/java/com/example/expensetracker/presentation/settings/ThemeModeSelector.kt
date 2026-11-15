@@ -49,18 +49,15 @@ fun ThemeModeSelector(
     )
 
     Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(52.dp),
+        modifier = modifier.height(42.dp),
         shape = CircleShape,
         color = extendedColors.cardElevated,
         border = BorderStroke(1.dp, extendedColors.cardBorder)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            modifier = Modifier.padding(3.dp),
+            horizontalArrangement = Arrangement.spacedBy(3.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             options.forEach { (mode, label, icon) ->
                 val isSelected = selectedMode == mode
@@ -78,11 +75,10 @@ fun ThemeModeSelector(
 
                 Box(
                     modifier = Modifier
-                        .weight(1f)
                         .clip(CircleShape)
                         .background(itemBg)
                         .clickable { onModeSelected(mode) }
-                        .padding(vertical = 8.dp),
+                        .padding(horizontal = 14.dp, vertical = 6.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Row(

@@ -246,7 +246,7 @@ interface TransactionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(transaction: Transaction)
 
-    @Query("SELECT * FROM transactions WHERE syncStatus != 0")
+    @Query("SELECT * FROM transactions WHERE syncStatus != 0 OR serverId IS NULL")
     suspend fun getPendingSyncTransactions(): List<Transaction>
 
     @Query("UPDATE transactions SET syncStatus = 0, serverId = :serverId, updatedAt = :verifiedUpdatedAt WHERE id = :id AND updatedAt = :verifiedUpdatedAt")
@@ -255,7 +255,7 @@ interface TransactionDao {
     @Query("UPDATE transactions SET syncStatus = 1")
     suspend fun markAllAsPendingUpload(): Int
 
-    @Query("SELECT COUNT(*) FROM transactions WHERE syncStatus != 0")
+    @Query("SELECT COUNT(*) FROM transactions WHERE syncStatus != 0 OR serverId IS NULL")
     fun getPendingSyncCountFlow(): Flow<Int>
 
     @Query("SELECT COALESCE(SUM(amount), 0.0) FROM transactions WHERE ledgerId = :ledgerId AND type = 'INCOME' AND isDeleted = 0")

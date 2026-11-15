@@ -90,7 +90,7 @@ interface LedgerDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(ledger: Ledger)
 
-    @Query("SELECT * FROM ledgers WHERE syncStatus != 0")
+    @Query("SELECT * FROM ledgers WHERE syncStatus != 0 OR serverId IS NULL")
     suspend fun getPendingSyncLedgers(): List<Ledger>
 
     @Query("UPDATE ledgers SET syncStatus = 0, serverId = :serverId, updatedAt = :verifiedUpdatedAt WHERE id = :id AND updatedAt = :verifiedUpdatedAt")

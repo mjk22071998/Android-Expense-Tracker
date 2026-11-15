@@ -179,15 +179,18 @@ private fun SignedOutCardContent(
             }
 
             Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = if (extendedColors.isDark) Color(0x18FFFFFF) else Color(0x0C000000)
+                shape = CircleShape,
+                color = if (extendedColors.isDark) Color(0x18FFFFFF) else Color(0x0C000000),
+                modifier = Modifier.size(34.dp)
             ) {
-                Text(
-                    text = "Offline Mode",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = extendedColors.textSecondary,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                )
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_cloud_off),
+                        contentDescription = "Offline Mode",
+                        tint = extendedColors.textMuted,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
             }
         }
 

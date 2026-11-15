@@ -156,10 +156,15 @@ fun SettingsTabContent(
 
         // 2. Appearance & Theme Mode Section Card
         SettingsTabSectionCard(title = "Appearance") {
-            ThemeModeSelector(
-                selectedMode = uiState.themeMode,
-                onModeSelected = viewModel::setThemeMode
-            )
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
+            ) {
+                ThemeModeSelector(
+                    selectedMode = uiState.themeMode,
+                    onModeSelected = viewModel::setThemeMode
+                )
+            }
         }
 
         // 3. Data Management Section Card

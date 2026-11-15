@@ -196,10 +196,15 @@ fun SettingsScreen(
 
             // Appearance Section
             SettingsSectionCard(title = "Appearance") {
-                ThemeModeSelector(
-                    selectedMode = uiState.themeMode,
-                    onModeSelected = viewModel::setThemeMode
-                )
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ThemeModeSelector(
+                        selectedMode = uiState.themeMode,
+                        onModeSelected = viewModel::setThemeMode
+                    )
+                }
             }
 
             // Data Management Section
