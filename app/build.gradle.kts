@@ -15,8 +15,12 @@ val localProperties = Properties().apply {
         localFile.inputStream().use { load(it) }
     }
 }
-val supabaseUrl = localProperties.getProperty("SUPABASE_URL") ?: "https://fwycftgspnnthkneomlw.supabase.co"
-val supabaseAnonKey = localProperties.getProperty("SUPABASE_ANON_KEY") ?: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3eWNmdGdzcG5udGhrbmVvbWx3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzMDYyODEsImV4cCI6MjA5Mzg4MjI4MX0.ZdBVETVEoyFX0nvkCuHNxLSH_zNy5Ti9c4KH5CYx3gc"
+val supabaseUrl = localProperties.getProperty("SUPABASE_URL")
+    ?: System.getenv("SUPABASE_URL")
+    ?: "https://placeholder.supabase.co"
+val supabaseAnonKey = localProperties.getProperty("SUPABASE_ANON_KEY")
+    ?: System.getenv("SUPABASE_ANON_KEY")
+    ?: "placeholder-anon-key"
 
 android {
     namespace = "com.example.expensetracker"
