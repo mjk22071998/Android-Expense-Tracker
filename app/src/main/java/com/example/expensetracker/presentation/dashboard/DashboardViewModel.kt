@@ -102,10 +102,17 @@ class DashboardViewModel @Inject constructor(
                     val ledgerChanged = active?.id != currentLedgerId
                     currentLedgerId = active?.id ?: ""
 
+                    val currencySymbol = if (active != null && active.currencyCode.isNotEmpty()) {
+                        CurrencyHelper.getSymbol(active.currencyCode, context)
+                    } else {
+                        _uiState.value.currencySymbol
+                    }
+
                     _uiState.update { state ->
                         state.copy(
                             activeLedger = active,
                             allLedgers = ledgers,
+                            currencySymbol = currencySymbol,
                             balance = active?.balance ?: 0.0,
                             totalIncome = active?.totalIncome ?: 0.0,
                             totalExpense = active?.totalExpenses ?: 0.0

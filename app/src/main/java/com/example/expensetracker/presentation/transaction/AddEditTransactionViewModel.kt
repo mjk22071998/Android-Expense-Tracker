@@ -73,7 +73,13 @@ class AddEditTransactionViewModel @Inject constructor(
                 .catch { e -> handleError(e.toUiError()) }
                 .collect { ledger ->
                     ledger?.let {
-                        _uiState.update { state -> state.copy(currentLedgerId = it.id) }
+                        val symbol = CurrencyHelper.getSymbol(it.currencyCode, context)
+                        _uiState.update { state ->
+                            state.copy(
+                                currentLedgerId = it.id,
+                                currencySymbol = symbol
+                            )
+                        }
                         validate()
                     }
                 }

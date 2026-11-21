@@ -74,6 +74,7 @@ class AddEditTransactionViewModelTest {
         userPreferences = mockk(relaxed = true) {
             every { currencyCode } returns currencyCodeFlow
             every { themeMode } returns themeModeFlow
+            every { activeLedgerId } returns MutableStateFlow(null)
         }
         transactionRepository = FakeTransactionRepository()
         categoryRepository = FakeCategoryRepository()

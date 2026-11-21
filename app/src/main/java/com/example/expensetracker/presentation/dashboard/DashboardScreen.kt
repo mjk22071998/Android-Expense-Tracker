@@ -38,6 +38,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.example.expensetracker.presentation.ledger.CreateEditLedgerDialog
+import com.example.expensetracker.presentation.ledger.DeleteLedgerConfirmDialog
+import com.example.expensetracker.presentation.ledger.LedgerSwitcherBottomSheet
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -211,12 +214,21 @@ fun DashboardScreen(
         BottomNavDestination.SETTINGS -> "Settings"
     }
 
+    val activeLedgerForTopBar = when (currentTab) {
+        BottomNavDestination.HOME,
+        BottomNavDestination.ANALYTICS,
+        BottomNavDestination.LEDGER -> uiState.activeLedger?.name ?: "Personal"
+        else -> null
+    }
+
     Scaffold(
         containerColor = Color.Transparent,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             DashboardTopBar(
                 title = topBarTitle,
+                activeLedgerName = activeLedgerForTopBar,
+                onLedgerSwitcherClick = { viewModel.setLedgerSwitcherVisible(true) },
                 isSyncing = syncUiState.isSyncing,
                 onExportClick = { showExportSheet = true }
             )
@@ -370,6 +382,53 @@ fun DashboardScreen(
         )
     }
 
+    // Modal: Ledger Switcher Bottom Sheet
+    if (uiState.isLedgerSwitcherVisible) {
+        LedgerSwitcherBottomSheet(
+            activeLedger = uiState.activeLedger,
+            allLedgers = uiState.allLedgers,
+            onSelectLedger = viewModel::selectActiveLedger,
+            onCreateLedgerClick = {
+                viewModel.setCreateEditLedgerDialogVisible(true, null)
+            },
+            onEditLedgerClick = { ledger ->
+                viewModel.setCreateEditLedgerDialogVisible(true, ledger)
+            },
+            onDeleteLedgerClick = { ledger ->
+                viewModel.setDeleteLedgerDialogVisible(ledger)
+            },
+            onDismiss = { viewModel.setLedgerSwitcherVisible(false) }
+        )
+    }
+
+    // Modal: Create / Edit Ledger Dialog
+    if (uiState.isCreateEditLedgerDialogVisible) {
+        CreateEditLedgerDialog(
+            ledgerToEdit = uiState.ledgerToEdit,
+            defaultCurrencyCode = uiState.activeLedger?.currencyCode ?: "PKR",
+            onDismiss = {
+                viewModel.setCreateEditLedgerDialogVisible(false)
+            },
+            onConfirm = { name, currencyCode ->
+                val editing = uiState.ledgerToEdit
+                if (editing != null) {
+                    viewModel.updateLedger(editing, name, currencyCode)
+                } else {
+                    viewModel.createLedger(name, currencyCode)
+                }
+            }
+        )
+    }
+
+    // Modal: Delete Ledger Confirmation Dialog
+    uiState.ledgerToDelete?.let { ledger ->
+        DeleteLedgerConfirmDialog(
+            ledger = ledger,
+            onDismiss = { viewModel.setDeleteLedgerDialogVisible(null) },
+            onConfirm = { viewModel.deleteLedger(ledger) }
+        )
+    }
+
     // BottomSheet: Export to PDF Modal
     if (showExportSheet) {
         ExportPdfBottomSheet(
@@ -433,7 +492,7 @@ fun DashboardScreen(
                         val shareIntent = Intent(Intent.ACTION_SEND).apply {
                             type = "application/pdf"
                             putExtra(Intent.EXTRA_STREAM, uri)
-                            putExtra(Intent.EXTRA_SUBJECT, "Expense Report - Personal Ledger")
+                            putExtra(Intent.EXTRA_SUBJECT, "Expense Report - ${uiState.activeLedger?.name ?: "Personal"} Ledger")
                             clipData = ClipData.newRawUri("Expense Report", uri)
                             addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                         }
