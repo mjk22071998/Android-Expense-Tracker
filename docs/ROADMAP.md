@@ -102,17 +102,46 @@
 - **Automated Verification**:
   - 102 unit & stress tests passing (100% success rate).
 
+### Milestone v0.5 — Multi-Ledger Management & Cloud Sync (Online Multi-Ledgers) ✅
+- **Multi-Ledger Data Architecture & Room Migration (v3 $\to$ v4)**:
+  - Added `isDeleted` flag to local Room `Ledger` entity with backwards-compatible schema migration `MIGRATION_3_4`.
+  - Stored `activeLedgerId` in Jetpack DataStore `UserPreferences`, defaulting to `ledger_default` if unspecified or invalid.
+  - Implemented reactive `LedgerRepository` flows delivering active ledger state alongside all active ledgers list.
+  - Enforced cascading soft deletion (`softDeleteLedger`) for non-default ledgers while guarding the default primary ledger against accidental removal.
+- **TopBar Interactive Ledger Switcher & Selector Sheet**:
+  - Transformed static title in `DashboardTopBar` into an interactive, luxury glass pill: `[Wallet Icon] <Active Ledger Name> [Chevron Down]`.
+  - Luxury **Ledger Switcher Bottom Sheet** (`LedgerSwitcherBottomSheet`) displaying all user ledgers with:
+    - Ledger title, currency code, and live running balance.
+    - Active radio checkmark indicator and "Default" chip badge.
+    - One-tap switching with smooth dashboard and chart state transitions.
+    - Overflow options menu on custom ledgers: "Edit Ledger" and "Delete Ledger".
+    - High-contrast `+ Create New Ledger` CTA button.
+- **Ledger Management & Creation Dialog**:
+  - `CreateEditLedgerDialog` supporting custom ledger name (with 30-char validation) and currency selector (popular currency chips + full ISO picker modal).
+  - Edit ledger details (rename, change currency).
+  - `DeleteLedgerConfirmDialog` with safety safeguards (warns that transactions remain archived, reverts active ledger to default, soft-deletes and flags for sync).
+- **Bidirectional Multi-Ledger Cloud Synchronization**:
+  - Full synchronization of all user ledgers via Supabase PostgREST `ledgers` table.
+  - Handled remote ledger creation, updates, and soft deletions across devices.
+  - Automatically re-derived balance, income, and expense totals upon transaction cloud delta pull (`recalculateDerivedState`).
+- **Scoped Dashboard, Forms & Analytics Integration**:
+  - Automatically scoped Dashboard balance, quick actions, search queries, and transaction history to `activeLedgerId`.
+  - `AddEditTransactionViewModel` defaults newly logged transactions and currency symbols to the active ledger.
+  - Transaction history, PDF statement exports, and dynamic subjects aggregate data exclusively for the active ledger.
+- **Automated Verification**:
+  - 108 unit & stress tests passing (100% success rate).
+
 ---
 
 ## 3. Current Version & Living Status
 
 | Metric | Current State |
 |---|---|
-| **App Version** | `v0.4` |
-| **Version Code** | `4` |
-| **Default Ledger** | Single Ledger (`Personal`, ID: `ledger_default`) |
+| **App Version** | `v0.5` |
+| **Version Code** | `5` |
+| **Active Ledgers** | Multi-Ledger Support (Default `Personal` + Custom Ledgers) |
 | **Network Footprint** | Offline-First (Optional Supabase Cloud Sync & Backup) |
-| **Automated Tests** | 102 unit & stress tests passing (`100%`) |
+| **Automated Tests** | 108 unit & stress tests passing (`100%`) |
 | **CI/CD Status** | Automated Build & Test on push/PR (`ubuntu-latest`) |
 | **Minimum SDK** | API 24 (Android 7.0 Nougat) |
 | **Target SDK** | API 37 (Android 15+) |
@@ -120,36 +149,6 @@
 ---
 
 ## 4. Forward Roadmap & Next Phases
-
-### 📚 Milestone v0.5 — Multi-Ledger Management & Cloud Sync (Online Multi-Ledgers) (PLANNED)
-**Goal:** Enable users (especially authenticated accounts syncing to Supabase) to create, switch, manage, and synchronize multiple isolated ledgers (e.g., Personal, Business, Family, Side Hustle) with independent running balances, isolated transaction histories, scoped analytics, and multi-device cloud sync.
-
-- [ ] **Multi-Ledger Data Architecture & Room Migration (v3 $\to$ v4)**:
-  - Add `isDeleted` flag to local Room `Ledger` entity with backwards-compatible schema migration `MIGRATION_3_4`.
-  - Store `activeLedgerId` in Jetpack DataStore `UserPreferences`, defaulting to `ledger_default` if unspecified or invalid.
-  - Implement reactive `LedgerRepository` flows delivering active ledger state alongside all active ledgers list.
-  - Enforce cascading soft deletion for non-default ledgers while guarding the default primary ledger against accidental removal.
-- [ ] **TopBar Interactive Ledger Switcher & Selector Sheet**:
-  - Transform static "Personal Expenses" title in `DashboardTopBar` into an interactive, luxury glass pill: `[Book Icon] <Active Ledger Name> [Chevron Down]`.
-  - Luxury **Ledger Switcher Bottom Sheet** displaying all user ledgers with:
-    - Ledger title, currency badge, and live running balance.
-    - "Active" radio checkmark and "Default" chip indicator.
-    - One-tap switching with smooth dashboard and chart state transitions.
-    - "+ New Ledger" action button.
-- [ ] **Ledger Management & Creation Dialog / Sheet**:
-  - Create new ledger flow with custom name, optional currency selection (inherits user preference by default), and visual icon/tag.
-  - Edit ledger details (rename, update currency).
-  - Delete/Archive ledger with safety confirmation (warns if transactions exist, switches active ledger to default, soft-deletes locally and flags for cloud sync).
-- [ ] **Bidirectional Multi-Ledger Cloud Synchronization**:
-  - Full synchronization of all user ledgers via Supabase PostgREST `ledgers` table.
-  - Handle remote ledger creation, updates, and soft deletions across devices.
-  - Automatically associate newly created ledgers with `auth.uid() = user_id`.
-- [ ] **Scoped Dashboard, Forms & Analytics Integration**:
-  - Automatically scope Dashboard balance cards, filter chips, search queries, and transaction lists to `activeLedgerId`.
-  - `AddEditTransactionViewModel` defaults newly logged transactions to `activeLedgerId`.
-  - Analytics spline charts and PDF statement exports dynamically aggregate data exclusively for the active ledger.
-
----
 
 ### 📦 Milestone v0.6 — Local Data Portability & Data Management (PLANNED)
 **Goal:** Provide offline-first backup and restore capabilities independent of cloud services, and allow safe data resets.
