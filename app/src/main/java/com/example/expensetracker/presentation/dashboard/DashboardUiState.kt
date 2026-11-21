@@ -1,6 +1,7 @@
 package com.example.expensetracker.presentation.dashboard
 
 import com.example.expensetracker.data.local.entity.Category
+import com.example.expensetracker.data.local.entity.Ledger
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.domain.model.UiError
@@ -14,6 +15,12 @@ data class CategoryUsage(
 )
 
 data class DashboardUiState(
+    val activeLedger: Ledger? = null,
+    val allLedgers: List<Ledger> = emptyList(),
+    val isLedgerSwitcherVisible: Boolean = false,
+    val isCreateEditLedgerDialogVisible: Boolean = false,
+    val ledgerToEdit: Ledger? = null,
+    val ledgerToDelete: Ledger? = null,
     val balance: Double = 0.0,
     val totalIncome: Double = 0.0,
     val totalExpense: Double = 0.0,

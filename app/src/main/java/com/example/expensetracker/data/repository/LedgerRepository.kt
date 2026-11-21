@@ -12,4 +12,5 @@ interface LedgerRepository {
     suspend fun insertLedger(ledger: Ledger): AppResult<Unit>
     suspend fun updateLedger(ledger: Ledger): AppResult<Unit>
     suspend fun deleteLedger(id: String): AppResult<Unit>
+    suspend fun softDeleteLedger(id: String): AppResult<Unit>
 }

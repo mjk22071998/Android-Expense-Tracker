@@ -2,7 +2,9 @@ package com.example.expensetracker.presentation.dashboard
 
 import android.content.Context
 import com.example.expensetracker.Constants
+import com.example.expensetracker.data.local.SyncStatus
 import com.example.expensetracker.data.local.UserPreferences
+import com.example.expensetracker.data.local.entity.Ledger
 import com.example.expensetracker.data.local.entity.TransactionWithCategory
 import com.example.expensetracker.data.repository.CategoryRepository
 import com.example.expensetracker.data.repository.LedgerRepository
@@ -53,7 +55,7 @@ class DashboardViewModel @Inject constructor(
     private val searchQueryFlow = MutableStateFlow("")
 
     init {
-        loadDefaultLedger()
+        observeLedgers()
         loadCurrencySymbol()
         loadCategories()
         observeSearchQuery()
@@ -83,30 +85,41 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    private fun loadDefaultLedger() {
+    private fun observeLedgers() {
         launchSafely(onError = ::handleError) {
-            ledgerRepository.getDefaultLedger()
+            combine(
+                ledgerRepository.getAllLedgers(),
+                userPreferences.activeLedgerId
+            ) { ledgers, activeId ->
+                ledgers to activeId
+            }
                 .catch { e -> handleError(e.toUiError()) }
-                .collect { ledger ->
-                    ledger?.let {
-                        val ledgerChanged = currentLedgerId != it.id
-                        currentLedgerId = it.id
-                        _uiState.update { state ->
-                            state.copy(
-                                balance = ledger.balance,
-                                totalIncome = ledger.totalIncome,
-                                totalExpense = ledger.totalExpenses
-                            )
-                        }
-                        if (ledgerChanged) {
-                            loadTransactions()
-                            loadMonthlyComparison()
-                            loadCategoryUsages()
-                        } else {
-                            val tx = _uiState.value.transactions
-                            if (tx.isNotEmpty()) {
-                                updateChartData(tx, ledger.balance)
-                            }
+                .collect { (ledgers, activeId) ->
+                    val active = ledgers.firstOrNull { it.id == activeId }
+                        ?: ledgers.firstOrNull { it.isDefault }
+                        ?: ledgers.firstOrNull()
+
+                    val ledgerChanged = active?.id != currentLedgerId
+                    currentLedgerId = active?.id ?: ""
+
+                    _uiState.update { state ->
+                        state.copy(
+                            activeLedger = active,
+                            allLedgers = ledgers,
+                            balance = active?.balance ?: 0.0,
+                            totalIncome = active?.totalIncome ?: 0.0,
+                            totalExpense = active?.totalExpenses ?: 0.0
+                        )
+                    }
+
+                    if (ledgerChanged && currentLedgerId.isNotEmpty()) {
+                        loadTransactions()
+                        loadMonthlyComparison()
+                        loadCategoryUsages()
+                    } else if (active != null) {
+                        val tx = _uiState.value.transactions
+                        if (tx.isNotEmpty()) {
+                            updateChartData(tx, active.balance)
                         }
                     }
                 }
@@ -392,6 +405,97 @@ class DashboardViewModel @Inject constructor(
         }
         val catStr = if (categoryIds.isEmpty()) "All Categories" else "${categoryIds.size} categories"
         return "$periodStr • $typeStr • $catStr"
+    }
+
+    // ---------- multi-ledger ----------
+
+    fun setLedgerSwitcherVisible(visible: Boolean) {
+        _uiState.update { it.copy(isLedgerSwitcherVisible = visible) }
+    }
+
+    fun selectActiveLedger(ledgerId: String) {
+        launchSafely(onError = ::handleError) {
+            userPreferences.setActiveLedgerId(ledgerId)
+            _uiState.update { it.copy(isLedgerSwitcherVisible = false) }
+        }
+    }
+
+    fun setCreateEditLedgerDialogVisible(visible: Boolean, ledgerToEdit: Ledger? = null) {
+        _uiState.update {
+            it.copy(
+                isCreateEditLedgerDialogVisible = visible,
+                ledgerToEdit = ledgerToEdit
+            )
+        }
+    }
+
+    fun setDeleteLedgerDialogVisible(ledgerToDelete: Ledger?) {
+        _uiState.update { it.copy(ledgerToDelete = ledgerToDelete) }
+    }
+
+    fun createLedger(name: String, currencyCode: String? = null) {
+        if (name.isBlank()) return
+        launchSafely(onError = ::handleError) {
+            val defaultCurrency = userPreferences.currencyCode.first()
+            val currency = if (!currencyCode.isNullOrBlank()) currencyCode.trim() else defaultCurrency
+            val newLedger = Ledger.create(
+                name = name.trim(),
+                currencyCode = currency,
+                isDefault = false,
+                syncStatus = SyncStatus.PENDING_UPLOAD
+            )
+            when (val result = ledgerRepository.insertLedger(newLedger)) {
+                is AppResult.Success -> {
+                    userPreferences.setActiveLedgerId(newLedger.id)
+                    _uiState.update {
+                        it.copy(
+                            isCreateEditLedgerDialogVisible = false,
+                            ledgerToEdit = null
+                        )
+                    }
+                }
+                is AppResult.Error -> handleError(result.error)
+            }
+        }
+    }
+
+    fun updateLedger(ledger: Ledger, newName: String, newCurrencyCode: String? = null) {
+        if (newName.isBlank()) return
+        launchSafely(onError = ::handleError) {
+            val updated = ledger.copy(
+                name = newName.trim(),
+                currencyCode = newCurrencyCode?.trim() ?: ledger.currencyCode,
+                updatedAt = System.currentTimeMillis(),
+                syncStatus = SyncStatus.PENDING_UPLOAD
+            )
+            when (val result = ledgerRepository.updateLedger(updated)) {
+                is AppResult.Success -> {
+                    _uiState.update {
+                        it.copy(
+                            isCreateEditLedgerDialogVisible = false,
+                            ledgerToEdit = null
+                        )
+                    }
+                }
+                is AppResult.Error -> handleError(result.error)
+            }
+        }
+    }
+
+    fun deleteLedger(ledger: Ledger) {
+        if (ledger.isDefault) return
+        launchSafely(onError = ::handleError) {
+            val defaultLedger = _uiState.value.allLedgers.firstOrNull { it.isDefault }
+            if (currentLedgerId == ledger.id && defaultLedger != null) {
+                userPreferences.setActiveLedgerId(defaultLedger.id)
+            }
+            when (val result = ledgerRepository.softDeleteLedger(ledger.id)) {
+                is AppResult.Success -> {
+                    _uiState.update { it.copy(ledgerToDelete = null) }
+                }
+                is AppResult.Error -> handleError(result.error)
+            }
+        }
     }
 
     // ---------- errors ----------

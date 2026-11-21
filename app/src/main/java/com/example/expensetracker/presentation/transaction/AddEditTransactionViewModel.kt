@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 
 @HiltViewModel
@@ -61,7 +62,14 @@ class AddEditTransactionViewModel @Inject constructor(
 
     private fun loadDefaultLedger() {
         launchSafely(onError = ::handleError) {
-            ledgerRepository.getDefaultLedger()
+            combine(
+                ledgerRepository.getAllLedgers(),
+                userPreferences.activeLedgerId
+            ) { ledgers, activeId ->
+                ledgers.firstOrNull { it.id == activeId }
+                    ?: ledgers.firstOrNull { it.isDefault }
+                    ?: ledgers.firstOrNull()
+            }
                 .catch { e -> handleError(e.toUiError()) }
                 .collect { ledger ->
                     ledger?.let {

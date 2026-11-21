@@ -13,6 +13,7 @@ import com.example.expensetracker.domain.model.DateRangeFilter
 import com.example.expensetracker.domain.model.UiError
 import com.example.expensetracker.domain.model.chart.ChartMode
 import com.example.expensetracker.util.MainDispatcherRule
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,6 +33,7 @@ class DashboardViewModelTest {
     private lateinit var transactionRepository: FakeTransactionRepository
     private lateinit var ledgerRepository: FakeLedgerRepository
     private lateinit var userPreferences: UserPreferences
+    private lateinit var activeLedgerIdFlow: MutableStateFlow<String?>
     private lateinit var categoryRepository: FakeCategoryRepository
     private lateinit var context: Context
     private lateinit var viewModel: DashboardViewModel
@@ -42,8 +44,13 @@ class DashboardViewModelTest {
         ledgerRepository = FakeLedgerRepository()
         context = mockk(relaxed = true)
         categoryRepository = FakeCategoryRepository()
+        activeLedgerIdFlow = MutableStateFlow(null)
         userPreferences = mockk(relaxed = true) {
             every { currencyCode } returns MutableStateFlow("PKR")
+            every { activeLedgerId } returns activeLedgerIdFlow
+            coEvery { setActiveLedgerId(any()) } coAnswers {
+                activeLedgerIdFlow.value = firstArg()
+            }
         }
 
         viewModel = DashboardViewModel(
@@ -196,5 +203,60 @@ class DashboardViewModelTest {
 
         viewModel.onChartModeSelected(ChartMode.BALANCE)
         assertEquals(ChartMode.BALANCE, viewModel.uiState.value.selectedChartMode)
+    }
+
+    @Test
+    fun `switching active ledger updates activeLedger and scoped totals`() = runTest {
+        val defaultLedger = sampleLedger(balance = 500.0)
+        val businessLedger = Ledger(
+            id = "ledger_business",
+            name = "Business",
+            currencyCode = "USD",
+            balance = 12000.0,
+            totalIncome = 15000.0,
+            totalExpenses = 3000.0,
+            createdAt = 10L,
+            updatedAt = 10L,
+            isDefault = false
+        )
+        ledgerRepository.emitLedgers(listOf(defaultLedger, businessLedger))
+
+        viewModel.selectActiveLedger("ledger_business")
+
+        val state = viewModel.uiState.value
+        assertEquals("Business", state.activeLedger?.name)
+        assertEquals(12000.0, state.balance, 0.0)
+        assertEquals(15000.0, state.totalIncome, 0.0)
+        assertEquals(3000.0, state.totalExpense, 0.0)
+    }
+
+    @Test
+    fun `creating a ledger inserts it into repository and sets it as active`() = runTest {
+        every { userPreferences.currencyCode } returns MutableStateFlow("PKR")
+
+        viewModel.createLedger("Freelance", "USD")
+
+        val state = viewModel.uiState.value
+        assertEquals(false, state.isCreateEditLedgerDialogVisible)
+    }
+
+    @Test
+    fun `deleting a non-default ledger marks it soft-deleted and falls back to default`() = runTest {
+        val defaultLedger = sampleLedger(balance = 500.0)
+        val customLedger = Ledger(
+            id = "ledger_temp",
+            name = "Temp",
+            currencyCode = "PKR",
+            balance = 100.0,
+            createdAt = 10L,
+            updatedAt = 10L,
+            isDefault = false
+        )
+        ledgerRepository.emitLedgers(listOf(defaultLedger, customLedger))
+
+        viewModel.deleteLedger(customLedger)
+
+        val found = ledgerRepository.getLedgerById("ledger_temp")
+        assertTrue(found is AppResult.Success && found.data == null)
     }
 }

@@ -29,4 +29,8 @@ class LedgerRepositoryImpl @Inject constructor(
     override suspend fun deleteLedger(id: String): AppResult<Unit> = safeCall {
         ledgerDao.delete(id)
     }
+
+    override suspend fun softDeleteLedger(id: String): AppResult<Unit> = safeCall {
+        ledgerDao.softDelete(id, System.currentTimeMillis())
+    }
 }
