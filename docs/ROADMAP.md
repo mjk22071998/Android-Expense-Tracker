@@ -102,7 +102,9 @@
 - **Automated Verification**:
   - 102 unit & stress tests passing (100% success rate).
 
-### Milestone v0.5 — Multi-Ledger Management & Cloud Sync (Online Multi-Ledgers) ✅
+### Milestone v0.5 — Multi-Ledger Management (Personal Multiple Ledgers) & Cloud Sync ✅
+> [!NOTE]
+> Enables independent multi-ledger creation and switching for an individual user (e.g., Personal, Business, Projects) with isolated balances, custom currencies, and Supabase cloud sync. This establishes the Room and UI foundation for future multi-user collaborative group ledgers (Milestone v1.2).
 - **Multi-Ledger Data Architecture & Room Migration (v3 $\to$ v4)**:
   - Added `isDeleted` flag to local Room `Ledger` entity with backwards-compatible schema migration `MIGRATION_3_4`.
   - Stored `activeLedgerId` in Jetpack DataStore `UserPreferences`, defaulting to `ledger_default` if unspecified or invalid.
@@ -245,3 +247,28 @@
       Upon user's reply (*"Last month"*), it filters `category = 'travel'` across the exact date boundary and replies with the aggregated total.
 - [ ] **Automatic Background Sync to Device**:
   - Transactions recorded via WhatsApp automatically flow down to the user's local Room database during the next background sync or when the app is opened.
+
+---
+
+### 👥 Milestone v1.2 — Multi-User Collaborative Group Ledgers (FUTURE PLANNED)
+**Goal:** Enable multiple authenticated users to participate in a shared group ledger (e.g., household expenses, room-mates, group trips, startup teams) where every member can log transactions into the shared book, while enforcing individual ownership security guardrails (members can only edit and delete their own transactions).
+
+> [!IMPORTANT]
+> Deferred to a future release cycle once multi-account integration testing infrastructure and collaborative Supabase backend testing environments are fully provisioned.
+
+- [ ] **Collaborative Access Control & Database Schema**:
+  - Introduce `ledger_members` association table in Supabase: `(ledger_id, user_id, role, joined_at)`.
+  - Granular Supabase PostgreSQL Row-Level Security (RLS) policies:
+    - **Read (`SELECT`)**: Any active member of the ledger can view the ledger and its transactions.
+    - **Insert (`INSERT`)**: Any member can log an expense into the ledger with `created_by = auth.uid()`.
+    - **Update / Delete (`UPDATE`, `DELETE`)**: Strictly restricted to `created_by = auth.uid()` (only the creator can modify or delete their own records), or ledger owner for admin cleanup.
+- [ ] **Ledger Sharing & Member Invitation System**:
+  - Invite members via email or shareable invite code / deep link.
+  - Accept/Decline invitations in Settings with instant synchronization.
+  - Display member list with avatars/names in `LedgerSwitcherBottomSheet` or dedicated ledger settings.
+- [ ] **Attribution UI & Scoped Edit/Delete Actions**:
+  - Each transaction item displays the creator's display name or avatar badge (e.g. *"Logged by Sarah"*).
+  - Context menu conditionally hides/disables "Edit" and "Delete" if `transaction.createdBy != currentUserId`.
+- [ ] **Multi-User Sync & Real-Time Conflict Resolution**:
+  - Handle real-time concurrent insertions from multiple devices via Supabase Realtime channel or periodic delta pull.
+  - Recalculate group balances atomically while handling concurrent member writes.
