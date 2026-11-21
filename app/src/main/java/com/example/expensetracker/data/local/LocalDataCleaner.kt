@@ -18,5 +18,6 @@ class LocalDataCleaner @Inject constructor(
         categorySeeder.seedIfNeeded()
         ledgerSeeder.seedIfNeeded()
         userPreferences.clearLastSyncTime()
+        userPreferences.clearActiveLedgerId()
     }
 }

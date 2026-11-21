@@ -17,6 +17,7 @@ data class Ledger(
     val createdAt: Long,
     val updatedAt: Long,
     val isDefault: Boolean = false,
+    val isDeleted: Boolean = false,
     val syncStatus: Int = SyncStatus.SYNCED,
     val serverId: String? = null
 ) {
@@ -30,6 +31,7 @@ data class Ledger(
             currencyCode: String,
             id: String = UUID.randomUUID().toString(),
             isDefault: Boolean = false,
+            isDeleted: Boolean = false,
             syncStatus: Int = SyncStatus.PENDING_UPLOAD,
             timestamp: Long = System.currentTimeMillis()
         ): Ledger = Ledger(
@@ -42,6 +44,7 @@ data class Ledger(
             createdAt = timestamp,
             updatedAt = timestamp,
             isDefault = isDefault,
+            isDeleted = isDeleted,
             syncStatus = syncStatus,
             serverId = null
         )

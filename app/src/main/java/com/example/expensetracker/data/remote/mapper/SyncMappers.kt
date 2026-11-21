@@ -83,7 +83,7 @@ fun Ledger.toDto(userId: String): LedgerDto = LedgerDto(
     isDefault = isDefault,
     createdAt = createdAt.toIso8601(),
     updatedAt = updatedAt.toIso8601(),
-    isDeleted = false
+    isDeleted = isDeleted
 )
 
 fun LedgerDto.toEntity(): Ledger = Ledger(
@@ -96,6 +96,7 @@ fun LedgerDto.toEntity(): Ledger = Ledger(
     createdAt = createdAt.toEpochMillis(),
     updatedAt = updatedAt.toEpochMillis(),
     isDefault = isDefault,
+    isDeleted = isDeleted,
     syncStatus = SyncStatus.SYNCED,
     serverId = id
 )

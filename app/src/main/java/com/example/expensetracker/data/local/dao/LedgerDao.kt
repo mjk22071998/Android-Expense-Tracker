@@ -16,7 +16,7 @@ interface LedgerDao {
     @Update
     suspend fun update(ledger: Ledger)
 
-    @Query("SELECT * FROM ledgers")
+    @Query("SELECT * FROM ledgers WHERE isDeleted = 0 ORDER BY isDefault DESC, createdAt ASC")
     fun getAllLedgers(): Flow<List<Ledger>>
 
     @Query("SELECT * FROM ledgers WHERE id=:id")
@@ -71,6 +71,9 @@ interface LedgerDao {
 
     @Query("DELETE FROM ledgers WHERE id=:id AND isDefault=0")
     suspend fun delete(id: String)
+
+    @Query("UPDATE ledgers SET isDeleted = 1, syncStatus = 1, updatedAt = :updatedAt WHERE id = :id AND isDefault = 0")
+    suspend fun softDelete(id: String, updatedAt: Long)
 
     @Query("SELECT * FROM ledgers WHERE isDefault = 1 LIMIT 1")
     suspend fun getDefaultLedgerSync(): Ledger?

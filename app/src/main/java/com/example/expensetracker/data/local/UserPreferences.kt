@@ -26,6 +26,27 @@ class UserPreferences @Inject constructor(
         private val CURRENCY_CODE = stringPreferencesKey(Constants.Preferences.CURRENCY_CODE)
         private val THEME_MODE = stringPreferencesKey("theme_mode")
         private val LAST_SYNC_TIME = longPreferencesKey("last_sync_time")
+        private val ACTIVE_LEDGER_ID = stringPreferencesKey("active_ledger_id")
+    }
+
+    val activeLedgerId: Flow<String?> = context.dataStore.data
+        .catch { exception ->
+            if (exception is IOException) emit(emptyPreferences()) else throw exception
+        }
+        .map { preferences ->
+            preferences[ACTIVE_LEDGER_ID]
+        }
+
+    suspend fun setActiveLedgerId(id: String) {
+        context.dataStore.edit { preferences ->
+            preferences[ACTIVE_LEDGER_ID] = id
+        }
+    }
+
+    suspend fun clearActiveLedgerId() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(ACTIVE_LEDGER_ID)
+        }
     }
 
     val lastSyncTime: Flow<Long?> = context.dataStore.data
