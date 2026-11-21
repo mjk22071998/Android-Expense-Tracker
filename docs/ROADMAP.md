@@ -121,7 +121,37 @@
 
 ## 4. Forward Roadmap & Next Phases
 
-### 📦 Milestone v0.5 — Local Data Portability & Data Management (PLANNED)
+### 📚 Milestone v0.5 — Multi-Ledger Management & Cloud Sync (Online Multi-Ledgers) (PLANNED)
+**Goal:** Enable users (especially authenticated accounts syncing to Supabase) to create, switch, manage, and synchronize multiple isolated ledgers (e.g., Personal, Business, Family, Side Hustle) with independent running balances, isolated transaction histories, scoped analytics, and multi-device cloud sync.
+
+- [ ] **Multi-Ledger Data Architecture & Room Migration (v3 $\to$ v4)**:
+  - Add `isDeleted` flag to local Room `Ledger` entity with backwards-compatible schema migration `MIGRATION_3_4`.
+  - Store `activeLedgerId` in Jetpack DataStore `UserPreferences`, defaulting to `ledger_default` if unspecified or invalid.
+  - Implement reactive `LedgerRepository` flows delivering active ledger state alongside all active ledgers list.
+  - Enforce cascading soft deletion for non-default ledgers while guarding the default primary ledger against accidental removal.
+- [ ] **TopBar Interactive Ledger Switcher & Selector Sheet**:
+  - Transform static "Personal Expenses" title in `DashboardTopBar` into an interactive, luxury glass pill: `[Book Icon] <Active Ledger Name> [Chevron Down]`.
+  - Luxury **Ledger Switcher Bottom Sheet** displaying all user ledgers with:
+    - Ledger title, currency badge, and live running balance.
+    - "Active" radio checkmark and "Default" chip indicator.
+    - One-tap switching with smooth dashboard and chart state transitions.
+    - "+ New Ledger" action button.
+- [ ] **Ledger Management & Creation Dialog / Sheet**:
+  - Create new ledger flow with custom name, optional currency selection (inherits user preference by default), and visual icon/tag.
+  - Edit ledger details (rename, update currency).
+  - Delete/Archive ledger with safety confirmation (warns if transactions exist, switches active ledger to default, soft-deletes locally and flags for cloud sync).
+- [ ] **Bidirectional Multi-Ledger Cloud Synchronization**:
+  - Full synchronization of all user ledgers via Supabase PostgREST `ledgers` table.
+  - Handle remote ledger creation, updates, and soft deletions across devices.
+  - Automatically associate newly created ledgers with `auth.uid() = user_id`.
+- [ ] **Scoped Dashboard, Forms & Analytics Integration**:
+  - Automatically scope Dashboard balance cards, filter chips, search queries, and transaction lists to `activeLedgerId`.
+  - `AddEditTransactionViewModel` defaults newly logged transactions to `activeLedgerId`.
+  - Analytics spline charts and PDF statement exports dynamically aggregate data exclusively for the active ledger.
+
+---
+
+### 📦 Milestone v0.6 — Local Data Portability & Data Management (PLANNED)
 **Goal:** Provide offline-first backup and restore capabilities independent of cloud services, and allow safe data resets.
 - [ ] **JSON Data Export**:
   - Export all transactions, categories, and ledger state into an encrypted or plain human-readable `.json` backup file.
@@ -139,7 +169,7 @@
 
 ---
 
-### 📊 Milestone v0.6 — Advanced Visual Analytics & Trends (PLANNED)
+### 📊 Milestone v0.7 — Advanced Visual Analytics & Trends (PLANNED)
 **Goal:** Deepen spending insight and financial distribution using native Compose Canvas without third-party chart libraries.
 - [ ] **Category Donut / Pie Breakdown**:
   - Interactive, hardware-accelerated Compose Canvas category donut chart.
@@ -154,7 +184,7 @@
 
 ---
 
-### 🎯 Milestone v0.7 — Category Budgets & Spending Limits (PLANNED)
+### 🎯 Milestone v0.8 — Category Budgets & Spending Limits (PLANNED)
 **Goal:** Help users control spending through customizable monthly thresholds per category.
 - [ ] **Monthly Budget Targets**:
   - Set optional monthly budget amounts per expense category (e.g., Dining: Rs 15,000/month).
@@ -166,7 +196,7 @@
 
 ---
 
-### ⏰ Milestone v0.8 — Scheduled Reminders & Recurring Transactions (PLANNED)
+### ⏰ Milestone v0.9 — Scheduled Reminders & Recurring Transactions (PLANNED)
 **Goal:** Automate logging of fixed recurring expenses and bills completely on-device.
 - [ ] **Recurring Expense Templates**:
   - Create recurring templates (Daily, Weekly, Monthly, Yearly) for subscriptions, rent, utility bills.
