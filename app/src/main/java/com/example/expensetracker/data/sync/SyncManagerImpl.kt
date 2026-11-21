@@ -133,7 +133,12 @@ class SyncManagerImpl @Inject constructor(
             val local = ledgerDao.getLedgerById(dto.id)
             val remoteUpdated = dto.updatedAt.toEpochMillis()
             if (local == null || (local.syncStatus == SyncStatus.SYNCED && remoteUpdated > local.updatedAt)) {
-                ledgerDao.upsert(dto.toEntity())
+                val entity = dto.toEntity().copy(
+                    balance = local?.balance ?: 0.0,
+                    totalIncome = local?.totalIncome ?: 0.0,
+                    totalExpenses = local?.totalExpenses ?: 0.0
+                )
+                ledgerDao.upsert(entity)
             }
         }
     }
@@ -157,12 +162,18 @@ class SyncManagerImpl @Inject constructor(
             }
         }.decodeList<TransactionDto>()
 
+        val touchedLedgerIds = mutableSetOf<String>()
         for (dto in remoteList) {
             val local = transactionDao.getTransactionById(dto.id)
             val remoteUpdated = dto.updatedAt.toEpochMillis()
             if (local == null || (local.syncStatus == SyncStatus.SYNCED && remoteUpdated > local.updatedAt)) {
                 transactionDao.upsert(dto.toEntity())
+                touchedLedgerIds.add(dto.ledgerId)
             }
+        }
+
+        for (ledgerId in touchedLedgerIds) {
+            transactionDao.recalculateDerivedState(ledgerId, ledgerDao, monthlySnapshotDao)
         }
     }
 }

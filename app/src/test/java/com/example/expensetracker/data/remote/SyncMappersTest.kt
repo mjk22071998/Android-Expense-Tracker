@@ -101,10 +101,12 @@ class SyncMappersTest {
         assertEquals("ledger_default", dto.id)
         assertEquals(testUserId, dto.userId)
         assertEquals("Personal", dto.name)
+        assertEquals(false, dto.isDeleted)
 
         val decoded = dto.toEntity()
         assertEquals(entity.id, decoded.id)
         assertEquals(entity.name, decoded.name)
+        assertEquals(false, decoded.isDeleted)
         assertEquals(SyncStatus.SYNCED, decoded.syncStatus)
     }
 }
